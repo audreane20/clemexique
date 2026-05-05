@@ -1,0 +1,8 @@
+/vendor/
+/.vs/
+.env
+config.php
+config.local.php
+send-email.local.php
+email-debug.log
+config.example.php

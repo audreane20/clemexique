@@ -1,0 +1,35 @@
+﻿{% extends "layout.html.twig" %}
+
+{% block content %}
+
+<section class="about-hero">
+    <p>{{ trans('about.hero') }}</p>
+</section>
+
+<section class="about-container">
+
+    <h1>{{ trans('about.title') }}</h1>
+
+    <p>{{ trans('about.intro') }}</p>
+    <p>{{ trans('about.p1') }}</p>
+    <p>{{ trans('about.p2') }}</p>
+    <p>{{ trans('about.p3') }}</p>
+    <p>{{ trans('about.p4') }}</p>
+    <p>{{ trans('about.p5') }}</p>
+
+    <p><strong>{{ trans('about.signature') }}</strong><br>
+    {{ trans('about.name') }}</p>
+
+    <h2>{{ trans('about.trust.title') }}</h2>
+
+    <ul class="trust-list">
+        <li>✔ {{ trans('about.trust.1') }}</li>
+        <li>✔ {{ trans('about.trust.2') }}</li>
+        <li>✔ {{ trans('about.trust.3') }}</li>
+        <li>✔ {{ trans('about.trust.4') }}</li>
+        <li>✔ {{ trans('about.trust.5') }}</li>
+    </ul>
+
+</section>
+
+{% endblock %}

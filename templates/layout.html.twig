@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="{{ app_lang ?? 'fr' }}">
+<head>
+    <link rel="icon" type="image/png" href="{{ base_path }}/images/Circle_logo-cropped.png" />
+    <meta charset="UTF-8">
+    <title>{{ page_title ?? 'Riviera Maya' }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{ base_path }}/css/style.css">
+</head>
+<body>
+
+<header class="site-header">
+    <div class="header-container">
+
+        <a href="{{ base_path }}/" class="logo">
+            <img src="{{ base_path }}/images/logo_t.png" alt="Riviera Maya Logo">
+        </a>
+
+        <nav class="main-nav">
+            <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
+            <a href="{{ base_path }}/about">{{ trans('nav.about') }}</a>
+            <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
+        </nav>
+
+        <div class="lang-switch">
+            <a href="?lang=fr" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
+            <a href="?lang=en" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
+        </div>
+
+    </div>
+</header>
+
+<main class="page-content">
+    {% block content %}{% endblock %}
+</main>
+
+</body>
+</html>

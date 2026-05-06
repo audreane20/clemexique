@@ -1,0 +1,117 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="admin-properties">
+    <h1>Properties</h1>
+
+    <form method="POST" action="{{ base_path }}/admin/properties/create" class="property-form">
+        <h2>Create property</h2>
+
+        <label>
+            Property type ID
+            <input type="number" name="property_type_id" required>
+        </label>
+
+        <label>
+            Listing type IDs
+            <small>Use 1 for sale, 2 for rent. You can select both later when we make the full form.</small>
+            <input type="number" name="listing_type_ids[]" placeholder="1">
+        </label>
+
+        <label>
+            Name
+            <input type="text" name="name" required>
+        </label>
+
+        <label>
+            Price
+            <input type="number" step="0.01" name="price" required>
+        </label>
+
+        <label>
+            City
+            <input type="text" name="city" required>
+        </label>
+
+        <label>
+            Bedrooms
+            <input type="number" name="bedrooms" min="0" required>
+        </label>
+
+        <label>
+            Bathrooms
+            <input type="number" name="bathrooms" min="0" required>
+        </label>
+
+        <label>
+            Pool type
+            <input type="text" name="pool_type">
+        </label>
+
+        <label>
+            Distance from beach
+            <input type="text" name="distance_from_beach">
+        </label>
+
+        <label>
+            Parking type
+            <select name="parking_type">
+                <option value="aucun">Aucun</option>
+                <option value="interieur">Intérieur</option>
+                <option value="exterieur">Extérieur</option>
+                <option value="les_deux">Les deux</option>
+            </select>
+        </label>
+
+        <label>
+            Parking count
+            <input type="number" name="parking_count" min="0" value="0">
+        </label>
+
+        <label>
+            <input type="checkbox" name="has_elevator" value="1">
+            Has elevator
+        </label>
+
+        <label>
+            <input type="checkbox" name="animals_allowed" value="1">
+            Animals allowed
+        </label>
+
+        <button type="submit">Create</button>
+    </form>
+
+    <h2>Existing properties</h2>
+
+    {% if properties is empty %}
+        <p>No properties yet.</p>
+    {% else %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>City</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for property in properties %}
+                    <tr>
+                        <td>{{ property.name }}</td>
+                        <td>{{ app_lang == 'fr' ? property.property_type_name_fr : property.property_type_name_en }}</td>
+                        <td>{{ property.city }}</td>
+                        <td>{{ property.price }}</td>
+                        <td>
+                            <form method="POST" action="{{ base_path }}/admin/properties/{{ property.id }}/delete" onsubmit="return confirm('Delete this property?');">
+                                <button type="submit">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+</section>
+{% endblock %}

@@ -15,6 +15,12 @@
         </div>
     {% endif %}
 
+    {% if error %}
+        <div class="form-error">
+            {{ error }}
+        </div>
+    {% endif %}
+
     <form class="contact-form" method="POST" action="{{ base_path }}/contact">
         <div class="form-group">
             <label>{{ trans('contact.name') }}</label>

@@ -1,117 +1,119 @@
 {% extends "layout.html.twig" %}
 
 {% block content %}
-<section class="admin-properties">
-    <h1>Properties</h1>
+<section class="admin-properties-shell">
+    <div class="admin-properties-header">
+        <div>
+            <p class="admin-properties-eyebrow">{{ trans('properties.admin_eyebrow') }}</p>
+            <h1>{{ trans('properties.admin_title') }}</h1>
+            <p>{{ trans('properties.admin_copy') }}</p>
+        </div>
+    </div>
 
-    <form method="POST" action="{{ base_path }}/admin/properties/create" class="property-form">
-        <h2>Create property</h2>
+    <div class="admin-properties-layout">
+        <div class="property-form-card">
+            <h2>{{ editing_property ? trans('properties.edit_title') : trans('properties.form_title') }}</h2>
 
-        <label>
-            Property type ID
-            <input type="number" name="property_type_id" required>
-        </label>
+            <form method="POST" action="{{ editing_property ? base_path ~ '/admin/properties/' ~ editing_property.id ~ '/update' : base_path ~ '/admin/properties/create' }}" class="property-form" enctype="multipart/form-data">
+                <label>
+                    {{ trans('properties.picture') }}
+                    <input type="file" name="image_file" accept="image/*" {{ editing_property ? '' : 'required' }}>
+                </label>
 
-        <label>
-            Listing type IDs
-            <small>Use 1 for sale, 2 for rent. You can select both later when we make the full form.</small>
-            <input type="number" name="listing_type_ids[]" placeholder="1">
-        </label>
+                <label>
+                    {{ trans('properties.name') }}
+                    <input type="text" name="name" placeholder="Tohoku Living" value="{{ editing_property.name ?? '' }}" required>
+                </label>
 
-        <label>
-            Name
-            <input type="text" name="name" required>
-        </label>
+                <label>
+                    {{ trans('properties.city') }}
+                    <input type="text" name="city" placeholder="Playa del Carmen" value="{{ editing_property.city ?? '' }}" required>
+                </label>
 
-        <label>
-            Price
-            <input type="number" step="0.01" name="price" required>
-        </label>
+                <fieldset class="property-form-choice">
+                    <legend>{{ trans('properties.type') }}</legend>
+                    <div class="property-radio-group">
+                        <label class="property-radio-option">
+                            <input type="radio" name="listing_mode" value="achat" {{ (editing_property.listing_mode ?? 'achat') == 'achat' ? 'checked' : '' }}>
+                            <span>{{ trans('properties.mode_buy') }}</span>
+                        </label>
 
-        <label>
-            City
-            <input type="text" name="city" required>
-        </label>
+                        <label class="property-radio-option">
+                            <input type="radio" name="listing_mode" value="location" {{ (editing_property.listing_mode ?? 'achat') == 'location' ? 'checked' : '' }}>
+                            <span>{{ trans('properties.mode_rent') }}</span>
+                        </label>
+                    </div>
+                </fieldset>
 
-        <label>
-            Bedrooms
-            <input type="number" name="bedrooms" min="0" required>
-        </label>
+                <div class="property-form-row">
+                    <label>
+                        {{ trans('properties.price') }}
+                        <input type="number" name="price_amount" step="0.01" min="0" placeholder="0" value="{{ editing_property.price_amount ?? '' }}" required>
+                    </label>
 
-        <label>
-            Bathrooms
-            <input type="number" name="bathrooms" min="0" required>
-        </label>
+                    <label>
+                        {{ trans('properties.currency') }}
+                        <select name="price_currency" required>
+                            <option value="CAD" {{ (editing_property.price_currency ?? 'CAD') == 'CAD' ? 'selected' : '' }}>CAD</option>
+                            <option value="USD" {{ (editing_property.price_currency ?? 'CAD') == 'USD' ? 'selected' : '' }}>USD</option>
+                        </select>
+                    </label>
+                </div>
 
-        <label>
-            Pool type
-            <input type="text" name="pool_type">
-        </label>
+                <label>
+                    {{ trans('properties.link') }}
+                    <input type="url" name="external_url" placeholder="https://example.com/property" value="{{ editing_property.external_url ?? '' }}" required>
+                </label>
 
-        <label>
-            Distance from beach
-            <input type="text" name="distance_from_beach">
-        </label>
+                <button type="submit" class="contact-btn">{{ editing_property ? trans('properties.update') : trans('properties.save') }}</button>
 
-        <label>
-            Parking type
-            <select name="parking_type">
-                <option value="aucun">Aucun</option>
-                <option value="interieur">Intérieur</option>
-                <option value="exterieur">Extérieur</option>
-                <option value="les_deux">Les deux</option>
-            </select>
-        </label>
+                {% if editing_property %}
+                    <a href="{{ base_path }}/admin/properties" class="property-cancel-link">{{ trans('properties.cancel_edit') }}</a>
+                {% endif %}
+            </form>
+        </div>
 
-        <label>
-            Parking count
-            <input type="number" name="parking_count" min="0" value="0">
-        </label>
+        <div class="property-admin-preview">
+            <div class="property-admin-preview-header">
+                <div>
+                    <p class="property-preview-label">{{ trans('properties.current') }}</p>
+                    <h2>{{ properties|length }} {{ properties|length == 1 ? trans('properties.card_singular') : trans('properties.card_plural') }}</h2>
+                </div>
+            </div>
 
-        <label>
-            <input type="checkbox" name="has_elevator" value="1">
-            Has elevator
-        </label>
+            {% if properties is empty %}
+                <div class="property-empty-state">
+                    <p>{{ trans('properties.admin_empty') }}</p>
+                </div>
+            {% else %}
+                <div class="property-admin-grid">
+                    {% for property in properties %}
+                        <article class="property-admin-card">
+                            <img src="{{ property.image_url }}" alt="{{ property.name }}">
 
-        <label>
-            <input type="checkbox" name="animals_allowed" value="1">
-            Animals allowed
-        </label>
+                            <div class="property-admin-card-body">
+                                <p class="property-admin-mode">{{ property.listing_mode == 'location' ? trans('properties.mode_rent') : trans('properties.mode_buy') }}</p>
+                                <h3>{{ property.name }}</h3>
+                                <p class="property-admin-city">{{ property.city }}</p>
+                                <p class="property-admin-price">{{ property.price_display }}</p>
 
-        <button type="submit">Create</button>
-    </form>
+                                <div class="property-admin-actions">
+                                    <a href="{{ property.external_url }}" target="_blank" rel="noopener noreferrer" class="header-auth-link property-open-link">{{ trans('properties.open_link') }}</a>
 
-    <h2>Existing properties</h2>
+                                    <div class="property-admin-secondary-actions">
+                                        <a href="{{ base_path }}/admin/properties?edit={{ property.id }}" class="account-menu-button property-edit-link">{{ trans('properties.edit') }}</a>
 
-    {% if properties is empty %}
-        <p>No properties yet.</p>
-    {% else %}
-        <table>
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Type</th>
-                    <th>City</th>
-                    <th>Price</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for property in properties %}
-                    <tr>
-                        <td>{{ property.name }}</td>
-                        <td>{{ app_lang == 'fr' ? property.property_type_name_fr : property.property_type_name_en }}</td>
-                        <td>{{ property.city }}</td>
-                        <td>{{ property.price }}</td>
-                        <td>
-                            <form method="POST" action="{{ base_path }}/admin/properties/{{ property.id }}/delete" onsubmit="return confirm('Delete this property?');">
-                                <button type="submit">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    {% endif %}
+                                        <form method="POST" action="{{ base_path }}/admin/properties/{{ property.id }}/delete" onsubmit="return confirm('{{ trans('properties.delete_confirm') }}');">
+                                            <button type="submit" class="account-menu-button property-delete-button">{{ trans('properties.delete') }}</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+    </div>
 </section>
 {% endblock %}

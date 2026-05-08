@@ -2,11 +2,14 @@
 
 namespace App\Model;
 
-use PDO;
 use InvalidArgumentException;
+use PDO;
 
 class PropertyModel
 {
+    private const USD_TO_CAD_RATE = 1.3625;
+    private const USD_TO_CAD_RATE_DATE = '2026-05-06';
+
     private PDO $pdo;
 
     public function __construct(PDO $pdo)
@@ -16,57 +19,31 @@ class PropertyModel
 
     public function create(array $data): int
     {
-        $this->validateRequiredFields($data);
+        $payload = $this->normalizePayload($data);
 
-        $sql = "
-            INSERT INTO properties (
-                property_type_id,
+        $stmt = $this->pdo->prepare("
+            INSERT INTO property_cards (
+                image_url,
                 name,
-                price,
                 city,
-                bedrooms,
-                bathrooms,
-                pool_type,
-                distance_from_beach,
-                parking_type,
-                parking_count,
-                has_elevator,
-                animals_allowed
+                listing_mode,
+                price_amount,
+                price_currency,
+                external_url
             ) VALUES (
-                :property_type_id,
+                :image_url,
                 :name,
-                :price,
                 :city,
-                :bedrooms,
-                :bathrooms,
-                :pool_type,
-                :distance_from_beach,
-                :parking_type,
-                :parking_count,
-                :has_elevator,
-                :animals_allowed
+                :listing_mode,
+                :price_amount,
+                :price_currency,
+                :external_url
             )
-        ";
+        ");
 
-        try {
-            $this->pdo->beginTransaction();
+        $stmt->execute($payload);
 
-            $stmt = $this->pdo->prepare($sql);
-            $stmt->execute($this->buildPropertyParams($data));
-
-            $propertyId = (int) $this->pdo->lastInsertId();
-            $this->syncListingTypes($propertyId, $data['listing_type_ids'] ?? []);
-
-            $this->pdo->commit();
-
-            return $propertyId;
-        } catch (\Throwable $e) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
-            }
-
-            throw $e;
-        }
+        return (int) $this->pdo->lastInsertId();
     }
 
     public function update(int $id, array $data): bool
@@ -75,47 +52,33 @@ class PropertyModel
             throw new InvalidArgumentException('Invalid property ID.');
         }
 
-        $this->validateRequiredFields($data);
+        if (empty($data['image_url'])) {
+            $existingProperty = $this->findById($id);
 
-        $sql = "
-            UPDATE properties
-            SET
-                property_type_id = :property_type_id,
-                name = :name,
-                price = :price,
-                city = :city,
-                bedrooms = :bedrooms,
-                bathrooms = :bathrooms,
-                pool_type = :pool_type,
-                distance_from_beach = :distance_from_beach,
-                parking_type = :parking_type,
-                parking_count = :parking_count,
-                has_elevator = :has_elevator,
-                animals_allowed = :animals_allowed
-            WHERE id = :id
-        ";
-
-        try {
-            $this->pdo->beginTransaction();
-
-            $params = $this->buildPropertyParams($data);
-            $params['id'] = $id;
-
-            $stmt = $this->pdo->prepare($sql);
-            $updated = $stmt->execute($params);
-
-            $this->syncListingTypes($id, $data['listing_type_ids'] ?? []);
-
-            $this->pdo->commit();
-
-            return $updated;
-        } catch (\Throwable $e) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
+            if ($existingProperty === null) {
+                throw new InvalidArgumentException('Property not found.');
             }
 
-            throw $e;
+            $data['image_url'] = $existingProperty['image_url'];
         }
+
+        $payload = $this->normalizePayload($data);
+        $payload['id'] = $id;
+
+        $stmt = $this->pdo->prepare("
+            UPDATE property_cards
+            SET
+                image_url = :image_url,
+                name = :name,
+                city = :city,
+                listing_mode = :listing_mode,
+                price_amount = :price_amount,
+                price_currency = :price_currency,
+                external_url = :external_url
+            WHERE id = :id
+        ");
+
+        return $stmt->execute($payload);
     }
 
     public function delete(int $id): bool
@@ -124,7 +87,7 @@ class PropertyModel
             throw new InvalidArgumentException('Invalid property ID.');
         }
 
-        $stmt = $this->pdo->prepare("DELETE FROM properties WHERE id = :id");
+        $stmt = $this->pdo->prepare("DELETE FROM property_cards WHERE id = :id");
 
         return $stmt->execute([
             'id' => $id,
@@ -133,116 +96,126 @@ class PropertyModel
 
     public function findAll(): array
     {
-        $stmt = $this->pdo->query("
-            SELECT
-                p.*,
-                pt.name_fr AS property_type_name_fr,
-                pt.name_en AS property_type_name_en
-            FROM properties p
-            INNER JOIN property_types pt ON pt.id = p.property_type_id
-            ORDER BY p.created_at DESC
-        ");
+        return $this->findAllByMode('all');
+    }
 
-        return $stmt->fetchAll();
+    public function findAllByMode(string $mode): array
+    {
+        $mode = strtolower($mode);
+
+        if (!in_array($mode, ['all', 'achat', 'location'], true)) {
+            $mode = 'all';
+        }
+
+        $sql = "
+            SELECT *
+            FROM property_cards
+        ";
+
+        $params = [];
+
+        if ($mode !== 'all') {
+            $sql .= " WHERE listing_mode = :listing_mode";
+            $params['listing_mode'] = $mode;
+        }
+
+        $sql .= " ORDER BY created_at DESC, id DESC";
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($params);
+
+        $properties = $stmt->fetchAll();
+
+        return array_map(fn (array $property) => $this->decorateProperty($property), $properties);
     }
 
     public function findById(int $id): ?array
     {
         $stmt = $this->pdo->prepare("
             SELECT *
-            FROM properties
+            FROM property_cards
             WHERE id = :id
             LIMIT 1
         ");
 
-        $stmt->execute(['id' => $id]);
+        $stmt->execute([
+            'id' => $id,
+        ]);
+
         $property = $stmt->fetch();
 
-        return $property ?: null;
-    }
-
-    private function validateRequiredFields(array $data): void
-    {
-        $requiredFields = [
-            'property_type_id',
-            'name',
-            'price',
-            'city',
-            'bedrooms',
-            'bathrooms',
-        ];
-
-        foreach ($requiredFields as $field) {
-            if (!isset($data[$field]) || trim((string) $data[$field]) === '') {
-                throw new InvalidArgumentException("Missing required field: {$field}");
-            }
+        if ($property === false) {
+            return null;
         }
+
+        return $this->decorateProperty($property);
     }
 
-    private function buildPropertyParams(array $data): array
+    private function normalizePayload(array $data): array
     {
+        $imageUrl = trim((string) ($data['image_url'] ?? ''));
+        $name = trim((string) ($data['name'] ?? ''));
+        $city = trim((string) ($data['city'] ?? ''));
+        $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'achat')));
+        $priceAmount = trim((string) ($data['price_amount'] ?? ''));
+        $priceCurrency = strtoupper(trim((string) ($data['price_currency'] ?? 'USD')));
+        $externalUrl = trim((string) ($data['external_url'] ?? ''));
+
+        if ($imageUrl === '' || $name === '' || $city === '' || $priceAmount === '' || $externalUrl === '') {
+            throw new InvalidArgumentException('Missing required property fields.');
+        }
+
+        if (!is_numeric($priceAmount)) {
+            throw new InvalidArgumentException('Invalid property price.');
+        }
+
+        if (!in_array($priceCurrency, ['USD', 'CAD'], true)) {
+            throw new InvalidArgumentException('Invalid property currency.');
+        }
+
+        if (!in_array($listingMode, ['achat', 'location'], true)) {
+            throw new InvalidArgumentException('Invalid listing mode.');
+        }
+
         return [
-            'property_type_id' => (int) $data['property_type_id'],
-            'name' => trim((string) $data['name']),
-            'price' => (float) $data['price'],
-            'city' => trim((string) $data['city']),
-            'bedrooms' => (int) $data['bedrooms'],
-            'bathrooms' => (int) $data['bathrooms'],
-            'pool_type' => $this->nullableString($data['pool_type'] ?? null),
-            'distance_from_beach' => $this->nullableString($data['distance_from_beach'] ?? null),
-            'parking_type' => $this->cleanParkingType($data['parking_type'] ?? 'aucun'),
-            'parking_count' => (int) ($data['parking_count'] ?? 0),
-            'has_elevator' => $this->checkboxToInt($data['has_elevator'] ?? null),
-            'animals_allowed' => $this->checkboxToInt($data['animals_allowed'] ?? null),
+            'image_url' => $imageUrl,
+            'name' => $name,
+            'city' => $city,
+            'listing_mode' => $listingMode,
+            'price_amount' => (float) $priceAmount,
+            'price_currency' => $priceCurrency,
+            'external_url' => $externalUrl,
         ];
     }
 
-    private function syncListingTypes(int $propertyId, array|string|int $listingTypeIds): void
+    private function decorateProperty(array $property): array
     {
-        if (!is_array($listingTypeIds)) {
-            $listingTypeIds = [$listingTypeIds];
+        $amount = (float) $property['price_amount'];
+        $currency = strtoupper((string) $property['price_currency']);
+
+        if ($currency === 'CAD') {
+            $primaryAmount = $amount;
+            $primaryCurrency = 'CAD';
+            $secondaryAmount = $amount / self::USD_TO_CAD_RATE;
+            $secondaryCurrency = 'USD';
+        } else {
+            $primaryAmount = $amount * self::USD_TO_CAD_RATE;
+            $primaryCurrency = 'CAD';
+            $secondaryAmount = $amount;
+            $secondaryCurrency = 'USD';
         }
 
-        $deleteStmt = $this->pdo->prepare("DELETE FROM property_listing_types WHERE property_id = :property_id");
-        $deleteStmt->execute(['property_id' => $propertyId]);
+        $property['price_display'] = $this->formatPrice($amount, $currency);
+        $property['primary_price_display'] = $this->formatPrice($primaryAmount, $primaryCurrency);
+        $property['secondary_price_display'] = $this->formatPrice($secondaryAmount, $secondaryCurrency);
+        $property['exchange_rate_date'] = self::USD_TO_CAD_RATE_DATE;
+        $property['listing_mode_label'] = $property['listing_mode'] === 'location' ? 'Location' : 'Achat';
 
-        if (empty($listingTypeIds)) {
-            return;
-        }
-
-        $insertStmt = $this->pdo->prepare("
-            INSERT INTO property_listing_types (property_id, listing_type_id)
-            VALUES (:property_id, :listing_type_id)
-        ");
-
-        foreach ($listingTypeIds as $listingTypeId) {
-            if ((int) $listingTypeId <= 0) {
-                continue;
-            }
-
-            $insertStmt->execute([
-                'property_id' => $propertyId,
-                'listing_type_id' => (int) $listingTypeId,
-            ]);
-        }
+        return $property;
     }
 
-    private function nullableString(mixed $value): ?string
+    private function formatPrice(float $amount, string $currency): string
     {
-        $value = trim((string) ($value ?? ''));
-
-        return $value === '' ? null : $value;
-    }
-
-    private function checkboxToInt(mixed $value): int
-    {
-        return !empty($value) ? 1 : 0;
-    }
-
-    private function cleanParkingType(string $parkingType): string
-    {
-        $allowed = ['interieur', 'exterieur', 'les_deux', 'aucun'];
-
-        return in_array($parkingType, $allowed, true) ? $parkingType : 'aucun';
+        return '$' . number_format($amount, 0, '.', ' ') . ' ' . $currency;
     }
 }

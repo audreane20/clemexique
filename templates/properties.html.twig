@@ -9,13 +9,13 @@
     <div class="property-filter-bar">
         <span class="property-filter-label">{{ trans('properties.filter_label') }}</span>
         <div class="property-filter-actions">
-            <a href="{{ base_path }}/?lang={{ app_lang }}&mode=all" class="property-filter-link {{ selected_mode == 'all' ? 'active' : '' }}">
+            <a href="{{ base_path }}/properties?lang={{ app_lang }}&mode=all" class="property-filter-link {{ selected_mode == 'all' ? 'active' : '' }}">
                 {{ trans('properties.filter_all') }}
             </a>
-            <a href="{{ base_path }}/?lang={{ app_lang }}&mode=achat" class="property-filter-link {{ selected_mode == 'achat' ? 'active' : '' }}">
+            <a href="{{ base_path }}/properties?lang={{ app_lang }}&mode=achat" class="property-filter-link {{ selected_mode == 'achat' ? 'active' : '' }}">
                 {{ trans('properties.mode_buy') }}
             </a>
-            <a href="{{ base_path }}/?lang={{ app_lang }}&mode=location" class="property-filter-link {{ selected_mode == 'location' ? 'active' : '' }}">
+            <a href="{{ base_path }}/properties?lang={{ app_lang }}&mode=location" class="property-filter-link {{ selected_mode == 'location' ? 'active' : '' }}">
                 {{ trans('properties.mode_rent') }}
             </a>
         </div>
@@ -44,14 +44,5 @@
             {% endfor %}
         </div>
     {% endif %}
-</section>
-
-<section class="info-request-shell">
-    <div class="info-request-card">
-        <p class="info-request-eyebrow">{{ trans('info_request.eyebrow') }}</p>
-        <h2>{{ trans('info_request.title') }}</h2>
-        <p>{{ trans('info_request.copy') }}</p>
-        <a href="{{ base_path }}/demande-information" class="info-request-link">{{ trans('info_request.cta') }}</a>
-    </div>
 </section>
 {% endblock %}

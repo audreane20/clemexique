@@ -22,6 +22,8 @@
     {% endif %}
 
     <form class="contact-form" method="POST" action="{{ base_path }}/contact">
+        <input type="hidden" name="preferred_language" value="{{ app_lang }}">
+
         <div class="form-group">
             <label>{{ trans('contact.name') }}</label>
             <input type="text" name="name" required>

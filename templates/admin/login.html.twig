@@ -1,0 +1,30 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="admin-auth-shell">
+    <div class="admin-auth-card">
+        <p class="admin-auth-eyebrow">{{ trans('admin.login_eyebrow') }}</p>
+        <h1>{{ trans('admin.login_title') }}</h1>
+        <p class="admin-auth-copy">{{ trans('admin.login_copy') }}</p>
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ base_path }}/admin/login" class="admin-auth-form">
+            <label for="username">{{ trans('admin.username') }}</label>
+            <input id="username" type="text" name="username" value="{{ last_username|default('') }}" autocomplete="username" required>
+
+            <label for="password">{{ trans('admin.password') }}</label>
+            <input id="password" type="password" name="password" autocomplete="current-password" required>
+
+            <button type="submit" class="contact-btn">{{ trans('admin.login_submit') }}</button>
+        </form>
+
+        <p class="auth-switch-copy">
+            {{ trans('auth.back_to_regular_prompt') }}
+            <a href="{{ base_path }}/login">{{ trans('auth.back_to_regular_link') }}</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

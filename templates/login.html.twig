@@ -1,0 +1,39 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card">
+        <p class="auth-eyebrow">{{ trans('auth.login_eyebrow') }}</p>
+        <h1>{{ trans('auth.login_title') }}</h1>
+        <p class="auth-copy">{{ trans('auth.login_copy') }}</p>
+
+        {% if success %}
+            <div class="form-success">{{ success }}</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ base_path }}/login" class="auth-form">
+            <label for="email">{{ trans('auth.email') }}</label>
+            <input id="email" type="email" name="email" value="{{ last_email|default('') }}" autocomplete="email" required>
+
+            <label for="password">{{ trans('auth.password') }}</label>
+            <input id="password" type="password" name="password" autocomplete="current-password" required>
+
+            <button type="submit" class="contact-btn">{{ trans('auth.login_submit') }}</button>
+        </form>
+
+        <p class="auth-switch-copy">
+            {{ trans('auth.no_account') }}
+            <a href="{{ base_path }}/register">{{ trans('auth.register_link') }}</a>
+        </p>
+
+        <p class="auth-switch-copy">
+            {{ trans('auth.admin_prompt') }}
+            <a href="{{ base_path }}/admin/login">{{ trans('auth.admin_link') }}</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

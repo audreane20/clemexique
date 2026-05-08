@@ -1,0 +1,36 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card">
+        <p class="auth-eyebrow">{{ trans('auth.register_eyebrow') }}</p>
+        <h1>{{ trans('auth.register_title') }}</h1>
+        <p class="auth-copy">{{ trans('auth.register_copy') }}</p>
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ base_path }}/register" class="auth-form">
+            <label for="name">{{ trans('auth.name') }}</label>
+            <input id="name" type="text" name="name" value="{{ last_name|default('') }}" autocomplete="name" required>
+
+            <label for="email">{{ trans('auth.email') }}</label>
+            <input id="email" type="email" name="email" value="{{ last_email|default('') }}" autocomplete="email" required>
+
+            <label for="password">{{ trans('auth.password') }}</label>
+            <input id="password" type="password" name="password" autocomplete="new-password" required>
+
+            <label for="confirm_password">{{ trans('auth.confirm_password') }}</label>
+            <input id="confirm_password" type="password" name="confirm_password" autocomplete="new-password" required>
+
+            <button type="submit" class="contact-btn">{{ trans('auth.register_submit') }}</button>
+        </form>
+
+        <p class="auth-switch-copy">
+            {{ trans('auth.have_account') }}
+            <a href="{{ base_path }}/login">{{ trans('auth.login_link') }}</a>
+        </p>
+    </div>
+</section>
+{% endblock %}

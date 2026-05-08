@@ -1,0 +1,29 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="auth-shell">
+    <div class="auth-card">
+        <p class="auth-eyebrow">{{ trans('profile.eyebrow') }}</p>
+        <h1>{{ trans('profile.title') }}</h1>
+        <p class="auth-copy">{{ trans('profile.copy') }}</p>
+
+        {% if success %}
+            <div class="form-success">{{ success }}</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ base_path }}/admin/profile" class="auth-form">
+            <label for="name">{{ trans('profile.name') }}</label>
+            <input id="name" type="text" name="name" value="{{ profile_name }}" autocomplete="name" required>
+
+            <label for="email">{{ trans('profile.email') }}</label>
+            <input id="email" type="text" value="{{ profile_email }}" disabled>
+
+            <button type="submit" class="contact-btn">{{ trans('profile.submit') }}</button>
+        </form>
+    </div>
+</section>
+{% endblock %}

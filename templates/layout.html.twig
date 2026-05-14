@@ -3,7 +3,7 @@
 <head>
     <link rel="icon" type="image/png" href="{{ base_path }}/images/Circle_logo-cropped.png" />
     <meta charset="UTF-8">
-    <title>{{ page_title ?? 'Riviera Maya' }}</title>
+    <title>{% if page_title_key is defined %}{{ trans(page_title_key) }}{% else %}{{ page_title ?? 'Riviera Maya' }}{% endif %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <link rel="stylesheet" href="{{ base_path }}/css/style.css">

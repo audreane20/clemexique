@@ -36,12 +36,17 @@
 
         <div class="form-group">
             <label>{{ trans('contact.phone') }}</label>
-            <input type="text" name="phone">
+            <input type="text" name="phone" value="{{ phone }}">
+        </div>
+
+        <div class="form-group">
+            <label>{{ trans('contact.project') }}</label>
+            <input type="text" name="project" value="{{ project }}">
         </div>
 
         <div class="form-group">
             <label>{{ trans('contact.message') }}</label>
-            <textarea name="message" rows="6" required></textarea>
+            <textarea name="message" rows="6" required>{{ message }}</textarea>
         </div>
 
         <button type="submit" class="contact-btn">

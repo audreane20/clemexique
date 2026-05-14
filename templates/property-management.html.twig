@@ -1,0 +1,34 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ trans('property_management.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('property_management.title') }}</h1>
+    <p>{{ trans('property_management.intro') }}</p>
+    <p>{{ trans('property_management.intro_p1') }}</p>
+
+    <div class="residency-note">
+        <h2>{{ trans('property_management.section_title') }}</h2>
+        <ul class="residency-list">
+            <li>{{ trans('property_management.service_1') }}</li>
+            <li>{{ trans('property_management.service_2') }}</li>
+            <li>{{ trans('property_management.service_3') }}</li>
+            <li>{{ trans('property_management.service_4') }}</li>
+            <li>{{ trans('property_management.service_5') }}</li>
+            <li>{{ trans('property_management.service_6') }}</li>
+            <li>{{ trans('property_management.service_7') }}</li>
+            <li>{{ trans('property_management.service_8') }}</li>
+            <li>{{ trans('property_management.service_9') }}</li>
+        </ul>
+    </div>
+
+    <p class="property-management-outro">{{ trans('property_management.outro') }}</p>
+
+    <div class="residency-actions">
+        <a href="{{ base_path }}/gestion-immobiliere/formulaire?lang={{ app_lang }}" class="info-request-link">{{ trans('property_management.cta') }}</a>
+    </div>
+</section>
+{% endblock %}

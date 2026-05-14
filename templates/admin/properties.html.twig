@@ -16,8 +16,9 @@
 
             <form method="POST" action="{{ editing_property ? base_path ~ '/admin/properties/' ~ editing_property.id ~ '/update' : base_path ~ '/admin/properties/create' }}" class="property-form" enctype="multipart/form-data">
                 <label>
-                    {{ trans('properties.picture') }}
-                    <input type="file" name="image_file" accept="image/*" {{ editing_property ? '' : 'required' }}>
+                    {{ trans('properties.pictures') }}
+                    <input type="file" name="image_files[]" accept="image/*" multiple {{ editing_property ? '' : 'required' }}>
+                    <small class="property-field-help">{{ trans('properties.pictures_help') }}</small>
                 </label>
 
                 <label>
@@ -28,6 +29,11 @@
                 <label>
                     {{ trans('properties.city') }}
                     <input type="text" name="city" placeholder="Playa del Carmen" value="{{ editing_property.city ?? '' }}" required>
+                </label>
+
+                <label>
+                    {{ trans('properties.description') }}
+                    <textarea name="description" rows="8" placeholder="{{ trans('properties.description_placeholder') }}" required>{{ editing_property.description ?? '' }}</textarea>
                 </label>
 
                 <fieldset class="property-form-choice">
@@ -60,11 +66,6 @@
                     </label>
                 </div>
 
-                <label>
-                    {{ trans('properties.link') }}
-                    <input type="url" name="external_url" placeholder="https://example.com/property" value="{{ editing_property.external_url ?? '' }}" required>
-                </label>
-
                 <button type="submit" class="contact-btn">{{ editing_property ? trans('properties.update') : trans('properties.save') }}</button>
 
                 {% if editing_property %}
@@ -96,9 +97,10 @@
                                 <h3>{{ property.name }}</h3>
                                 <p class="property-admin-city">{{ property.city }}</p>
                                 <p class="property-admin-price">{{ property.price_display }}</p>
+                                <p class="property-admin-count">{{ property.image_count }} {{ property.image_count == 1 ? trans('properties.photo_singular') : trans('properties.photo_plural') }}</p>
 
                                 <div class="property-admin-actions">
-                                    <a href="{{ property.external_url }}" target="_blank" rel="noopener noreferrer" class="header-auth-link property-open-link">{{ trans('properties.open_link') }}</a>
+                                    <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="header-auth-link property-open-link">{{ trans('properties.open_page') }}</a>
 
                                     <div class="property-admin-secondary-actions">
                                         <a href="{{ base_path }}/admin/properties?edit={{ property.id }}" class="account-menu-button property-edit-link">{{ trans('properties.edit') }}</a>
@@ -115,5 +117,22 @@
             {% endif %}
         </div>
     </div>
+
+    {% if editing_property and editing_property.images is not empty %}
+        <div class="property-gallery-admin-card">
+            <div class="property-admin-preview-header">
+                <div>
+                    <p class="property-preview-label">{{ trans('properties.current_photos') }}</p>
+                    <h2>{{ editing_property.name }}</h2>
+                </div>
+            </div>
+
+            <div class="property-gallery-admin-grid">
+                {% for image in editing_property.images %}
+                    <img src="{{ image }}" alt="{{ editing_property.name }} photo {{ loop.index }}">
+                {% endfor %}
+            </div>
+        </div>
+    {% endif %}
 </section>
 {% endblock %}

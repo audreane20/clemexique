@@ -1,0 +1,73 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ trans('residency.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('residency.title') }}</h1>
+    <p>{{ trans('residency.intro') }}</p>
+
+    <div class="residency-steps">
+        <article class="residency-step-card">
+            <span class="residency-step-number">1</span>
+            <h2>{{ trans('residency.step1_title')|nl2br }}</h2>
+            <p>{{ trans('residency.step1_copy') }}</p>
+            <p class="residency-step-link">
+                <a href="{{ base_path }}/uploads/DEMANDE_VISA.pdf" target="_blank" rel="noopener noreferrer">
+                    {{ trans('residency.step1_link_label') }}
+                </a>
+            </p>
+        </article>
+
+        <article class="residency-step-card">
+            <span class="residency-step-number">2</span>
+            <h2>{{ trans('residency.step2_title') }}</h2>
+            <p>{{ trans('residency.step2_copy') }}</p>
+        </article>
+
+        <article class="residency-step-card">
+            <span class="residency-step-number">3</span>
+            <h2>{{ trans('residency.step3_title') }}</h2>
+            <p>{{ trans('residency.step3_copy') }}</p>
+        </article>
+
+        <article class="residency-step-card">
+            <span class="residency-step-number">4</span>
+            <h2>{{ trans('residency.step4_title') }}</h2>
+            <p>{{ trans('residency.step4_copy') }}</p>
+        </article>
+
+        <article class="residency-step-card">
+            <span class="residency-step-number">5</span>
+            <h2>{{ trans('residency.step5_title') }}</h2>
+            <p>{{ trans('residency.step5_copy')|nl2br }}</p>
+        </article>
+    </div>
+
+    <div class="residency-note">
+        <h2>{{ trans('residency.note_title') }}</h2>
+        <ul class="residency-list">
+            <li>{{ trans('residency.note_item_1') }}</li>
+            <li>{{ trans('residency.note_item_2') }}</li>
+        </ul>
+    </div>
+
+    <div class="residency-note">
+        <h2>{{ trans('residency.advantages_title') }}</h2>
+        <ul class="residency-list">
+            <li>{{ trans('residency.advantages_item_1') }}</li>
+            <li>{{ trans('residency.advantages_item_2') }}</li>
+            <li>{{ trans('residency.advantages_item_3') }}</li>
+            <li>{{ trans('residency.advantages_item_4') }}</li>
+            <li>{{ trans('residency.advantages_item_5') }}</li>
+            <li>{{ trans('residency.advantages_item_6') }}</li>
+        </ul>
+    </div>
+
+    <div class="residency-actions">
+        <a href="{{ base_path }}/contact?lang={{ app_lang }}" class="info-request-link">{{ trans('residency.cta') }}</a>
+    </div>
+</section>
+{% endblock %}

@@ -30,11 +30,14 @@
             </div>
         {% endif %}
 
-        <form class="inquiry-form" method="POST" action="{{ base_path }}/demande-information">
+        <form class="inquiry-form" method="POST" action="{{ base_path }}/demande-information?lang={{ app_lang }}">
             <input type="hidden" name="preferred_language" value="{{ app_lang }}">
 
             <section class="inquiry-intent-row">
-                <div class="inquiry-interest-label">{{ trans('info_request.intent_title') }}</div>
+                <div class="inquiry-interest-label">
+                    <span class="inquiry-step">1</span>
+                    <span>{{ trans('info_request.intent_title') }}</span>
+                </div>
 
                 <div class="inquiry-pill-options">
                     <label class="inquiry-pill-option">
@@ -53,7 +56,7 @@
             <div class="inquiry-grid inquiry-grid-top">
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">1</span>
+                        <span class="inquiry-step">2</span>
                         <h2>{{ trans('info_request.client_title') }}</h2>
                     </div>
 
@@ -83,7 +86,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">2</span>
+                        <span class="inquiry-step">3</span>
                         <h2>{{ trans('info_request.location_title') }}</h2>
                     </div>
 
@@ -120,7 +123,7 @@
             <div class="inquiry-grid inquiry-grid-middle">
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">3</span>
+                        <span class="inquiry-step">4</span>
                         <h2>{{ trans('info_request.bedrooms_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -137,7 +140,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">4</span>
+                        <span class="inquiry-step">5</span>
                         <h2>{{ trans('info_request.bathrooms_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -153,7 +156,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">5</span>
+                        <span class="inquiry-step">6</span>
                         <h2>{{ trans('info_request.pool_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -168,7 +171,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">6</span>
+                        <span class="inquiry-step">7</span>
                         <h2>{{ trans('info_request.beach_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -193,7 +196,7 @@
             <div class="inquiry-grid inquiry-grid-bottom">
                 <section class="inquiry-card inquiry-parking-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">7</span>
+                        <span class="inquiry-step">8</span>
                         <h2>{{ trans('info_request.parking_title') }}</h2>
                     </div>
 
@@ -217,7 +220,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">8</span>
+                        <span class="inquiry-step">9</span>
                         <h2>{{ trans('info_request.elevator_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -232,7 +235,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">9</span>
+                        <span class="inquiry-step">10</span>
                         <h2>{{ trans('info_request.animals_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -247,7 +250,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">10</span>
+                        <span class="inquiry-step">11</span>
                         <h2>{{ trans('info_request.project_name_title') }}</h2>
                     </div>
                     <div class="inquiry-budget-layout">
@@ -263,7 +266,7 @@
             <div class="inquiry-grid inquiry-grid-footer">
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">11</span>
+                        <span class="inquiry-step">12</span>
                         <h2>{{ trans('info_request.budget_title') }}</h2>
                     </div>
 
@@ -289,7 +292,7 @@
 
                 <section class="inquiry-card inquiry-comments-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">12</span>
+                        <span class="inquiry-step">13</span>
                         <h2>{{ trans('info_request.comments_title') }}</h2>
                     </div>
                     <div class="inquiry-budget-layout">
@@ -304,7 +307,7 @@
 
             <div class="inquiry-submit">
                 <button type="submit" class="inquiry-submit-button">{{ trans('info_request.submit') }}</button>
-                <a href="{{ base_path }}/" class="inquiry-return-button">{{ trans('info_request.return') }}</a>
+                <a href="{{ base_path }}/?lang={{ app_lang }}" class="inquiry-return-button">{{ trans('info_request.return') }}</a>
                 <p>{{ trans('info_request.privacy') }}</p>
             </div>
         </form>

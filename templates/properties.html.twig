@@ -37,7 +37,7 @@
                     <p class="property-public-price property-public-price-primary">{{ property.primary_price_display }}</p>
                     <p class="property-public-price property-public-price-secondary">{{ property.secondary_price_display }}</p>
 
-                    <a href="{{ property.external_url }}" target="_blank" rel="noopener noreferrer" class="property-public-link">
+                    <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
                         {{ trans('properties.cta') }}
                     </a>
                 </article>

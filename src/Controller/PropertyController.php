@@ -31,7 +31,7 @@ class PropertyController
         }
 
         return $this->twig->render($response, 'admin/properties.html.twig', [
-            'page_title' => 'Properties',
+            'page_title_key' => 'properties.page_title',
             'properties' => $this->propertyModel->findAll(),
             'editing_property' => $editingProperty,
         ]);
@@ -47,9 +47,29 @@ class PropertyController
         }
 
         return $this->twig->render($response, 'properties.html.twig', [
-            'page_title' => 'Properties',
+            'page_title_key' => 'properties.page_title',
             'properties' => $this->propertyModel->findAllByMode($mode),
             'selected_mode' => $mode,
+        ]);
+    }
+
+    public function show(Request $request, Response $response, array $args): Response
+    {
+        $id = (int) ($args['id'] ?? 0);
+        $property = $this->propertyModel->findById($id);
+
+        if ($property === null) {
+            $response = $response->withStatus(404);
+
+            return $this->twig->render($response, 'property-detail.html.twig', [
+                'page_title_key' => 'properties.not_found_title',
+                'property' => null,
+            ]);
+        }
+
+        return $this->twig->render($response, 'property-detail.html.twig', [
+            'page_title' => $property['name'],
+            'property' => $property,
         ]);
     }
 
@@ -57,9 +77,11 @@ class PropertyController
     {
         $data = (array) $request->getParsedBody();
         $uploadedFiles = $request->getUploadedFiles();
-        $data['image_url'] = $this->storeUploadedImage($uploadedFiles['image_file'] ?? null);
+        $imageUrls = $this->storeUploadedImages($uploadedFiles['image_files'] ?? []);
+        $data['image_url'] = $imageUrls[0] ?? '';
 
-        $this->propertyModel->create($data);
+        $propertyId = $this->propertyModel->create($data);
+        $this->propertyModel->replaceImages($propertyId, $imageUrls);
 
         return $response
             ->withHeader('Location', $this->basePath . '/admin/properties')
@@ -71,10 +93,17 @@ class PropertyController
         $id = (int) ($args['id'] ?? 0);
         $data = (array) $request->getParsedBody();
         $uploadedFiles = $request->getUploadedFiles();
+        $property = $this->propertyModel->findById($id);
 
-        if (($uploadedFiles['image_file'] ?? null) instanceof UploadedFileInterface
-            && $uploadedFiles['image_file']->getError() === UPLOAD_ERR_OK) {
-            $data['image_url'] = $this->storeUploadedImage($uploadedFiles['image_file']);
+        if ($property === null) {
+            throw new \InvalidArgumentException('Property not found.');
+        }
+
+        $data['image_url'] = $property['image_url'];
+        $newImageUrls = $this->storeUploadedImages($uploadedFiles['image_files'] ?? [], false);
+
+        if ($newImageUrls !== []) {
+            $this->propertyModel->addImages($id, $newImageUrls);
         }
 
         $this->propertyModel->update($id, $data);
@@ -95,12 +124,43 @@ class PropertyController
             ->withStatus(302);
     }
 
-    private function storeUploadedImage(?UploadedFileInterface $uploadedFile): string
+    private function storeUploadedImages(mixed $uploadedFiles, bool $required = true): array
     {
-        if (!$uploadedFile instanceof UploadedFileInterface || $uploadedFile->getError() !== UPLOAD_ERR_OK) {
-            throw new \RuntimeException('Please upload a property image.');
+        $files = [];
+
+        if ($uploadedFiles instanceof UploadedFileInterface) {
+            $files = [$uploadedFiles];
+        } elseif (is_array($uploadedFiles)) {
+            $files = $uploadedFiles;
         }
 
+        $storedImages = [];
+
+        foreach ($files as $uploadedFile) {
+            if (!$uploadedFile instanceof UploadedFileInterface) {
+                continue;
+            }
+
+            if ($uploadedFile->getError() === UPLOAD_ERR_NO_FILE) {
+                continue;
+            }
+
+            if ($uploadedFile->getError() !== UPLOAD_ERR_OK) {
+                throw new \RuntimeException('Please upload valid property images.');
+            }
+
+            $storedImages[] = $this->storeSingleUploadedImage($uploadedFile);
+        }
+
+        if ($required && $storedImages === []) {
+            throw new \RuntimeException('Please upload at least one property image.');
+        }
+
+        return $storedImages;
+    }
+
+    private function storeSingleUploadedImage(UploadedFileInterface $uploadedFile): string
+    {
         $mediaType = strtolower((string) $uploadedFile->getClientMediaType());
         $extension = $this->extensionFromMediaType($mediaType);
 

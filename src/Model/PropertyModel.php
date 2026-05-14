@@ -26,6 +26,7 @@ class PropertyModel
                 image_url,
                 name,
                 city,
+                description,
                 listing_mode,
                 price_amount,
                 price_currency,
@@ -34,6 +35,7 @@ class PropertyModel
                 :image_url,
                 :name,
                 :city,
+                :description,
                 :listing_mode,
                 :price_amount,
                 :price_currency,
@@ -44,6 +46,36 @@ class PropertyModel
         $stmt->execute($payload);
 
         return (int) $this->pdo->lastInsertId();
+    }
+
+    public function replaceImages(int $propertyId, array $imageUrls): void
+    {
+        if ($propertyId <= 0) {
+            throw new InvalidArgumentException('Invalid property ID.');
+        }
+
+        $this->pdo->prepare('DELETE FROM property_card_images WHERE property_card_id = :property_card_id')
+            ->execute([
+                'property_card_id' => $propertyId,
+            ]);
+
+        $this->insertImages($propertyId, $imageUrls);
+    }
+
+    public function addImages(int $propertyId, array $imageUrls): void
+    {
+        if ($propertyId <= 0) {
+            throw new InvalidArgumentException('Invalid property ID.');
+        }
+
+        $existingCountStmt = $this->pdo->prepare('SELECT COUNT(*) FROM property_card_images WHERE property_card_id = :property_card_id');
+        $existingCountStmt->execute([
+            'property_card_id' => $propertyId,
+        ]);
+
+        $offset = (int) $existingCountStmt->fetchColumn();
+
+        $this->insertImages($propertyId, $imageUrls, $offset);
     }
 
     public function update(int $id, array $data): bool
@@ -71,6 +103,7 @@ class PropertyModel
                 image_url = :image_url,
                 name = :name,
                 city = :city,
+                description = :description,
                 listing_mode = :listing_mode,
                 price_amount = :price_amount,
                 price_currency = :price_currency,
@@ -86,6 +119,11 @@ class PropertyModel
         if ($id <= 0) {
             throw new InvalidArgumentException('Invalid property ID.');
         }
+
+        $this->pdo->prepare("DELETE FROM property_card_images WHERE property_card_id = :id")
+            ->execute([
+                'id' => $id,
+            ]);
 
         $stmt = $this->pdo->prepare("DELETE FROM property_cards WHERE id = :id");
 
@@ -126,7 +164,7 @@ class PropertyModel
 
         $properties = $stmt->fetchAll();
 
-        return array_map(fn (array $property) => $this->decorateProperty($property), $properties);
+        return $this->attachImages(array_map(fn (array $property) => $this->decorateProperty($property), $properties));
     }
 
     public function findById(int $id): ?array
@@ -148,20 +186,22 @@ class PropertyModel
             return null;
         }
 
-        return $this->decorateProperty($property);
+        $properties = $this->attachImages([$this->decorateProperty($property)]);
+
+        return $properties[0] ?? null;
     }
 
     private function normalizePayload(array $data): array
     {
         $imageUrl = trim((string) ($data['image_url'] ?? ''));
-        $name = trim((string) ($data['name'] ?? ''));
-        $city = trim((string) ($data['city'] ?? ''));
+        $name = $this->capitalizeFirstCharacter(trim((string) ($data['name'] ?? '')));
+        $city = $this->capitalizeFirstCharacter(trim((string) ($data['city'] ?? '')));
+        $description = trim((string) ($data['description'] ?? ''));
         $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'achat')));
         $priceAmount = trim((string) ($data['price_amount'] ?? ''));
         $priceCurrency = strtoupper(trim((string) ($data['price_currency'] ?? 'USD')));
-        $externalUrl = trim((string) ($data['external_url'] ?? ''));
 
-        if ($imageUrl === '' || $name === '' || $city === '' || $priceAmount === '' || $externalUrl === '') {
+        if ($imageUrl === '' || $name === '' || $city === '' || $description === '' || $priceAmount === '') {
             throw new InvalidArgumentException('Missing required property fields.');
         }
 
@@ -181,11 +221,112 @@ class PropertyModel
             'image_url' => $imageUrl,
             'name' => $name,
             'city' => $city,
+            'description' => $description,
             'listing_mode' => $listingMode,
             'price_amount' => (float) $priceAmount,
             'price_currency' => $priceCurrency,
-            'external_url' => $externalUrl,
+            'external_url' => '',
         ];
+    }
+
+    private function attachImages(array $properties): array
+    {
+        if ($properties === []) {
+            return [];
+        }
+
+        $propertyIds = array_values(array_map(
+            static fn (array $property): int => (int) $property['id'],
+            $properties
+        ));
+
+        $imagesByPropertyId = $this->fetchImagesByPropertyIds($propertyIds);
+
+        foreach ($properties as &$property) {
+            $propertyId = (int) $property['id'];
+            $images = $imagesByPropertyId[$propertyId] ?? [];
+
+            if ($images === [] && !empty($property['image_url'])) {
+                $images = [$property['image_url']];
+            }
+
+            $property['images'] = $images;
+            $property['image_count'] = count($images);
+            $property['detail_url'] = '/properties/' . $propertyId;
+        }
+        unset($property);
+
+        return $properties;
+    }
+
+    private function fetchImagesByPropertyIds(array $propertyIds): array
+    {
+        if ($propertyIds === []) {
+            return [];
+        }
+
+        $placeholders = implode(', ', array_fill(0, count($propertyIds), '?'));
+        $stmt = $this->pdo->prepare("
+            SELECT property_card_id, image_url
+            FROM property_card_images
+            WHERE property_card_id IN ($placeholders)
+            ORDER BY sort_order ASC, id ASC
+        ");
+        $stmt->execute($propertyIds);
+
+        $imagesByPropertyId = [];
+
+        foreach ($stmt->fetchAll() as $row) {
+            $propertyId = (int) $row['property_card_id'];
+            $imagesByPropertyId[$propertyId] ??= [];
+            $imagesByPropertyId[$propertyId][] = (string) $row['image_url'];
+        }
+
+        return $imagesByPropertyId;
+    }
+
+    private function insertImages(int $propertyId, array $imageUrls, int $offset = 0): void
+    {
+        $imageUrls = array_values(array_filter(
+            array_map(static fn ($imageUrl): string => trim((string) $imageUrl), $imageUrls),
+            static fn (string $imageUrl): bool => $imageUrl !== ''
+        ));
+
+        if ($imageUrls === []) {
+            return;
+        }
+
+        $stmt = $this->pdo->prepare("
+            INSERT INTO property_card_images (
+                property_card_id,
+                image_url,
+                sort_order
+            ) VALUES (
+                :property_card_id,
+                :image_url,
+                :sort_order
+            )
+        ");
+
+        foreach ($imageUrls as $index => $imageUrl) {
+            $stmt->execute([
+                'property_card_id' => $propertyId,
+                'image_url' => $imageUrl,
+                'sort_order' => $offset + $index,
+            ]);
+        }
+    }
+
+    private function capitalizeFirstCharacter(string $value): string
+    {
+        if ($value === '') {
+            return $value;
+        }
+
+        $firstCharacter = mb_substr($value, 0, 1, 'UTF-8');
+        $remainingCharacters = mb_substr($value, 1, null, 'UTF-8');
+
+        return mb_strtoupper($firstCharacter, 'UTF-8') . $remainingCharacters;
     }
 
     private function decorateProperty(array $property): array

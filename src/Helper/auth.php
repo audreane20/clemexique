@@ -2,6 +2,20 @@
 
 use Psr\Http\Message\ResponseInterface as Response;
 
+function authTrans(string $key): string
+{
+    static $messagesByLang = [];
+
+    $lang = $_SESSION['lang'] ?? 'fr';
+    $lang = in_array($lang, ['fr', 'en'], true) ? $lang : 'fr';
+
+    if (!isset($messagesByLang[$lang])) {
+        $messagesByLang[$lang] = require __DIR__ . '/../translations/messages.' . $lang . '.php';
+    }
+
+    return $messagesByLang[$lang][$key] ?? $key;
+}
+
 function isAdminAuthenticated(): bool
 {
     return !empty($_SESSION['admin_authenticated']);
@@ -52,7 +66,7 @@ function attemptAdminLogin(array $data): bool
     $configuredPasswordHash = (string) ($_ENV['ADMIN_PASSWORD_HASH'] ?? '');
 
     if ($configuredUsername === '' || ($configuredPassword === '' && $configuredPasswordHash === '')) {
-        $_SESSION['auth_error'] = 'Admin login is not configured yet. Add ADMIN_USERNAME and ADMIN_PASSWORD in .env.';
+        $_SESSION['auth_error'] = authTrans('auth.admin_not_configured');
 
         return false;
     }
@@ -62,7 +76,7 @@ function attemptAdminLogin(array $data): bool
         : hash_equals($configuredPassword, $password);
 
     if (!hash_equals($configuredUsername, $username) || !$passwordMatches) {
-        $_SESSION['auth_error'] = 'Invalid username or password.';
+        $_SESSION['auth_error'] = authTrans('auth.invalid_username_password');
 
         return false;
     }
@@ -231,7 +245,7 @@ function attemptUserLogin(array $data, \App\Model\UserModel $userModel): bool
     $_SESSION['user_auth_last_email'] = $email;
 
     if ($email === '' || $password === '') {
-        $_SESSION['user_auth_error'] = 'Please enter your email and password.';
+        $_SESSION['user_auth_error'] = authTrans('auth.user_missing_credentials');
 
         return false;
     }
@@ -239,7 +253,7 @@ function attemptUserLogin(array $data, \App\Model\UserModel $userModel): bool
     $user = $userModel->verifyCredentials($email, $password);
 
     if ($user === null) {
-        $_SESSION['user_auth_error'] = 'Invalid email or password.';
+        $_SESSION['user_auth_error'] = authTrans('auth.user_invalid_credentials');
 
         return false;
     }
@@ -261,31 +275,31 @@ function attemptUserRegistration(array $data, \App\Model\UserModel $userModel): 
     $_SESSION['user_auth_last_email'] = $email;
 
     if ($name === '' || $email === '' || $password === '' || $confirmPassword === '') {
-        $_SESSION['user_auth_error'] = 'Please fill in all required fields.';
+        $_SESSION['user_auth_error'] = authTrans('auth.register_missing_fields');
 
         return false;
     }
 
     if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-        $_SESSION['user_auth_error'] = 'Please enter a valid email address.';
+        $_SESSION['user_auth_error'] = authTrans('auth.register_invalid_email');
 
         return false;
     }
 
     if (strlen($password) < 8) {
-        $_SESSION['user_auth_error'] = 'Password must be at least 8 characters long.';
+        $_SESSION['user_auth_error'] = authTrans('auth.register_password_length');
 
         return false;
     }
 
     if (!hash_equals($password, $confirmPassword)) {
-        $_SESSION['user_auth_error'] = 'Passwords do not match.';
+        $_SESSION['user_auth_error'] = authTrans('auth.register_password_match');
 
         return false;
     }
 
     if ($userModel->findByEmail($email) !== null) {
-        $_SESSION['user_auth_error'] = 'An account with that email already exists.';
+        $_SESSION['user_auth_error'] = authTrans('auth.register_email_exists');
 
         return false;
     }
@@ -294,13 +308,13 @@ function attemptUserRegistration(array $data, \App\Model\UserModel $userModel): 
     $user = $userModel->findById($userId);
 
     if ($user === null) {
-        $_SESSION['user_auth_error'] = 'Your account could not be created. Please try again.';
+        $_SESSION['user_auth_error'] = authTrans('auth.register_create_failed');
 
         return false;
     }
 
     loginUserSession($user);
-    $_SESSION['user_profile_success'] = 'Your account has been created.';
+    $_SESSION['user_profile_success'] = authTrans('auth.register_success');
 
     return true;
 }

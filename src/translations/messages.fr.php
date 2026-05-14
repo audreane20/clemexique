@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'common.back_home' => 'Retour à l\'accueil',
     'nav.home' => 'Accueil',
     'nav.about' => 'À propos',
     'nav.properties' => 'Propriétés',
@@ -164,6 +165,7 @@ return [
     'auto_rental.page_title' => 'Location d\'automobiles',
     'auto_rental.title' => 'Location d\'automobiles',
     'auto_rental.copy' => 'Consultez cette section pour obtenir de l\'information utile sur la location d\'automobiles au Mexique.',
+    'auto_rental.home_cta' => 'Cliquez ici pour plus d’information',
     'auto_rental.cta' => 'Ouvrir le formulaire de location',
     'auto_rental.hero' => 'Une section dédiée à la location d\'automobiles pour vous aider à mieux planifier vos déplacements au Mexique.',
     'auto_rental.intro_lead' => 'Simplifiez vos déplacements au Mexique avec notre service de location de voiture particulier !',
@@ -190,6 +192,7 @@ return [
     'property_management.service_8' => 'Relevés de compte, état des lieux et suivi rigoureux',
     'property_management.service_9' => 'Option de mise en valeur de votre condo (photos, ameublement, décoration)',
     'property_management.outro' => 'Que vous soyez investisseur à distance ou résident à temps partiel, nous sommes là pour que votre propriété travaille pour vous, sans tracas.',
+    'property_management.home_cta' => 'Cliquez ici pour plus d’information',
     'property_management.cta' => 'Ouvrir le formulaire',
     'management_form.page_title' => 'Formulaire de gestion immobilière',
     'management_form.title' => 'Gestion immobilière',

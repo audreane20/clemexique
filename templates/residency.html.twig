@@ -66,8 +66,9 @@
         </ul>
     </div>
 
-    <div class="residency-actions">
+    <div class="page-home-actions">
         <a href="{{ base_path }}/contact?lang={{ app_lang }}" class="info-request-link">{{ trans('residency.cta') }}</a>
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
     </div>
 </section>
 {% endblock %}

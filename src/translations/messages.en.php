@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'common.back_home' => 'Back to home',
     'nav.home' => 'Home',
     'nav.about' => 'About',
     'nav.properties' => 'Properties',
@@ -172,6 +173,7 @@ return [
     'auto_rental.page_title' => 'Car rental',
     'auto_rental.title' => 'Car rental',
     'auto_rental.copy' => 'Open this section for helpful information about renting a car in Mexico.',
+    'auto_rental.home_cta' => 'Click here for more information',
     'auto_rental.cta' => 'Open the rental form',
     'auto_rental.hero' => 'A dedicated section for car rentals to help you better plan your transportation in Mexico.',
     'auto_rental.intro_lead' => 'Make getting around Mexico easier with our private car rental service!',
@@ -198,6 +200,7 @@ return [
     'property_management.service_8' => 'Account statements, property condition reports, and rigorous follow-up',
     'property_management.service_9' => 'Optional condo enhancement service (photos, furnishing, decoration)',
     'property_management.outro' => 'Whether you are a remote investor or a part-time resident, we are here to make your property work for you, without the hassle.',
+    'property_management.home_cta' => 'Click here for more information',
     'property_management.cta' => 'Open the form',
     'management_form.page_title' => 'Property management form',
     'management_form.title' => 'Property management',

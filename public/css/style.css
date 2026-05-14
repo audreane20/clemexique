@@ -1185,13 +1185,29 @@ body {
 }
 
 .property-detail-back-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 20px;
+    border-radius: 999px;
+    border: 1px solid rgba(18, 163, 197, 0.28);
+    background: linear-gradient(180deg, #ffffff 0%, #eefbfd 100%);
+    box-shadow: 0 12px 24px rgba(11, 53, 88, 0.1);
     color: var(--navy);
     font-weight: 700;
     text-decoration: none;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
 .property-detail-back-link:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #ffffff 0%, #def7fb 100%);
     color: var(--turquoise);
+    box-shadow: 0 16px 30px rgba(11, 53, 88, 0.14);
+}
+
+.property-detail-back-link:focus-visible {
+    outline: 3px solid rgba(18, 163, 197, 0.22);
+    outline-offset: 3px;
 }
 
 .property-detail-copy {
@@ -1538,6 +1554,35 @@ body {
 
 .residency-actions {
     margin-top: 28px;
+}
+
+.page-home-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    align-items: center;
+    margin-top: 28px;
+}
+
+.page-home-link {
+    margin-left: auto;
+    border: 1px solid rgba(18, 163, 197, 0.28);
+    background: linear-gradient(180deg, #ffffff 0%, #eefbfd 100%);
+    box-shadow: 0 12px 24px rgba(11, 53, 88, 0.1);
+    color: var(--navy);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.page-home-link:hover {
+    transform: translateY(-1px);
+    background: linear-gradient(180deg, #ffffff 0%, #def7fb 100%);
+    color: var(--turquoise);
+    box-shadow: 0 16px 30px rgba(11, 53, 88, 0.14);
+}
+
+.page-home-link:focus-visible {
+    outline: 3px solid rgba(18, 163, 197, 0.22);
+    outline-offset: 3px;
 }
 
 .rental-form-page {

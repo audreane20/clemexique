@@ -10,42 +10,95 @@
         </div>
     </div>
 
+    <div class="property-upload-progress property-upload-progress-shell" data-property-upload-progress hidden aria-live="polite">
+        <div class="property-upload-progress-stage">
+            <p class="property-upload-progress-label">Upload</p>
+            <div class="property-upload-progress-bar">
+                <span class="property-upload-progress-fill" data-property-upload-progress-fill></span>
+            </div>
+            <p class="property-upload-progress-text" data-property-upload-progress-text>0%</p>
+        </div>
+
+        <div class="property-upload-progress-stage property-upload-processing-stage" data-property-processing-stage hidden>
+            <p class="property-upload-progress-label" data-property-processing-label>Processing files</p>
+            <div class="property-upload-progress-bar">
+                <span class="property-upload-progress-fill property-upload-processing-progress-fill" data-property-processing-fill></span>
+            </div>
+            <p class="property-upload-progress-text" data-property-processing-text>Waiting for server...</p>
+        </div>
+    </div>
+
     <div class="admin-properties-layout">
         <div class="property-form-card">
             <h2>{{ editing_property ? trans('properties.edit_title') : trans('properties.form_title') }}</h2>
 
-            <form method="POST" action="{{ editing_property ? base_path ~ '/admin/properties/' ~ editing_property.id ~ '/update' : base_path ~ '/admin/properties/create' }}" class="property-form" enctype="multipart/form-data">
+            {% if form_error_groups %}
+                <div class="form-error">
+                    <strong>{{ form_error_groups.title }}</strong>
+                    {% for group in form_error_groups.groups %}
+                        <div class="property-upload-group">
+                            <p class="property-upload-group-title">{{ group.label }}</p>
+                            <ul class="property-upload-group-list">
+                                {% for name in group.names %}
+                                    <li>{{ name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% elseif form_error %}
+                <div class="form-error">{{ form_error }}</div>
+            {% endif %}
+
+            {% if form_notice_groups %}
+                <div class="form-success">
+                    <strong>{{ form_notice_groups.title }}</strong>
+                    {% for group in form_notice_groups.groups %}
+                        <div class="property-upload-group">
+                            <p class="property-upload-group-title">{{ group.label }}</p>
+                            <ul class="property-upload-group-list">
+                                {% for name in group.names %}
+                                    <li>{{ name }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form id="property-upload-form" method="POST" action="{{ editing_property ? base_path ~ '/admin/properties/' ~ editing_property.id ~ '/update' : base_path ~ '/admin/properties/create' }}" class="property-form" enctype="multipart/form-data">
+                <input type="hidden" name="upload_progress_token" value="" data-property-upload-token>
                 <label>
                     {{ trans('properties.pictures') }}
-                    <input type="file" name="image_files[]" accept="image/*" multiple {{ editing_property ? '' : 'required' }}>
+                    <input type="file" name="image_files[]" accept="image/*,video/mp4,video/webm,video/quicktime,.zip,application/zip" multiple {{ editing_property ? '' : 'required' }} data-property-file-input>
                     <small class="property-field-help">{{ trans('properties.pictures_help') }}</small>
                 </label>
 
                 <label>
                     {{ trans('properties.name') }}
-                    <input type="text" name="name" placeholder="Tohoku Living" value="{{ editing_property.name ?? '' }}" required>
+                    <input type="text" name="name" placeholder="Tohoku Living" value="{{ form_data.name ?? editing_property.name ?? '' }}" required>
                 </label>
 
                 <label>
                     {{ trans('properties.city') }}
-                    <input type="text" name="city" placeholder="Playa del Carmen" value="{{ editing_property.city ?? '' }}" required>
+                    <input type="text" name="city" placeholder="Playa del Carmen" value="{{ form_data.city ?? editing_property.city ?? '' }}" required>
                 </label>
 
                 <label>
                     {{ trans('properties.description') }}
-                    <textarea name="description" rows="8" placeholder="{{ trans('properties.description_placeholder') }}" required>{{ editing_property.description ?? '' }}</textarea>
+                    <textarea name="description" rows="8" placeholder="{{ trans('properties.description_placeholder') }}" required>{{ form_data.description ?? editing_property.description ?? '' }}</textarea>
                 </label>
 
                 <fieldset class="property-form-choice">
                     <legend>{{ trans('properties.type') }}</legend>
                     <div class="property-radio-group">
                         <label class="property-radio-option">
-                            <input type="radio" name="listing_mode" value="achat" {{ (editing_property.listing_mode ?? 'achat') == 'achat' ? 'checked' : '' }}>
+                            <input type="radio" name="listing_mode" value="achat" {{ (form_data.listing_mode ?? editing_property.listing_mode ?? 'achat') == 'achat' ? 'checked' : '' }}>
                             <span>{{ trans('properties.mode_buy') }}</span>
                         </label>
 
                         <label class="property-radio-option">
-                            <input type="radio" name="listing_mode" value="location" {{ (editing_property.listing_mode ?? 'achat') == 'location' ? 'checked' : '' }}>
+                            <input type="radio" name="listing_mode" value="location" {{ (form_data.listing_mode ?? editing_property.listing_mode ?? 'achat') == 'location' ? 'checked' : '' }}>
                             <span>{{ trans('properties.mode_rent') }}</span>
                         </label>
                     </div>
@@ -54,14 +107,15 @@
                 <div class="property-form-row">
                     <label>
                         {{ trans('properties.price') }}
-                        <input type="number" name="price_amount" step="0.01" min="0" placeholder="0" value="{{ editing_property.price_amount ?? '' }}" required>
+                        <input type="number" name="price_amount" step="0.01" min="0" placeholder="0" value="{{ form_data.price_amount ?? editing_property.price_amount ?? '' }}" required>
                     </label>
 
                     <label>
                         {{ trans('properties.currency') }}
                         <select name="price_currency" required>
-                            <option value="CAD" {{ (editing_property.price_currency ?? 'CAD') == 'CAD' ? 'selected' : '' }}>CAD</option>
-                            <option value="USD" {{ (editing_property.price_currency ?? 'CAD') == 'USD' ? 'selected' : '' }}>USD</option>
+                            <option value="CAD" {{ (form_data.price_currency ?? editing_property.price_currency ?? 'CAD') == 'CAD' ? 'selected' : '' }}>CAD</option>
+                            <option value="USD" {{ (form_data.price_currency ?? editing_property.price_currency ?? 'CAD') == 'USD' ? 'selected' : '' }}>USD</option>
+                            <option value="MXN" {{ (form_data.price_currency ?? editing_property.price_currency ?? 'CAD') == 'MXN' ? 'selected' : '' }}>MXN</option>
                         </select>
                     </label>
                 </div>
@@ -125,14 +179,292 @@
                     <p class="property-preview-label">{{ trans('properties.current_photos') }}</p>
                     <h2>{{ editing_property.name }}</h2>
                 </div>
+
+                <div class="property-gallery-admin-tools">
+                    <button type="button" class="account-menu-button property-gallery-toggle-button" data-select-all-photos>
+                        {{ trans('properties.select_all_photos') }}
+                    </button>
+                    <button type="button" class="account-menu-button property-gallery-toggle-button" data-deselect-all-photos>
+                        {{ trans('properties.deselect_all_photos') }}
+                    </button>
+                </div>
             </div>
 
-            <div class="property-gallery-admin-grid">
-                {% for image in editing_property.images %}
-                    <img src="{{ image }}" alt="{{ editing_property.name }} photo {{ loop.index }}">
-                {% endfor %}
+            <div class="property-gallery-admin-form">
+                <p class="property-gallery-admin-help">{{ trans('properties.select_photos_to_delete') }}</p>
+
+                <div class="property-gallery-admin-grid">
+                    {% for media in editing_property.media_items %}
+                        <div class="property-gallery-admin-item">
+                            <label class="property-gallery-admin-select">
+                                <input type="checkbox" name="image_urls[]" value="{{ media.url }}" form="property-delete-images-form">
+                            </label>
+                            {% if media.is_image %}
+                                <div class="property-gallery-admin-primary">
+                                    {% if media.url == editing_property.image_url %}
+                                        <span class="property-gallery-admin-primary-badge">{{ trans('properties.primary_image') }}</span>
+                                    {% else %}
+                                        <form method="POST" action="{{ base_path }}/admin/properties/{{ editing_property.id }}/images/primary">
+                                            <input type="hidden" name="primary_image_url" value="{{ media.url }}">
+                                            <button type="submit" class="property-gallery-admin-primary-button">{{ trans('properties.make_primary_image') }}</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                            {% if media.is_video %}
+                                <video controls preload="metadata" playsinline>
+                                    <source src="{{ media.url }}" type="{{ media.mime_type ?? 'video/mp4' }}">
+                                </video>
+                            {% else %}
+                                <img src="{{ media.url }}" alt="{{ editing_property.name }} photo {{ loop.index }}">
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <form id="property-delete-images-form" method="POST" action="{{ base_path }}/admin/properties/{{ editing_property.id }}/images/delete" onsubmit="return confirm('{{ trans('properties.delete_selected_photos_confirm') }}');">
+                    <button type="submit" class="account-menu-button property-delete-button property-delete-selected-button">{{ trans('properties.delete_selected_photos') }}</button>
+                </form>
             </div>
         </div>
     {% endif %}
 </section>
+{% endblock %}
+
+{% block scripts %}
+    {{ parent() }}
+    <script>
+        (() => {
+            const form = document.getElementById('property-upload-form');
+            if (!form) {
+                return;
+            }
+
+            const fileInput = form.querySelector('[data-property-file-input]');
+            const progressShell = document.querySelector('[data-property-upload-progress]');
+            const progressFill = document.querySelector('[data-property-upload-progress-fill]');
+            const progressText = document.querySelector('[data-property-upload-progress-text]');
+            const processingStage = document.querySelector('[data-property-processing-stage]');
+            const processingFill = document.querySelector('[data-property-processing-fill]');
+            const processingText = document.querySelector('[data-property-processing-text]');
+            const processingLabel = document.querySelector('[data-property-processing-label]');
+            const progressTokenInput = form.querySelector('[data-property-upload-token]');
+            const submitButton = form.querySelector('button[type="submit"]');
+
+            if (!fileInput || !progressShell || !progressFill || !progressText || !processingStage || !processingFill || !processingText || !processingLabel || !progressTokenInput || !submitButton) {
+                return;
+            }
+
+            let pollTimer = null;
+            let hasStartedProcessingPoll = false;
+
+            const stopPolling = () => {
+                if (pollTimer !== null) {
+                    window.clearInterval(pollTimer);
+                    pollTimer = null;
+                }
+                hasStartedProcessingPoll = false;
+            };
+
+            const resetProgress = () => {
+                stopPolling();
+                progressShell.hidden = true;
+                processingStage.hidden = true;
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                processingFill.style.width = '0%';
+                processingLabel.textContent = 'Processing files';
+                processingText.textContent = 'Waiting for server...';
+                submitButton.disabled = false;
+                submitButton.removeAttribute('aria-busy');
+            };
+
+            const updateProcessingStage = (payload) => {
+                const percent = Math.max(0, Math.min(100, Number(payload.percent || 0)));
+                processingStage.hidden = false;
+                processingFill.style.width = percent + '%';
+                processingLabel.textContent = payload.phase || 'Processing files';
+                processingText.textContent = payload.message
+                    ? `${percent}% - ${payload.message}`
+                    : `${percent}%`;
+            };
+
+            const startPolling = (token) => {
+                if (hasStartedProcessingPoll) {
+                    return;
+                }
+
+                hasStartedProcessingPoll = true;
+                stopPolling();
+                hasStartedProcessingPoll = true;
+
+                const poll = () => {
+                    fetch(`{{ base_path }}/admin/properties/upload-progress/${encodeURIComponent(token)}?t=${Date.now()}`, {
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                        .then((response) => response.ok ? response.json() : null)
+                        .then((payload) => {
+                            if (!payload) {
+                                return;
+                            }
+
+                            if (payload.status === 'processing' || payload.status === 'uploaded') {
+                                updateProcessingStage(payload);
+                                return;
+                            }
+
+                            if (payload.status === 'complete') {
+                                updateProcessingStage(payload);
+                                stopPolling();
+                                return;
+                            }
+
+                            if (payload.status === 'failed') {
+                                updateProcessingStage(payload);
+                                stopPolling();
+                            }
+                        })
+                        .catch(() => {
+                        });
+                };
+
+                poll();
+                pollTimer = window.setInterval(poll, 500);
+            };
+
+            form.addEventListener('submit', async (event) => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    return;
+                }
+
+                event.preventDefault();
+
+                let progressToken = '';
+
+                try {
+                    const initResponse = await fetch('{{ base_path }}/admin/properties/upload-progress/init', {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    });
+
+                    if (!initResponse.ok) {
+                        resetProgress();
+                        return;
+                    }
+
+                    const initPayload = await initResponse.json();
+                    progressToken = typeof initPayload.token === 'string' ? initPayload.token : '';
+
+                    if (!progressToken) {
+                        resetProgress();
+                        return;
+                    }
+                } catch (error) {
+                    resetProgress();
+                    return;
+                }
+
+                progressTokenInput.value = progressToken;
+                const request = new XMLHttpRequest();
+                const requestUrl = new URL(form.action, window.location.origin);
+                requestUrl.searchParams.set('upload_progress_token', progressToken);
+                request.open(form.method, requestUrl.toString(), true);
+                request.responseType = 'text';
+
+                progressShell.hidden = false;
+                processingStage.hidden = true;
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                processingFill.style.width = '0%';
+                processingLabel.textContent = 'Processing files';
+                processingText.textContent = 'Waiting for server...';
+                submitButton.disabled = true;
+                submitButton.setAttribute('aria-busy', 'true');
+
+                request.upload.addEventListener('progress', (progressEvent) => {
+                    if (!progressEvent.lengthComputable) {
+                        return;
+                    }
+
+                    const percent = Math.min(100, Math.round((progressEvent.loaded / progressEvent.total) * 100));
+                    progressFill.style.width = percent + '%';
+                    if (percent >= 100) {
+                        progressText.textContent = '100%';
+                        processingStage.hidden = false;
+                        processingFill.style.width = '0%';
+                        processingText.textContent = '0% - Waiting for server...';
+                        startPolling(progressToken);
+                    } else {
+                        progressText.textContent = percent + '%';
+                    }
+                });
+
+                request.upload.addEventListener('load', () => {
+                    processingStage.hidden = false;
+                    if (processingFill.style.width === '0%') {
+                        processingText.textContent = '0% - Waiting for server...';
+                    }
+                    startPolling(progressToken);
+                });
+
+                request.addEventListener('load', () => {
+                    stopPolling();
+                    if (request.status >= 200 && request.status < 400) {
+                        if (request.responseURL) {
+                            window.history.replaceState({}, '', request.responseURL);
+                        }
+
+                        document.open();
+                        document.write(request.responseText);
+                        document.close();
+                        return;
+                    }
+
+                    resetProgress();
+                });
+
+                request.addEventListener('error', resetProgress);
+                request.addEventListener('abort', resetProgress);
+                request.send(new FormData(form));
+            });
+        })();
+    </script>
+    {% if editing_property and editing_property.images is not empty %}
+        <script>
+            (() => {
+                const galleryCard = document.querySelector('.property-gallery-admin-card');
+                if (!galleryCard) {
+                    return;
+                }
+
+                const checkboxes = Array.from(galleryCard.querySelectorAll('input[name="image_urls[]"]'));
+                const selectAllButton = galleryCard.querySelector('[data-select-all-photos]');
+                const deselectAllButton = galleryCard.querySelector('[data-deselect-all-photos]');
+
+                if (selectAllButton) {
+                    selectAllButton.addEventListener('click', () => {
+                        checkboxes.forEach((checkbox) => {
+                            checkbox.checked = true;
+                        });
+                    });
+                }
+
+                if (deselectAllButton) {
+                    deselectAllButton.addEventListener('click', () => {
+                        checkboxes.forEach((checkbox) => {
+                            checkbox.checked = false;
+                        });
+                    });
+                }
+            })();
+        </script>
+    {% endif %}
 {% endblock %}

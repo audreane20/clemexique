@@ -111,7 +111,7 @@ $pdo->exec("
 
 $propertyModel = new PropertyModel($pdo);
 $userModel = new UserModel($pdo);
-$propertyController = new PropertyController($propertyModel, $twig, $basePath);
+$propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator);
 $adminAuthMiddleware = requireAdminAuth($basePath);
 $userAuthMiddleware = requireUserAuth($basePath);
 
@@ -290,6 +290,267 @@ $app->get('/location-automobiles', function ($request, $response) use ($twig, $t
 $app->get('/gestion-immobiliere', function ($request, $response) use ($twig, $translator) {
     return $twig->render($response, 'property-management.html.twig', [
         'page_title' => $translator->trans('property_management.page_title'),
+    ]);
+});
+
+$app->get('/restaurants-a-essayer', function ($request, $response) use ($twig, $translator, $lang) {
+    $restaurantCategories = $lang === 'en'
+        ? [
+            [
+                'title' => 'Italian',
+                'flag' => 'IT',
+                'items' => [
+                    ['name' => 'Don Mario Ristorante', 'area' => '10th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://don-mario.restaurants-world.net/#google_vignette', 'url_label' => 'don-mario.restaurants-world.net'],
+                    ['name' => 'Romeo Trattoria', 'area' => '4th Street', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://romeotrattoriapizzeria.shop/', 'url_label' => 'romeotrattoriapizzeria.shop'],
+                    ['name' => 'Osteria de Roma', 'area' => '6th Street', 'price' => '$$', 'reference' => null, 'url' => 'https://osteriaderoma.shop/', 'url_label' => 'osteriaderoma.shop'],
+                    ['name' => 'Trattoria Del Centro', 'area' => '26th Avenue', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://trattoriaplaya.wixsite.com/trattoria', 'url_label' => 'trattoriaplaya.wixsite.com/trattoria'],
+                    ['name' => 'La Famiglia', 'area' => '10th Avenue', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://lafamiglia.mx/', 'url_label' => 'lafamiglia.mx'],
+                    ['name' => 'Roma Spaghetti', 'area' => 'CTM Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://facebook.com/romaspaghettimx', 'url_label' => 'facebook.com/romaspaghettimx'],
+                    ['name' => 'Piola Ristorante', 'area' => '38th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://piola.com.mx', 'url_label' => 'piola.com.mx'],
+                    ['name' => 'Papaya Slice', 'area' => '38th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://www.tripadvisor.ca/Restaurant_Review-g150812-d26812600-Reviews-Papaya_Slice-Playa_del_Carmen_Yucatan_Peninsula.html', 'url_label' => 'tripadvisor.ca/Papaya_Slice'],
+                ],
+            ],
+            [
+                'title' => 'Bistro / bakery',
+                'flag' => 'FR',
+                'items' => [
+                    ['name' => 'Francesca Italian Bakery', 'area' => '10th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://francescatheitalianbakery.shop/', 'url_label' => 'francescatheitalianbakery.shop'],
+                    ['name' => 'Choux Choux Cafe', 'area' => '20th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://facebook.com/chouxchouxcafe', 'url_label' => 'facebook.com/chouxchouxcafe'],
+                    ['name' => 'Chez Celine', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://chezceline.com.mx', 'url_label' => 'chezceline.com.mx'],
+                    ['name' => 'Somos Crisol', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://somoscrisol.com.mx', 'url_label' => 'somoscrisol.com.mx'],
+                    ['name' => 'Labrioche de Playa', 'area' => 'Playacar', 'price' => '$$', 'reference' => null, 'url' => 'https://linktr.ee/labriochedeplaya?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnVkjT1p_2CkBvgvHROJypUkVgamDr5rUph4mACDdvLK4bvdLl_QRGKJnSEeI_aem_j-Je-1Yro34mr5LdVTvNYA', 'url_label' => 'linktr.ee/labriochedeplaya'],
+                    ['name' => 'Cafe Kaawa', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://cafekaawa.mx', 'url_label' => 'cafekaawa.mx'],
+                ],
+            ],
+            [
+                'title' => 'Indian',
+                'flag' => 'IN',
+                'items' => [
+                    ['name' => 'India Jones', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://india-jones.com', 'url_label' => 'india-jones.com'],
+                ],
+            ],
+            [
+                'title' => 'Thai',
+                'flag' => 'TH',
+                'items' => [
+                    ['name' => 'Po Thai', 'area' => '10th Avenue', 'price' => '$$', 'reference' => 'Favorite pick', 'url' => 'https://pothai.com.mx', 'url_label' => 'pothai.com.mx'],
+                    ['name' => 'Mae Thai', 'area' => '38th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://mae-thai-restaurante.goto-where.com/', 'url_label' => 'mae-thai-restaurante.goto-where.com'],
+                    ['name' => 'Yum Yum', 'area' => '10th Avenue', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://grupogeorge.com', 'url_label' => 'grupogeorge.com'],
+                    ['name' => 'Kobma', 'area' => '1st Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://kobma.mx/nosotros/', 'url_label' => 'kobma.mx/nosotros/'],
+                ],
+            ],
+            [
+                'title' => 'Quebec-owned favorites',
+                'flag' => 'CA-QC',
+                'items' => [
+                    ['name' => 'Viaje de Sabores', 'area' => 'Constituyentes Avenue', 'price' => '$$', 'reference' => 'Favorite pick', 'url' => 'https://viajedesaborespdc.com', 'url_label' => 'viajedesaborespdc.com'],
+                    ['name' => 'Hotel Boutique Caché', 'area' => '15th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://hotelboutiquecacheplaya.com', 'url_label' => 'hotelboutiquecacheplaya.com'],
+                    ['name' => '3 Amigos Sports Bar', 'area' => '4th Street', 'price' => '$$', 'reference' => null, 'url' => 'https://les3amigos.com', 'url_label' => 'les3amigos.com'],
+                    ['name' => 'Los Tabarnacos', 'area' => '10th Street', 'price' => '$$', 'reference' => null, 'url' => 'https://lostabarnacos.com', 'url_label' => 'lostabarnacos.com'],
+                ],
+            ],
+            [
+                'title' => 'Mexican',
+                'flag' => 'MX',
+                'items' => [
+                    ['name' => 'Amate 38', 'area' => '38th Avenue', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://amate38.com', 'url_label' => 'amate38.com'],
+                    ['name' => 'Zitla Ceiba', 'area' => '34th Avenue', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://linktr.ee/ZitlaCeiba?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnkZxjEuGQ16hM8o_zMwSwIDZp_OqlkYJ5VniRkvehYppOhDssB34oWe4kc8U_aem_dQBgFYiH_VkLRfwdMSy2lg', 'url_label' => 'linktr.ee/ZitlaCeiba'],
+                    ['name' => 'Lido Cocina de Playa', 'area' => '1st Avenue', 'price' => '$$$', 'reference' => null, 'url' => 'https://lidococinadeplaya.com', 'url_label' => 'lidococinadeplaya.com'],
+                    ['name' => 'Don Sirloin', 'area' => 'Constituyentes Avenue', 'price' => '$', 'reference' => null, 'url' => 'https://www.tripadvisor.ca/Restaurant_Review-g150812-d2241519-Reviews-Don_Sirloin-Playa_del_Carmen_Yucatan_Peninsula.html', 'url_label' => 'tripadvisor.ca/Don_Sirloin'],
+                    ['name' => 'El Fogon', 'area' => 'Constituyentes Avenue', 'price' => '$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://el-fogon-77720-playa-del-carmen.goto-where.com/', 'url_label' => 'el-fogon-77720-playa-del-carmen.goto-where.com'],
+                    ['name' => 'Chilteplin Marisquillos', 'area' => '34th Street', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://www.chiltepinmarisquillos.com/', 'url_label' => 'chiltepinmarisquillos.com'],
+                    ['name' => 'Primo', 'area' => 'Constituyentes Avenue', 'price' => '$$$$', 'reference' => null, 'url' => 'https://primoplaya.com', 'url_label' => 'primoplaya.com'],
+                ],
+            ],
+            [
+                'title' => 'Music / nightlife',
+                'flag' => 'MUSIC',
+                'items' => [
+                    ['name' => 'La Vagabunda', 'area' => '38th Avenue and 5th Street', 'price' => '$$', 'reference' => null, 'url' => 'https://vagabundaplaya.com', 'url_label' => 'vagabundaplaya.com'],
+                    ['name' => 'Bar FAH', 'area' => '5th Avenue', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://fahrestaurant.com', 'url_label' => 'fahrestaurant.com'],
+                    ['name' => 'Zenzi Beach Bar', 'area' => '10th Street', 'price' => '$$', 'reference' => null, 'url' => 'https://zenzi-playa.com', 'url_label' => 'zenzi-playa.com'],
+                    ['name' => 'Caiman Tugurio', 'area' => '24th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://caimantugurio.com/menu/', 'url_label' => 'caimantugurio.com/menu'],
+                    ['name' => 'Bloody Mary', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://linktr.ee/bloodymaryplaya', 'url_label' => 'linktr.ee/bloodymaryplaya'],
+                ],
+            ],
+            [
+                'title' => 'Seafood',
+                'flag' => 'SEA',
+                'items' => [
+                    ['name' => 'Mariskinky', 'area' => '38th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://facebook.com/mariskinky', 'url_label' => 'facebook.com/mariskinky'],
+                    ['name' => 'Las Hijas De La Tostada', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://www.lashijasdelatostada.com/', 'url_label' => 'lashijasdelatostada.com'],
+                    ['name' => 'Kascabal', 'area' => '5th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://kascabalrestaurante.com', 'url_label' => 'kascabalrestaurante.com'],
+                ],
+            ],
+            [
+                'title' => 'Rotisserie',
+                'flag' => 'GRILL',
+                'items' => [
+                    ['name' => 'La Brocherie', 'area' => '15th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://sites.google.com/view/la-brocherie', 'url_label' => 'sites.google.com/view/la-brocherie'],
+                    ['name' => 'El Pechugon', 'area' => '30th Avenue', 'price' => '$', 'reference' => null, 'url' => 'https://el-pechugon.menu-world.com/', 'url_label' => 'el-pechugon.menu-world.com'],
+                ],
+            ],
+            [
+                'title' => 'Jamaican',
+                'flag' => 'JM',
+                'items' => [
+                    ['name' => 'Ferrons', 'area' => '10th Avenue', 'price' => '$', 'reference' => null, 'url' => 'https://ferronsjerkchicken.com', 'url_label' => 'ferronsjerkchicken.com'],
+                    ['name' => 'Rockas', 'area' => '38th Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://rockas-jamaican-kitchen.goto-where.com/', 'url_label' => 'rockas-jamaican-kitchen.goto-where.com'],
+                ],
+            ],
+            [
+                'title' => 'Fine dining',
+                'flag' => 'LUXE',
+                'items' => [
+                    ['name' => 'Nicoletta', 'area' => '5th Avenue', 'price' => '$$$$', 'reference' => null, 'url' => 'https://nicolettarestaurant.com/playa-del-carmen', 'url_label' => 'nicolettarestaurant.com/playa-del-carmen'],
+                    ['name' => 'Harrys Steak House', 'area' => '5th Avenue', 'price' => '$$$$', 'reference' => null, 'url' => 'https://harrys.com.mx/restaurante-playa-del-carmen', 'url_label' => 'harrys.com.mx/restaurante-playa-del-carmen'],
+                    ['name' => 'Ilios Greek Estiatorio', 'area' => '5th Avenue', 'price' => '$$$', 'reference' => 'With show', 'url' => 'https://iliosrestaurante.com.mx', 'url_label' => 'iliosrestaurante.com.mx'],
+                    ['name' => 'XAAK', 'area' => 'Xcaret complex', 'price' => '$$$$', 'reference' => 'Tripadvisor', 'url' => 'https://hotelxcaret.com/es/xaak/', 'url_label' => 'hotelxcaret.com/es/xaak/'],
+                    ['name' => 'Oh La La !', 'area' => '10th Avenue', 'price' => '$$$$', 'reference' => null, 'url' => 'https://grupobygeorge.com', 'url_label' => 'grupobygeorge.com'],
+                    ['name' => 'Ha!', 'area' => 'Xcaret complex', 'price' => '$$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://hotelxcaretmexico.com/es/restaurante-ha/', 'url_label' => 'hotelxcaretmexico.com/es/restaurante-ha/'],
+                    ['name' => 'Cocina de Autor', 'area' => 'Gran Velas Hotel', 'price' => '$$$$', 'reference' => null, 'url' => 'https://rivieramaya.granvelas.com/dining/cocina-de-autor', 'url_label' => 'rivieramaya.granvelas.com/dining/cocina-de-autor'],
+                    ['name' => 'Alux', 'area' => 'Benito Juarez Avenue', 'price' => '$$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://aluxrestaurant.com', 'url_label' => 'aluxrestaurant.com'],
+                ],
+            ],
+            [
+                'title' => 'Grill',
+                'flag' => 'STEAK',
+                'items' => [
+                    ['name' => '500 Gramos', 'area' => '5th Avenue', 'price' => '$$$', 'reference' => 'Favorite pick • Tripadvisor 2025', 'url' => 'https://www.500gramos.com/', 'url_label' => '500gramos.com'],
+                    ['name' => 'Porfirios', 'area' => '5th Avenue', 'price' => '$$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://porfirios.com.mx', 'url_label' => 'porfirios.com.mx'],
+                ],
+            ],
+        ]
+        : [
+            [
+                'title' => 'Italien',
+                'flag' => 'IT',
+                'items' => [
+                    ['name' => 'Don Mario Ristorante', 'area' => '10e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://don-mario.restaurants-world.net/#google_vignette', 'url_label' => 'don-mario.restaurants-world.net'],
+                    ['name' => 'Romeo Trattoria', 'area' => 'Rue 4', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://romeotrattoriapizzeria.shop/', 'url_label' => 'romeotrattoriapizzeria.shop'],
+                    ['name' => 'Osteria de Roma', 'area' => 'Rue 6', 'price' => '$$', 'reference' => null, 'url' => 'https://osteriaderoma.shop/', 'url_label' => 'osteriaderoma.shop'],
+                    ['name' => 'Trattoria Del Centro', 'area' => '26e Avenue', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://trattoriaplaya.wixsite.com/trattoria', 'url_label' => 'trattoriaplaya.wixsite.com/trattoria'],
+                    ['name' => 'La Famiglia', 'area' => '10e Avenue', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://lafamiglia.mx/', 'url_label' => 'lafamiglia.mx'],
+                    ['name' => 'Roma Spaghetti', 'area' => 'Avenue CTM', 'price' => '$$', 'reference' => null, 'url' => 'https://facebook.com/romaspaghettimx', 'url_label' => 'facebook.com/romaspaghettimx'],
+                    ['name' => 'Piola Ristorante', 'area' => '38e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://piola.com.mx', 'url_label' => 'piola.com.mx'],
+                    ['name' => 'Papaya Slice', 'area' => '38e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://www.tripadvisor.ca/Restaurant_Review-g150812-d26812600-Reviews-Papaya_Slice-Playa_del_Carmen_Yucatan_Peninsula.html', 'url_label' => 'tripadvisor.ca/Papaya_Slice'],
+                ],
+            ],
+            [
+                'title' => 'Resto bistro / boulangerie',
+                'flag' => 'FR',
+                'items' => [
+                    ['name' => 'Francesca Italian Bakery', 'area' => '10e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://francescatheitalianbakery.shop/', 'url_label' => 'francescatheitalianbakery.shop'],
+                    ['name' => 'Choux Choux Cafe', 'area' => '20e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://facebook.com/chouxchouxcafe', 'url_label' => 'facebook.com/chouxchouxcafe'],
+                    ['name' => 'Chez Celine', 'area' => '5e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://chezceline.com.mx', 'url_label' => 'chezceline.com.mx'],
+                    ['name' => 'Somos Crisol', 'area' => '5e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://somoscrisol.com.mx', 'url_label' => 'somoscrisol.com.mx'],
+                    ['name' => 'Labrioche de Playa', 'area' => 'Playacar', 'price' => '$$', 'reference' => null, 'url' => 'https://linktr.ee/labriochedeplaya?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnVkjT1p_2CkBvgvHROJypUkVgamDr5rUph4mACDdvLK4bvdLl_QRGKJnSEeI_aem_j-Je-1Yro34mr5LdVTvNYA', 'url_label' => 'linktr.ee/labriochedeplaya'],
+                    ['name' => 'Cafe Kaawa', 'area' => '5e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://cafekaawa.mx', 'url_label' => 'cafekaawa.mx'],
+                ],
+            ],
+            [
+                'title' => 'Resto indien',
+                'flag' => 'IN',
+                'items' => [
+                    ['name' => 'India Jones', 'area' => '5e Avenue', 'price' => '$$', 'reference' => null, 'url' => 'https://india-jones.com', 'url_label' => 'india-jones.com'],
+                ],
+            ],
+            [
+                'title' => 'Resto thaï',
+                'flag' => 'TH',
+                'items' => [
+                    ['name' => 'Po Thai', 'area' => 'Avenue 10', 'price' => '$$', 'reference' => 'Coup de coeur', 'url' => 'https://pothai.com.mx', 'url_label' => 'pothai.com.mx'],
+                    ['name' => 'Mae Thai', 'area' => 'Avenue 38', 'price' => '$$', 'reference' => null, 'url' => 'https://mae-thai-restaurante.goto-where.com/', 'url_label' => 'mae-thai-restaurante.goto-where.com'],
+                    ['name' => 'Yum Yum', 'area' => 'Avenue 10', 'price' => '$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://grupogeorge.com', 'url_label' => 'grupogeorge.com'],
+                    ['name' => 'Kobma', 'area' => 'Avenue 1', 'price' => '$$', 'reference' => null, 'url' => 'https://kobma.mx/nosotros/', 'url_label' => 'kobma.mx/nosotros/'],
+                ],
+            ],
+            [
+                'title' => 'Resto proprio québécois',
+                'flag' => 'CA-QC',
+                'items' => [
+                    ['name' => 'Viaje de Sabores', 'area' => 'Avenue Constituyentes', 'price' => '$$', 'reference' => 'Coup de coeur', 'url' => 'https://viajedesaborespdc.com', 'url_label' => 'viajedesaborespdc.com'],
+                    ['name' => 'Hotel Boutique Caché', 'area' => 'Avenue 15', 'price' => '$$', 'reference' => null, 'url' => 'https://hotelboutiquecacheplaya.com', 'url_label' => 'hotelboutiquecacheplaya.com'],
+                    ['name' => '3 Amigos Sports Bar', 'area' => 'Rue 4', 'price' => '$$', 'reference' => null, 'url' => 'https://les3amigos.com', 'url_label' => 'les3amigos.com'],
+                    ['name' => 'Los Tabarnacos', 'area' => 'Rue 10', 'price' => '$$', 'reference' => null, 'url' => 'https://lostabarnacos.com', 'url_label' => 'lostabarnacos.com'],
+                ],
+            ],
+            [
+                'title' => 'Resto mexicain',
+                'flag' => 'MX',
+                'items' => [
+                    ['name' => 'Amate 38', 'area' => '38e Avenue', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://amate38.com', 'url_label' => 'amate38.com'],
+                    ['name' => 'Zitla Ceiba', 'area' => 'Avenue 34', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://linktr.ee/ZitlaCeiba?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZXh0bgNhZW0CMTEAc3J0YwZhcHBfaWQMMjU2MjgxMDQwNTU4AAGnkZxjEuGQ16hM8o_zMwSwIDZp_OqlkYJ5VniRkvehYppOhDssB34oWe4kc8U_aem_dQBgFYiH_VkLRfwdMSy2lg', 'url_label' => 'linktr.ee/ZitlaCeiba'],
+                    ['name' => 'Lido Cocina de Playa', 'area' => 'Avenue 1', 'price' => '$$$', 'reference' => null, 'url' => 'https://lidococinadeplaya.com', 'url_label' => 'lidococinadeplaya.com'],
+                    ['name' => 'Don Sirloin', 'area' => 'Avenue Constituyentes', 'price' => '$', 'reference' => null, 'url' => 'https://www.tripadvisor.ca/Restaurant_Review-g150812-d2241519-Reviews-Don_Sirloin-Playa_del_Carmen_Yucatan_Peninsula.html', 'url_label' => 'tripadvisor.ca/Don_Sirloin'],
+                    ['name' => 'El Fogon', 'area' => 'Avenue Constituyentes', 'price' => '$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://el-fogon-77720-playa-del-carmen.goto-where.com/', 'url_label' => 'el-fogon-77720-playa-del-carmen.goto-where.com'],
+                    ['name' => 'Chilteplin Marisquillos', 'area' => 'Rue 34', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://www.chiltepinmarisquillos.com/', 'url_label' => 'chiltepinmarisquillos.com'],
+                    ['name' => 'Primo', 'area' => 'Avenue Constituyentes', 'price' => '$$$$', 'reference' => null, 'url' => 'https://primoplaya.com', 'url_label' => 'primoplaya.com'],
+                ],
+            ],
+            [
+                'title' => 'Resto musical',
+                'flag' => 'MUSIC',
+                'items' => [
+                    ['name' => 'La Vagabunda', 'area' => '38e Avenue et Rue 5', 'price' => '$$', 'reference' => null, 'url' => 'https://vagabundaplaya.com', 'url_label' => 'vagabundaplaya.com'],
+                    ['name' => 'Bar FAH', 'area' => 'Avenue 5', 'price' => '$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://fahrestaurant.com', 'url_label' => 'fahrestaurant.com'],
+                    ['name' => 'Zenzi Beach Bar', 'area' => 'Rue 10', 'price' => '$$', 'reference' => null, 'url' => 'https://zenzi-playa.com', 'url_label' => 'zenzi-playa.com'],
+                    ['name' => 'Caiman Tugurio', 'area' => 'Avenue 24', 'price' => '$$', 'reference' => null, 'url' => 'https://caimantugurio.com/menu/', 'url_label' => 'caimantugurio.com/menu'],
+                    ['name' => 'Bloody Mary', 'area' => 'Avenue 5', 'price' => '$$', 'reference' => null, 'url' => 'https://linktr.ee/bloodymaryplaya', 'url_label' => 'linktr.ee/bloodymaryplaya'],
+                ],
+            ],
+            [
+                'title' => 'Fruits de mer',
+                'flag' => 'SEA',
+                'items' => [
+                    ['name' => 'Mariskinky', 'area' => 'Avenue 38', 'price' => '$$', 'reference' => null, 'url' => 'https://facebook.com/mariskinky', 'url_label' => 'facebook.com/mariskinky'],
+                    ['name' => 'Las Hijas De La Tostada', 'area' => 'Avenue 5', 'price' => '$$', 'reference' => null, 'url' => 'https://www.lashijasdelatostada.com/', 'url_label' => 'lashijasdelatostada.com'],
+                    ['name' => 'Kascabal', 'area' => 'Avenue 5', 'price' => '$$', 'reference' => null, 'url' => 'https://kascabalrestaurante.com', 'url_label' => 'kascabalrestaurante.com'],
+                ],
+            ],
+            [
+                'title' => 'Rôtisserie',
+                'flag' => 'GRILL',
+                'items' => [
+                    ['name' => 'La Brocherie', 'area' => 'Avenue 15', 'price' => '$$', 'reference' => null, 'url' => 'https://sites.google.com/view/la-brocherie', 'url_label' => 'sites.google.com/view/la-brocherie'],
+                    ['name' => 'El Pechugon', 'area' => 'Avenue 30', 'price' => '$', 'reference' => null, 'url' => 'https://el-pechugon.menu-world.com/', 'url_label' => 'el-pechugon.menu-world.com'],
+                ],
+            ],
+            [
+                'title' => 'Resto jamaïcain',
+                'flag' => 'JM',
+                'items' => [
+                    ['name' => 'Ferrons', 'area' => 'Avenue 10', 'price' => '$', 'reference' => null, 'url' => 'https://ferronsjerkchicken.com', 'url_label' => 'ferronsjerkchicken.com'],
+                    ['name' => 'Rockas', 'area' => 'Avenue 38', 'price' => '$$', 'reference' => null, 'url' => 'https://rockas-jamaican-kitchen.goto-where.com/', 'url_label' => 'rockas-jamaican-kitchen.goto-where.com'],
+                ],
+            ],
+            [
+                'title' => 'Resto haut de gamme',
+                'flag' => 'LUXE',
+                'items' => [
+                    ['name' => 'Nicoletta', 'area' => 'Avenue 5', 'price' => '$$$$', 'reference' => null, 'url' => 'https://nicolettarestaurant.com/playa-del-carmen', 'url_label' => 'nicolettarestaurant.com/playa-del-carmen'],
+                    ['name' => 'Harrys Steak House', 'area' => 'Avenue 5', 'price' => '$$$$', 'reference' => null, 'url' => 'https://harrys.com.mx/restaurante-playa-del-carmen', 'url_label' => 'harrys.com.mx/restaurante-playa-del-carmen'],
+                    ['name' => 'Ilios Greek Estiatorio', 'area' => 'Avenue 5', 'price' => '$$$', 'reference' => 'Avec spectacle', 'url' => 'https://iliosrestaurante.com.mx', 'url_label' => 'iliosrestaurante.com.mx'],
+                    ['name' => 'XAAK', 'area' => 'Complexe Xcaret', 'price' => '$$$$', 'reference' => 'Tripadvisor', 'url' => 'https://hotelxcaret.com/es/xaak/', 'url_label' => 'hotelxcaret.com/es/xaak/'],
+                    ['name' => 'Oh La La !', 'area' => 'Avenue 10', 'price' => '$$$$', 'reference' => null, 'url' => 'https://grupobygeorge.com', 'url_label' => 'grupobygeorge.com'],
+                    ['name' => 'Ha!', 'area' => 'Complexe Xcaret', 'price' => '$$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://hotelxcaretmexico.com/es/restaurante-ha/', 'url_label' => 'hotelxcaretmexico.com/es/restaurante-ha/'],
+                    ['name' => 'Cocina de Autor', 'area' => 'Hôtel Gran Velas', 'price' => '$$$$', 'reference' => null, 'url' => 'https://rivieramaya.granvelas.com/dining/cocina-de-autor', 'url_label' => 'rivieramaya.granvelas.com/dining/cocina-de-autor'],
+                    ['name' => 'Alux', 'area' => 'Avenue Benito Juarez', 'price' => '$$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://aluxrestaurant.com', 'url_label' => 'aluxrestaurant.com'],
+                ],
+            ],
+            [
+                'title' => 'Grillade',
+                'flag' => 'STEAK',
+                'items' => [
+                    ['name' => '500 Gramos', 'area' => 'Avenue 5', 'price' => '$$$', 'reference' => 'Coup de coeur • Tripadvisor 2025', 'url' => 'https://www.500gramos.com/', 'url_label' => '500gramos.com'],
+                    ['name' => 'Porfirios', 'area' => 'Avenue 5', 'price' => '$$$$', 'reference' => 'Tripadvisor 2025', 'url' => 'https://porfirios.com.mx', 'url_label' => 'porfirios.com.mx'],
+                ],
+            ],
+        ];
+
+    return $twig->render($response, 'restaurants.html.twig', [
+        'page_title' => $translator->trans('restaurants.page_title'),
+        'restaurant_categories' => $restaurantCategories,
     ]);
 });
 
@@ -1138,8 +1399,12 @@ $app->post('/admin/profile', function ($request, $response) use ($basePath) {
 
 $app->group('/admin', function ($group) use ($propertyController) {
     $group->get('/properties', [$propertyController, 'index']);
+    $group->post('/properties/upload-progress/init', [$propertyController, 'initUploadProgress']);
+    $group->get('/properties/upload-progress/{token}', [$propertyController, 'uploadProgress']);
     $group->post('/properties/create', [$propertyController, 'create']);
     $group->post('/properties/{id}/update', [$propertyController, 'update']);
+    $group->post('/properties/{id}/images/primary', [$propertyController, 'setPrimaryImage']);
+    $group->post('/properties/{id}/images/delete', [$propertyController, 'deleteImages']);
     $group->post('/properties/{id}/delete', [$propertyController, 'delete']);
 })->add($adminAuthMiddleware);
 

@@ -572,6 +572,10 @@ body {
     padding: 32px 0 20px;
 }
 
+.restaurant-toc-shell {
+    padding: 18px 0 12px;
+}
+
 .home-toc-card {
     display: grid;
     gap: 24px;
@@ -718,11 +722,101 @@ body {
     font-weight: 700;
 }
 
+.property-upload-group + .property-upload-group {
+    margin-top: 14px;
+}
+
+.property-upload-group-title {
+    margin: 12px 0 8px;
+    font-weight: 700;
+}
+
+.property-upload-group-list {
+    margin: 0;
+    padding-left: 20px;
+    column-count: 1;
+    font-weight: 600;
+}
+
+.property-upload-group-list li + li {
+    margin-top: 4px;
+}
+
 .property-field-help {
     color: #52606d;
     font-size: 13px;
     font-weight: 500;
     line-height: 1.5;
+}
+
+.property-upload-progress {
+    display: grid;
+    gap: 10px;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: rgba(233, 249, 255, 0.9);
+    border: 1px solid rgba(37, 185, 229, 0.18);
+}
+
+.property-upload-progress-shell {
+    max-width: 1300px;
+    margin: 0 auto 22px;
+}
+
+.property-upload-progress[hidden] {
+    display: none !important;
+}
+
+.property-upload-progress-stage {
+    display: grid;
+    gap: 8px;
+}
+
+.property-upload-processing-stage[hidden] {
+    display: none !important;
+}
+
+.property-upload-progress-bar {
+    position: relative;
+    width: 100%;
+    height: 12px;
+    border-radius: 999px;
+    overflow: hidden;
+    background: rgba(11, 53, 88, 0.08);
+}
+
+.property-upload-progress-label {
+    margin: 0;
+    color: var(--navy);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+}
+
+.property-upload-progress-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--turquoise), var(--navy));
+    transition: width 0.18s ease;
+}
+
+.property-upload-processing-fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(135deg, var(--turquoise), var(--navy));
+}
+
+.property-upload-progress-text {
+    margin: 0;
+    color: var(--navy);
+    font-size: 14px;
+    font-weight: 700;
+    text-align: right;
 }
 
 .property-form-choice {
@@ -805,6 +899,10 @@ body {
 }
 
 .property-admin-preview-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
     margin-bottom: 22px;
 }
 
@@ -953,6 +1051,20 @@ body {
     color: #52606d;
     font-weight: 700;
     text-decoration: none;
+}
+
+.property-new-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 12px;
+    background: var(--turquoise-light);
+    color: var(--navy);
+    text-decoration: none;
+    font-weight: 700;
+    padding: 12px 16px;
 }
 
 .property-cancel-link:hover {
@@ -1125,6 +1237,144 @@ body {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 18px;
+    margin-bottom: 18px;
+}
+
+.property-gallery-admin-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.property-gallery-admin-tools {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    flex-wrap: nowrap;
+    margin-left: auto;
+    flex: 0 0 auto;
+}
+
+.property-gallery-toggle-button {
+    min-width: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 24px;
+    border-radius: 999px;
+    border: 1px solid rgba(37, 185, 229, 0.35);
+    background: rgba(255, 255, 255, 0.92);
+    color: var(--navy);
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: 0 10px 24px rgba(11, 53, 88, 0.08);
+    transition: 0.2s ease;
+}
+
+.property-gallery-toggle-button:hover {
+    background: linear-gradient(135deg, rgba(233, 249, 255, 0.98), rgba(255, 255, 255, 0.98));
+    border-color: rgba(37, 185, 229, 0.5);
+    color: var(--navy);
+    transform: translateY(-1px);
+}
+
+.property-gallery-toggle-button:focus-visible {
+    outline: 3px solid rgba(37, 185, 229, 0.22);
+    outline-offset: 2px;
+}
+
+.property-gallery-admin-help {
+    margin: 0;
+    color: rgba(11, 53, 88, 0.78);
+}
+
+.property-gallery-admin-item {
+    position: relative;
+    display: block;
+    cursor: pointer;
+}
+
+.property-gallery-admin-select {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+}
+
+.property-gallery-admin-item input {
+    position: absolute;
+    inset: 12px auto auto 12px;
+    width: 20px;
+    height: 20px;
+    margin: 0;
+    z-index: 2;
+}
+
+.property-gallery-admin-primary {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    z-index: 2;
+}
+
+.property-gallery-admin-primary form {
+    margin: 0;
+}
+
+.property-gallery-admin-primary-button,
+.property-gallery-admin-primary-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.94);
+    color: var(--navy);
+    font-size: 0.8rem;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 8px 18px rgba(11, 53, 88, 0.08);
+}
+
+.property-gallery-admin-primary-button {
+    border: 1px solid rgba(37, 185, 229, 0.35);
+    cursor: pointer;
+}
+
+.property-gallery-admin-primary-badge {
+    border: 1px solid rgba(37, 185, 229, 0.45);
+    background: rgba(233, 249, 255, 0.96);
+}
+
+.property-gallery-admin-item img {
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+}
+
+.property-gallery-admin-item video,
+.property-detail-gallery-video {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+    display: block;
+    border-radius: 18px;
+    background: #0b3558;
+}
+
+.property-gallery-admin-item input:checked ~ img {
+    opacity: 0.55;
+    transform: scale(0.98);
+    box-shadow: 0 0 0 3px rgba(225, 38, 72, 0.2);
+}
+
+.property-gallery-admin-item input:checked ~ video {
+    opacity: 0.55;
+    transform: scale(0.98);
+    box-shadow: 0 0 0 3px rgba(225, 38, 72, 0.2);
+}
+
+.property-delete-selected-button {
+    align-self: flex-start;
 }
 
 .property-detail-gallery-grid {
@@ -1583,6 +1833,166 @@ body {
 .page-home-link:focus-visible {
     outline: 3px solid rgba(18, 163, 197, 0.22);
     outline-offset: 3px;
+}
+
+.restaurant-category-list {
+    display: grid;
+    gap: 24px;
+    margin-top: 28px;
+}
+
+.restaurant-toc-shell .home-toc-card {
+    gap: 18px;
+    padding: 24px;
+}
+
+.restaurant-toc-shell .home-toc-grid {
+    gap: 12px;
+}
+
+.restaurant-toc-shell .home-toc-link {
+    min-height: 0;
+    gap: 2px;
+    padding: 12px 16px;
+    align-content: start;
+}
+
+.restaurant-toc-shell .home-toc-link-title {
+    font-size: 16px;
+}
+
+.restaurant-toc-shell .home-toc-link-copy {
+    font-size: 13px;
+    line-height: 1.35;
+}
+
+.restaurant-category {
+    background: rgba(255, 255, 255, 0.98);
+    border: 1px solid rgba(11, 53, 88, 0.1);
+    border-radius: 24px;
+    box-shadow: 0 14px 28px rgba(11, 53, 88, 0.06);
+    padding: 24px;
+    scroll-margin-top: 180px;
+}
+
+.restaurant-category-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.restaurant-category-header h2 {
+    margin: 0;
+    color: var(--navy);
+    font-size: clamp(24px, 2vw, 30px);
+}
+
+.restaurant-category-flag {
+    display: inline-block;
+    width: 22px;
+    height: 16px;
+    object-fit: cover;
+    border-radius: 3px;
+    box-shadow: 0 2px 6px rgba(11, 53, 88, 0.14);
+    margin-right: 10px;
+    vertical-align: middle;
+}
+
+.restaurant-category-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    font-size: 18px;
+    vertical-align: middle;
+}
+
+.restaurant-category-header span {
+    color: var(--turquoise);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.restaurant-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.restaurant-card {
+    display: grid;
+    gap: 10px;
+    padding: 18px;
+    border-radius: 20px;
+    background: linear-gradient(180deg, #ffffff 0%, #f6fcff 100%);
+    border: 1px solid rgba(18, 163, 197, 0.14);
+}
+
+.restaurant-card-top {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.restaurant-card h3 {
+    margin: 0;
+    color: var(--navy);
+    font-size: 21px;
+}
+
+
+.restaurant-price {
+    padding: 6px 10px;
+    border-radius: 999px;
+    background: rgba(18, 163, 197, 0.12);
+    color: var(--turquoise);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.restaurant-area,
+.restaurant-reference {
+    margin: 0;
+    color: #52606d;
+    font-size: 16px;
+    line-height: 1.5;
+}
+
+.restaurant-area-link {
+    color: inherit;
+    text-decoration: none;
+    border-bottom: 1px dashed rgba(18, 163, 197, 0.35);
+}
+
+.restaurant-area-link:hover {
+    color: var(--turquoise);
+    border-bottom-color: rgba(18, 163, 197, 0.8);
+}
+
+.restaurant-reference {
+    color: var(--navy);
+    font-weight: 600;
+}
+
+.restaurant-link {
+    color: var(--turquoise);
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    word-break: break-word;
+}
+
+.restaurant-link:hover {
+    color: var(--navy);
 }
 
 .rental-form-page {
@@ -2266,7 +2676,8 @@ body {
     .inquiry-grid-bottom,
     .inquiry-grid-footer,
     .inquiry-pill-options,
-    .inquiry-location-grid {
+    .inquiry-location-grid,
+    .restaurant-grid {
         grid-template-columns: 1fr;
     }
 

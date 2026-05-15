@@ -78,6 +78,96 @@ class PropertyModel
         $this->insertImages($propertyId, $imageUrls, $offset);
     }
 
+    public function removeImages(int $propertyId, array $imageUrls): void
+    {
+        if ($propertyId <= 0) {
+            throw new InvalidArgumentException('Invalid property ID.');
+        }
+
+        $property = $this->findById($propertyId);
+
+        if ($property === null) {
+            throw new InvalidArgumentException('Property not found.');
+        }
+
+        $selectedImages = array_values(array_intersect(
+            $property['images'] ?? [],
+            array_map(static fn ($imageUrl): string => trim((string) $imageUrl), $imageUrls)
+        ));
+
+        if ($selectedImages === []) {
+            throw new InvalidArgumentException('No property images selected.');
+        }
+
+        $remainingImages = array_values(array_filter(
+            $property['images'] ?? [],
+            static fn (string $imageUrl): bool => !in_array($imageUrl, $selectedImages, true)
+        ));
+
+        if ($remainingImages === [] || !$this->hasImageMedia($remainingImages)) {
+            throw new InvalidArgumentException('A property must keep at least one image.');
+        }
+
+        $this->pdo->prepare('DELETE FROM property_card_images WHERE property_card_id = :property_card_id')
+            ->execute([
+                'property_card_id' => $propertyId,
+            ]);
+
+        $this->insertImages($propertyId, $remainingImages);
+
+        $this->pdo->prepare('UPDATE property_cards SET image_url = :image_url WHERE id = :id')
+            ->execute([
+                'image_url' => $this->firstImageUrl($remainingImages) ?? $remainingImages[0],
+                'id' => $propertyId,
+            ]);
+
+        foreach ($selectedImages as $imageUrl) {
+            $this->deleteManagedUploadFile($imageUrl);
+        }
+    }
+
+    public function setPrimaryImage(int $propertyId, string $imageUrl): void
+    {
+        if ($propertyId <= 0) {
+            throw new InvalidArgumentException('Invalid property ID.');
+        }
+
+        $property = $this->findById($propertyId);
+
+        if ($property === null) {
+            throw new InvalidArgumentException('Property not found.');
+        }
+
+        $images = $property['images'] ?? [];
+
+        if (!in_array($imageUrl, $images, true)) {
+            throw new InvalidArgumentException('Property image not found.');
+        }
+
+        if (!$this->buildMediaItem($imageUrl)['is_image']) {
+            throw new InvalidArgumentException('Primary media must be an image.');
+        }
+
+        $orderedImages = array_values(array_filter(
+            $images,
+            static fn (string $existingImageUrl): bool => $existingImageUrl !== $imageUrl
+        ));
+        array_unshift($orderedImages, $imageUrl);
+
+        $this->pdo->prepare('DELETE FROM property_card_images WHERE property_card_id = :property_card_id')
+            ->execute([
+                'property_card_id' => $propertyId,
+            ]);
+
+        $this->insertImages($propertyId, $orderedImages);
+
+        $this->pdo->prepare('UPDATE property_cards SET image_url = :image_url WHERE id = :id')
+            ->execute([
+                'image_url' => $imageUrl,
+                'id' => $propertyId,
+            ]);
+    }
+
     public function update(int $id, array $data): bool
     {
         if ($id <= 0) {
@@ -209,7 +299,7 @@ class PropertyModel
             throw new InvalidArgumentException('Invalid property price.');
         }
 
-        if (!in_array($priceCurrency, ['USD', 'CAD'], true)) {
+        if (!in_array($priceCurrency, ['USD', 'CAD', 'MXN'], true)) {
             throw new InvalidArgumentException('Invalid property currency.');
         }
 
@@ -251,7 +341,9 @@ class PropertyModel
             }
 
             $property['images'] = $images;
+            $property['media_items'] = array_map(fn (string $imageUrl): array => $this->buildMediaItem($imageUrl), $images);
             $property['image_count'] = count($images);
+            $property['media_count'] = count($images);
             $property['detail_url'] = '/properties/' . $propertyId;
         }
         unset($property);
@@ -315,6 +407,64 @@ class PropertyModel
                 'sort_order' => $offset + $index,
             ]);
         }
+    }
+
+    private function deleteManagedUploadFile(string $imageUrl): void
+    {
+        $basePath = '/uploads/properties/';
+
+        if (!str_starts_with($imageUrl, $basePath)) {
+            return;
+        }
+
+        $filename = basename($imageUrl);
+        $filePath = dirname(__DIR__, 2) . '/public/uploads/properties/' . $filename;
+
+        if (is_file($filePath)) {
+            @unlink($filePath);
+        }
+    }
+
+    private function buildMediaItem(string $url): array
+    {
+        $extension = strtolower(pathinfo(parse_url($url, PHP_URL_PATH) ?? '', PATHINFO_EXTENSION));
+        $videoExtensions = ['mp4', 'mov', 'webm'];
+        $imageExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
+        return [
+            'url' => $url,
+            'type' => in_array($extension, $videoExtensions, true) ? 'video' : 'image',
+            'is_video' => in_array($extension, $videoExtensions, true),
+            'is_image' => in_array($extension, $imageExtensions, true),
+            'mime_type' => match ($extension) {
+                'mp4' => 'video/mp4',
+                'mov' => 'video/quicktime',
+                'webm' => 'video/webm',
+                default => null,
+            },
+        ];
+    }
+
+    private function hasImageMedia(array $mediaUrls): bool
+    {
+        foreach ($mediaUrls as $mediaUrl) {
+            if ($this->buildMediaItem((string) $mediaUrl)['is_image']) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function firstImageUrl(array $mediaUrls): ?string
+    {
+        foreach ($mediaUrls as $mediaUrl) {
+            if ($this->buildMediaItem((string) $mediaUrl)['is_image']) {
+                return (string) $mediaUrl;
+            }
+        }
+
+        return null;
     }
 
     private function capitalizeFirstCharacter(string $value): string

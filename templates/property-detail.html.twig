@@ -12,10 +12,10 @@
                 <div class="property-admin-preview-header">
                     <div>
                         <p class="property-preview-label">{{ trans('properties.gallery') }}</p>
-                        <h2>{{ property.image_count }} {{ property.image_count == 1 ? trans('properties.photo_singular') : trans('properties.photo_plural') }}</h2>
+                        <h2>{{ property.media_count }} {{ property.media_count == 1 ? trans('properties.media_singular') : trans('properties.media_plural') }}</h2>
                     </div>
 
-                    {% if property.image_count > 4 %}
+                    {% if property.media_count > 4 %}
                         <div class="property-gallery-nav">
                             <button type="button" class="property-gallery-nav-button" data-gallery-prev aria-label="{{ trans('properties.previous_images') }}">&#8249;</button>
                             <button type="button" class="property-gallery-nav-button" data-gallery-next aria-label="{{ trans('properties.next_images') }}">&#8250;</button>
@@ -25,11 +25,17 @@
 
                 <div class="property-detail-gallery-viewport">
                     <div class="property-detail-gallery-grid" data-gallery-track>
-                        {% for image in property.images %}
+                        {% for media in property.media_items %}
                             <figure class="property-detail-gallery-item">
-                                <button type="button" class="property-lightbox-trigger" data-lightbox-index="{{ loop.index0 }}" data-lightbox-image="{{ image }}" data-lightbox-alt="{{ property.name }} photo {{ loop.index }}">
-                                    <img src="{{ image }}" alt="{{ property.name }} photo {{ loop.index }}">
-                                </button>
+                                {% if media.is_video %}
+                                    <video controls preload="metadata" playsinline class="property-detail-gallery-video">
+                                        <source src="{{ media.url }}" type="{{ media.mime_type ?? 'video/mp4' }}">
+                                    </video>
+                                {% else %}
+                                    <button type="button" class="property-lightbox-trigger" data-lightbox-index="{{ loop.index0 }}" data-lightbox-image="{{ media.url }}" data-lightbox-alt="{{ property.name }} photo {{ loop.index }}">
+                                        <img src="{{ media.url }}" alt="{{ property.name }} photo {{ loop.index }}">
+                                    </button>
+                                {% endif %}
                             </figure>
                         {% endfor %}
                     </div>
@@ -45,8 +51,8 @@
             </div>
 
             <div class="property-detail-pricing">
-                <p class="property-detail-price">{{ property.primary_price_display }}</p>
-                <p class="property-detail-price-secondary">{{ property.secondary_price_display }}</p>
+                <p class="property-detail-price">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                <p class="property-detail-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
             </div>
 
             {% if property.description %}
@@ -155,7 +161,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (galleryTrack && galleryPrevButton && galleryNextButton) {
         const galleryViewport = galleryTrack.parentElement;
         const itemsPerPage = 4;
-        const totalPages = Math.ceil(triggers.length / itemsPerPage);
+        const totalItems = galleryTrack.children.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
 
         const updateGalleryPosition = function () {
             const viewportWidth = galleryViewport ? galleryViewport.clientWidth : 0;

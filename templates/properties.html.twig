@@ -34,8 +34,8 @@
                     <p class="property-public-mode">{{ property.listing_mode == 'location' ? trans('properties.mode_rent') : trans('properties.mode_buy') }}</p>
                     <h2>{{ property.name }}</h2>
                     <p class="property-public-city">{{ property.city }}</p>
-                    <p class="property-public-price property-public-price-primary">{{ property.primary_price_display }}</p>
-                    <p class="property-public-price property-public-price-secondary">{{ property.secondary_price_display }}</p>
+                    <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                    <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
 
                     <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
                         {{ trans('properties.cta') }}

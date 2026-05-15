@@ -30,6 +30,10 @@
                 <span class="home-toc-link-title">{{ trans('home.toc_management_title') }}</span>
                 <span class="home-toc-link-copy">{{ trans('home.toc_management_copy') }}</span>
             </a>
+            <a href="#home-restaurants" class="home-toc-link" data-home-toc-target="home-restaurants">
+                <span class="home-toc-link-title">{{ trans('home.toc_restaurants_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_restaurants_copy') }}</span>
+            </a>
         </div>
     </div>
 </section>
@@ -67,8 +71,8 @@
                     <p class="property-public-mode">{{ property.listing_mode == 'location' ? trans('properties.mode_rent') : trans('properties.mode_buy') }}</p>
                     <h2>{{ property.name }}</h2>
                     <p class="property-public-city">{{ property.city }}</p>
-                    <p class="property-public-price property-public-price-primary">{{ property.primary_price_display }}</p>
-                    <p class="property-public-price property-public-price-secondary">{{ property.secondary_price_display }}</p>
+                    <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                    <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
 
                     <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
                         {{ trans('properties.cta') }}
@@ -115,6 +119,16 @@
         <p class="info-request-copy">{{ trans('property_management.copy') }}</p>
         <div class="info-request-actions">
             <a href="{{ base_path }}/gestion-immobiliere?lang={{ app_lang }}" class="info-request-link">{{ trans('property_management.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-restaurants">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('restaurants.title') }}</h2>
+        <p class="info-request-copy">{{ trans('restaurants.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/restaurants-a-essayer?lang={{ app_lang }}" class="info-request-link">{{ trans('restaurants.home_cta') }}</a>
         </div>
     </div>
 </section>

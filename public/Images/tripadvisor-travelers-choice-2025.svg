@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">Tripadvisor Travelers' Choice Awards 2025</title>
+  <desc id="desc">Green circular Tripadvisor Travelers' Choice Awards 2025 badge.</desc>
+  <circle cx="256" cy="256" r="256" fill="#00e35a"/>
+  <g fill="#111111" font-family="Arial, Helvetica, sans-serif" text-anchor="middle">
+    <text x="256" y="110" font-size="28" font-weight="700">Tripadvisor</text>
+    <text x="256" y="145" font-size="24">Travelers'</text>
+    <text x="256" y="178" font-size="24">Choice Awards</text>
+  </g>
+  <g transform="translate(256 286)" fill="none" stroke="#111111" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="0" cy="0" r="58" stroke-width="8"/>
+    <g transform="translate(-23 0)">
+      <circle cx="0" cy="0" r="20" fill="#00e35a" stroke-width="8"/>
+      <circle cx="0" cy="0" r="7" fill="#111111" stroke="none"/>
+    </g>
+    <g transform="translate(23 0)">
+      <circle cx="0" cy="0" r="20" fill="#00e35a" stroke-width="8"/>
+      <circle cx="0" cy="0" r="7" fill="#111111" stroke="none"/>
+    </g>
+    <path d="M-28 -22 L-8 -12 L-18 4" stroke-width="8"/>
+    <path d="M28 -22 L8 -12 L18 4" stroke-width="8"/>
+    <path d="M-3 0 L3 0" stroke-width="8"/>
+  </g>
+  <g transform="translate(256 332)" fill="none" stroke="#111111" stroke-linecap="round" stroke-linejoin="round" stroke-width="7">
+    <path d="M-104 -8 C-96 22 -80 48 -56 68" />
+    <path d="M-94 -22 C-88 0 -76 24 -58 42" />
+    <path d="M-82 -34 C-76 -10 -66 10 -50 28" />
+    <path d="M104 -8 C96 22 80 48 56 68" />
+    <path d="M94 -22 C88 0 76 24 58 42" />
+    <path d="M82 -34 C76 -10 66 10 50 28" />
+  </g>
+  <text x="256" y="430" fill="#111111" font-family="Arial, Helvetica, sans-serif" font-size="32" font-weight="700" text-anchor="middle">2025</text>
+</svg>

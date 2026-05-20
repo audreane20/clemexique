@@ -1,0 +1,529 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+{% set price_options = ['$', '$$', '$$$', '$$$$', '$$$$$'] %}
+{% set is_restaurants = active_section == 'restaurants' %}
+{% set item_label = active_section == 'restaurants'
+    ? {'en': 'restaurant', 'fr': 'restaurant'}
+    : active_section == 'excursions'
+        ? {'en': 'excursion', 'fr': 'excursion'}
+        : {'en': 'activity', 'fr': 'activitÃ©'} %}
+{% set required_item_fields = is_restaurants ? ['name', 'area', 'price', 'url'] : ['name', 'area', 'url'] %}
+{% set optional_item_fields = is_restaurants ? ['reference'] : ['note', 'video_url'] %}
+{% set is_editing_item = editing_item is not null %}
+{% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
+{% set selected_category_choice = is_editing_item ? editing_item_category_index : '' %}
+<section class="admin-properties-shell">
+    <div class="admin-properties-header">
+        <div>
+            <p class="admin-properties-eyebrow">{{ app_lang == 'en' ? 'Admin' : 'Admin' }}</p>
+            <h1>{{ section_config.page_title[app_lang] }}</h1>
+            <p>{{ section_config.page_copy[app_lang] }}</p>
+        </div>
+    </div>
+
+    {% if flash_success %}
+        <div class="form-success">{{ flash_success }}</div>
+    {% endif %}
+
+    {% if flash_error %}
+        <div class="form-error">{{ flash_error }}</div>
+    {% endif %}
+
+    <div class="admin-content-layout">
+        <section class="property-form-card admin-content-create-card">
+            <div class="admin-content-form-header">
+                <div>
+                    <h2>
+                        {% if is_editing_item %}
+                            {{ app_lang == 'en' ? 'Edit ' ~ item_label.en : 'Modifier ' ~ item_label.fr }}
+                        {% else %}
+                            {{ app_lang == 'en' ? 'Add ' ~ (item_label.en == 'activity' ? 'an ' : 'a ') ~ item_label.en : 'Ajouter ' ~ (item_label.fr == 'activitÃ©' ? 'une ' : 'un ') ~ item_label.fr }}
+                        {% endif %}
+                    </h2>
+                    <p>
+                        {% if is_editing_item %}
+                            {{ app_lang == 'en' ? 'The selected ' ~ item_label.en ~ ' is loaded here for editing.' : (item_label.fr == 'activitÃ©' ? 'Lâ€™activitÃ© sÃ©lectionnÃ©e est chargÃ©e ici pour modification.' : 'Le ' ~ item_label.fr ~ ' sÃ©lectionnÃ© est chargÃ© ici pour modification.') }}
+                        {% else %}
+                            {{ app_lang == 'en' ? 'Choose an existing category or create a new one directly from this form.' : 'Choisissez une catÃ©gorie existante ou crÃ©ez-en une nouvelle directement depuis ce formulaire.' }}
+                        {% endif %}
+                    </p>
+                </div>
+                {% if is_editing_item %}
+                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}" class="admin-content-cancel-link">{{ app_lang == 'en' ? 'Cancel' : 'Annuler' }}</a>
+                {% endif %}
+            </div>
+
+            <form method="POST" action="{{ item_form_action }}" class="admin-content-form" data-admin-content-form>
+                <input type="hidden" name="editor_language" value="{{ editor_language }}">
+
+                <label>
+                    <span class="admin-content-label-copy">{{ app_lang == 'en' ? 'Category' : 'Cat&eacute;gorie' }}<span class="admin-content-required-marker">*</span></span>
+                    <select name="category_choice" data-category-choice>
+                        <option value="">{{ app_lang == 'en' ? 'Select a category' : 'SÃ©lectionnez une catÃ©gorie' }}</option>
+                        {% for category in categories %}
+                            <option value="{{ loop.index0 }}" {{ selected_category_choice == loop.index0 ? 'selected' : '' }}>
+                                {{ category.title }}
+                            </option>
+                        {% endfor %}
+                        <option value="__new__">{{ app_lang == 'en' ? 'New category' : 'Nouvelle catÃ©gorie' }}</option>
+                    </select>
+                </label>
+
+                <div class="admin-content-new-category-fields is-hidden" data-new-category-fields>
+                    <div class="admin-content-inline-title">
+                        <h3>{{ app_lang == 'en' ? 'New category' : 'Nouvelle catÃ©gorie' }}</h3>
+                        <p>{{ app_lang == 'en' ? 'This category will be created when you save the ' ~ item_label.en ~ '.' : 'Cette catÃ©gorie sera crÃ©Ã©e lorsque vous enregistrerez ' ~ (item_label.fr == 'activitÃ©' ? 'lâ€™activitÃ©' : 'le ' ~ item_label.fr) ~ '.' }}</p>
+                    </div>
+
+                    {% for field in section_config.category_fields %}
+                        <label>
+                            {{ field.labels[app_lang] }}
+                            {% if field.name == 'flag' %}
+                                <div class="admin-content-icon-picker" data-category-icon-picker>
+                                    <input type="hidden" name="new_category_{{ field.name }}" value="" data-category-icon-value>
+                                    <input type="text" value="" placeholder="{{ app_lang == 'en' ? 'Search by name or code' : 'Recherchez par nom ou code' }}" autocomplete="off" data-category-icon-input>
+                                    <div class="admin-content-icon-picker-menu is-hidden" data-category-icon-menu>
+                                        {% for choice in category_icon_choices %}
+                                            <button type="button" class="admin-content-icon-option" data-icon-code="{{ choice.code }}" data-icon-label="{{ choice.name }}">
+                                                <span class="admin-content-icon-option-symbol">{{ render_category_icon(choice.code) }}</span>
+                                                <span class="admin-content-icon-option-copy">
+                                                    <strong>{{ choice.name }}</strong>
+                                                    <span>{{ choice.code }}</span>
+                                                </span>
+                                            </button>
+                                        {% endfor %}
+                                        <div class="admin-content-icon-empty is-hidden" data-category-icon-empty>
+                                            {{ app_lang == 'en' ? 'No matching icons.' : 'Aucune icÃ´ne correspondante.' }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="admin-content-icon-preview" data-category-icon-preview>
+                                    <span class="admin-content-icon-preview-label">{{ app_lang == 'en' ? 'Preview:' : 'AperÃ§u :' }}</span>
+                                    <span class="admin-content-icon-preview-value">{{ app_lang == 'en' ? 'No icon selected yet' : 'Aucune icÃ´ne sÃ©lectionnÃ©e pour le moment' }}</span>
+                                </div>
+                            {% else %}
+                                <input type="text" name="new_category_{{ field.name }}" value="" placeholder="{{ field.placeholders[app_lang] }}">
+                            {% endif %}
+                        </label>
+                    {% endfor %}
+                </div>
+
+                {% for field in section_config.item_fields %}
+                    {% if field.name != 'url_label' %}
+                    <label>
+                        <span class="admin-content-label-copy">
+                            {{ field.labels[app_lang] }}
+                            {% if field.name in required_item_fields %}
+                                <span class="admin-content-required-marker">*</span>
+                            {% elseif field.name in optional_item_fields %}
+                                <span class="admin-content-optional-marker">({{ app_lang == 'en' ? 'optional' : 'optionnel' }})</span>
+                            {% endif %}
+                        </span>
+                        {% if is_restaurants and field.name == 'price' %}
+                            <select name="{{ field.name }}">
+                                <option value="">{{ app_lang == 'en' ? 'Select a price range' : 'SÃ©lectionnez une gamme de prix' }}</option>
+                                {% for option in price_options %}
+                                    <option value="{{ option }}" {{ is_editing_item and attribute(editing_item, field.name)|default('') == option ? 'selected' : '' }}>{{ option }}</option>
+                                {% endfor %}
+                            </select>
+                        {% elseif is_restaurants and field.name == 'reference' %}
+                            {% set current_reference = is_editing_item ? attribute(editing_item, field.name)|default('') : '' %}
+                            {% set current_reference_lower = current_reference|lower %}
+                            {% set favorite_reference_value = app_lang == 'en' ? 'Favorite pick' : 'Coup de cÅ“ur' %}
+                            {% set tripadvisor_reference_value = 'Tripadvisor 2025' %}
+                            {% set selected_reference_value = '' %}
+                            {% if 'tripadvisor' in current_reference_lower %}
+                                {% set selected_reference_value = tripadvisor_reference_value %}
+                            {% elseif 'favorite pick' in current_reference_lower or 'coup de coeur' in current_reference_lower or 'coup de cÅ“ur' in current_reference_lower %}
+                                {% set selected_reference_value = favorite_reference_value %}
+                            {% endif %}
+
+                            <div class="admin-content-reference-picker" data-reference-picker>
+                                <input type="hidden" name="{{ field.name }}" value="{{ selected_reference_value }}" data-reference-value>
+                                <button type="button" class="admin-content-reference-trigger" data-reference-trigger aria-haspopup="listbox" aria-expanded="false">
+                                    <span class="admin-content-reference-trigger-content" data-reference-trigger-content>
+                                        {% if selected_reference_value == favorite_reference_value %}
+                                            <span class="restaurant-reference-badge restaurant-reference-badge-heart">
+                                                <span class="restaurant-reference-heart" aria-hidden="true">&#10084;</span>
+                                                <span>{{ favorite_reference_value }}</span>
+                                            </span>
+                                        {% elseif selected_reference_value == tripadvisor_reference_value %}
+                                            <span class="admin-content-reference-choice-render">
+                                                <span class="restaurant-reference-badge restaurant-reference-badge-tripadvisor">
+                                                    <img src="{{ base_path }}/images/tripadvisor_logo.webp" alt="Tripadvisor Travelers' Choice Awards 2025" class="restaurant-reference-tripadvisor-logo">
+                                                </span>
+                                                <span class="admin-content-reference-choice-label">{{ tripadvisor_reference_value }}</span>
+                                            </span>
+                                        {% else %}
+                                            <span class="admin-content-reference-placeholder">{{ app_lang == 'en' ? 'Select a reference' : 'SÃ©lectionnez une rÃ©fÃ©rence' }}</span>
+                                        {% endif %}
+                                    </span>
+                                </button>
+
+                                <div class="admin-content-reference-menu is-hidden" data-reference-menu role="listbox">
+                                    <button type="button" class="admin-content-reference-option" data-reference-option data-reference-value="">
+                                        <span class="admin-content-reference-choice-render">
+                                            <span class="admin-content-reference-placeholder">{{ app_lang == 'en' ? 'No reference' : 'Aucune rÃ©fÃ©rence' }}</span>
+                                        </span>
+                                    </button>
+
+                                    <button type="button" class="admin-content-reference-option" data-reference-option data-reference-value="{{ favorite_reference_value }}">
+                                        <span class="admin-content-reference-choice-render">
+                                            <span class="restaurant-reference-badge restaurant-reference-badge-heart">
+                                                <span class="restaurant-reference-heart" aria-hidden="true">&#10084;</span>
+                                                <span>{{ favorite_reference_value }}</span>
+                                            </span>
+                                        </span>
+                                    </button>
+
+                                    <button type="button" class="admin-content-reference-option" data-reference-option data-reference-value="{{ tripadvisor_reference_value }}">
+                                        <span class="admin-content-reference-choice-render">
+                                            <span class="restaurant-reference-badge restaurant-reference-badge-tripadvisor">
+                                                <img src="{{ base_path }}/images/tripadvisor_logo.webp" alt="Tripadvisor Travelers' Choice Awards 2025" class="restaurant-reference-tripadvisor-logo">
+                                            </span>
+                                            <span class="admin-content-reference-choice-label">{{ tripadvisor_reference_value }}</span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+                        {% else %}
+                            <input type="text" name="{{ field.name }}" value="{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}" placeholder="{{ field.placeholders[app_lang] }}">
+                        {% endif %}
+                    </label>
+                    {% endif %}
+                {% endfor %}
+
+                <button type="submit" class="contact-btn">
+                    {% if is_editing_item %}
+                        {{ app_lang == 'en' ? 'Save ' ~ item_label.en : 'Enregistrer ' ~ (item_label.fr == 'activitÃ©' ? 'lâ€™activitÃ©' : 'le ' ~ item_label.fr) }}
+                    {% else %}
+                        {{ app_lang == 'en' ? 'Add ' ~ item_label.en : 'Ajouter ' ~ (item_label.fr == 'activitÃ©' ? 'lâ€™activitÃ©' : (item_label.fr == 'excursion' ? 'lâ€™excursion' : 'le ' ~ item_label.fr)) }}
+                    {% endif %}
+                </button>
+            </form>
+        </section>
+
+        <section class="property-admin-preview admin-content-preview">
+            <div class="property-admin-preview-header">
+                <div>
+                    <p class="property-preview-label">{{ app_lang == 'en' ? 'Current sections' : 'Sections actuelles' }}</p>
+                    <h2>{{ categories|length }} {{ app_lang == 'en' ? 'categories' : 'catÃ©gories' }}</h2>
+                </div>
+            </div>
+
+            {% if categories is empty %}
+                <div class="property-empty-state">
+                    <p>{{ app_lang == 'en' ? 'No categories yet.' : 'Aucune catÃ©gorie pour le moment.' }}</p>
+                </div>
+            {% else %}
+                <div class="admin-content-quick-links">
+                    {% for category in categories %}
+                        <a href="#category-section-{{ loop.index0 }}" class="admin-content-quick-link">
+                            {% if category.flag %}
+                                {{ render_category_icon(category.flag) }}
+                            {% endif %}
+                            <span>{{ category.title }}</span>
+                        </a>
+                    {% endfor %}
+                </div>
+                <div class="admin-content-category-list">
+                    {% for category in categories %}
+                        {% set category_index = loop.index0 %}
+                        <article class="admin-content-category-card" id="category-section-{{ category_index }}">
+                            <div class="admin-content-category-header">
+                                <div>
+                                    <div class="admin-content-category-title-row">
+                                        <h3>{{ category.title }}</h3>
+                                        {% if category.flag %}
+                                            {{ render_category_icon(category.flag) }}
+                                        {% endif %}
+                                    </div>
+                                    <p>{{ category.items|length }} {{ app_lang == 'en' ? 'items' : 'Ã©lÃ©ments' }}</p>
+                                </div>
+
+                                <div class="admin-content-card-actions">
+                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" onsubmit="return confirm('{{ app_lang == 'en' ? 'Delete this category?' : 'Supprimer cette catÃ©gorie ?' }}');" data-admin-content-action>
+                                        <input type="hidden" name="editor_language" value="{{ editor_language }}">
+                                        <button type="submit" class="account-menu-button property-delete-button">{{ app_lang == 'en' ? 'Delete' : 'Supprimer' }}</button>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <div class="admin-content-item-list">
+                                {% if category.items is empty %}
+                                    <div class="admin-content-empty-items">
+                                        {{ app_lang == 'en' ? 'No restaurants in this category yet.' : 'Aucun restaurant dans cette catÃ©gorie pour le moment.' }}
+                                    </div>
+                                {% else %}
+                                    {% for item in category.items %}
+                                        {% set item_index = loop.index0 %}
+                                        <article class="admin-content-item-card">
+                                            <div class="admin-content-item-summary">
+                                                <div class="admin-content-item-summary-main">
+                                                    <h4>{{ item.name }}</h4>
+                                                    <p>
+                                                        {% if item.area %}<span>{{ item.area }}</span>{% endif %}
+                                                        {% if item.price %}<span>{{ item.price }}</span>{% endif %}
+                                                        {% if item.reference %}<span>{{ item.reference }}</span>{% endif %}
+                                                    </p>
+                                                </div>
+
+                                                <div class="admin-content-card-actions">
+                                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_item_category={{ category_index }}&edit_item={{ item_index }}" class="header-auth-link">{{ app_lang == 'en' ? 'Edit' : 'Modifier' }}</a>
+
+                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" onsubmit="return confirm('{{ app_lang == 'en' ? 'Delete this item?' : 'Supprimer cet Ã©lÃ©ment ?' }}');" data-admin-content-action>
+                                                        <input type="hidden" name="editor_language" value="{{ editor_language }}">
+                                                        <button type="submit" class="account-menu-button property-delete-button">{{ app_lang == 'en' ? 'Delete' : 'Supprimer' }}</button>
+                                                    </form>
+                                                </div>
+                                            </div>
+
+                                            {% if item.url %}
+                                                <div class="admin-content-item-meta">
+                                                    <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="guide-link">{{ item.url_label ? item.url_label : item.url }}</a>
+                                                </div>
+                                            {% endif %}
+                                        </article>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </section>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const categoryChoice = document.querySelector('[data-category-choice]');
+    const newCategoryFields = document.querySelector('[data-new-category-fields]');
+    const categoryIconPicker = document.querySelector('[data-category-icon-picker]');
+    const categoryIconInput = document.querySelector('[data-category-icon-input]');
+    const categoryIconValue = document.querySelector('[data-category-icon-value]');
+    const categoryIconPreview = document.querySelector('[data-category-icon-preview]');
+    const categoryIconMenu = document.querySelector('[data-category-icon-menu]');
+    const categoryIconEmpty = document.querySelector('[data-category-icon-empty]');
+    const referencePicker = document.querySelector('[data-reference-picker]');
+    const referenceValue = document.querySelector('[data-reference-value]');
+    const referenceTrigger = document.querySelector('[data-reference-trigger]');
+    const referenceTriggerContent = document.querySelector('[data-reference-trigger-content]');
+    const referenceMenu = document.querySelector('[data-reference-menu]');
+    const referenceOptions = Array.from(document.querySelectorAll('[data-reference-option]'));
+    const categoryIconChoices = {
+        {% for choice in category_icon_choices %}
+        '{{ choice.code }}': {
+            label: '{{ choice.name }} ({{ choice.code }})',
+            html: {{ render_category_icon(choice.code)|json_encode|raw }}
+        }{{ not loop.last ? ',' : '' }}
+        {% endfor %}
+    };
+
+    if (!categoryChoice || !newCategoryFields) {
+        return;
+    }
+
+    const syncNewCategoryFields = function () {
+        const showNewCategory = categoryChoice.value === '__new__';
+        newCategoryFields.classList.toggle('is-hidden', !showNewCategory);
+
+        newCategoryFields.querySelectorAll('input').forEach(function (input) {
+            input.disabled = !showNewCategory;
+        });
+    };
+
+    categoryChoice.addEventListener('change', syncNewCategoryFields);
+    syncNewCategoryFields();
+
+    if (!categoryIconInput || !categoryIconPreview) {
+        return;
+    }
+
+    const previewValue = categoryIconPreview.querySelector('.admin-content-icon-preview-value');
+    const iconOptions = Array.from(document.querySelectorAll('.admin-content-icon-option'));
+
+    const syncCategoryIconPreview = function () {
+        const code = categoryIconValue.value.trim().toUpperCase();
+        const choice = categoryIconChoices[code];
+
+        if (!choice) {
+            previewValue.textContent = code === ''
+                ? '{{ app_lang == 'en' ? 'No icon selected yet' : 'Aucune icÃ´ne sÃ©lectionnÃ©e pour le moment' }}'
+                : '{{ app_lang == 'en' ? 'Unknown code' : 'Code inconnu' }}';
+            return;
+        }
+
+        previewValue.innerHTML = choice.html + '<span>' + choice.label + '</span>';
+    };
+
+    const closeIconMenu = function () {
+        categoryIconMenu.classList.add('is-hidden');
+    };
+
+    const filterIconOptions = function () {
+        const query = categoryIconInput.value.trim().toLowerCase();
+        let visibleCount = 0;
+
+        iconOptions.forEach(function (option) {
+            const code = option.dataset.iconCode.toLowerCase();
+            const label = option.dataset.iconLabel.toLowerCase();
+            const matches = query === '' || code.includes(query) || label.includes(query);
+            option.classList.toggle('is-hidden', !matches);
+
+            if (matches) {
+                visibleCount += 1;
+            }
+        });
+
+        categoryIconEmpty.classList.toggle('is-hidden', visibleCount !== 0);
+    };
+
+    const openIconMenu = function () {
+        categoryIconMenu.classList.remove('is-hidden');
+        filterIconOptions();
+    };
+
+    iconOptions.forEach(function (option) {
+        option.addEventListener('click', function () {
+            const code = option.dataset.iconCode;
+            const label = option.dataset.iconLabel;
+            const choice = categoryIconChoices[code];
+
+            categoryIconValue.value = code;
+            categoryIconInput.value = choice ? (label + ' (' + code + ')') : code;
+            syncCategoryIconPreview();
+            closeIconMenu();
+        });
+    });
+
+    categoryIconInput.addEventListener('focus', openIconMenu);
+    categoryIconInput.addEventListener('input', function () {
+        categoryIconValue.value = '';
+        openIconMenu();
+        syncCategoryIconPreview();
+    });
+    document.addEventListener('click', function (event) {
+        if (!categoryIconPicker.contains(event.target)) {
+            closeIconMenu();
+        }
+    });
+
+    syncCategoryIconPreview();
+
+    if (referencePicker && referenceValue && referenceTrigger && referenceTriggerContent && referenceMenu) {
+        const closeReferenceMenu = function () {
+            referenceMenu.classList.add('is-hidden');
+            referenceTrigger.setAttribute('aria-expanded', 'false');
+        };
+
+        const openReferenceMenu = function () {
+            referenceMenu.classList.remove('is-hidden');
+            referenceTrigger.setAttribute('aria-expanded', 'true');
+        };
+
+        referenceTrigger.addEventListener('click', function () {
+            if (referenceMenu.classList.contains('is-hidden')) {
+                openReferenceMenu();
+            } else {
+                closeReferenceMenu();
+            }
+        });
+
+        referenceOptions.forEach(function (option) {
+            option.addEventListener('click', function () {
+                referenceValue.value = option.dataset.referenceValue || '';
+                referenceTriggerContent.innerHTML = option.querySelector('.admin-content-reference-choice-render').innerHTML;
+                closeReferenceMenu();
+            });
+        });
+
+        document.addEventListener('click', function (event) {
+            if (!referencePicker.contains(event.target)) {
+                closeReferenceMenu();
+            }
+        });
+    }
+});
+</script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const submitAdminContentAction = function (form, loadingLabel) {
+        const submitButton = form.querySelector('button[type="submit"]');
+        const originalLabel = submitButton ? submitButton.textContent : '';
+
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = loadingLabel;
+        }
+
+        fetch(form.action, {
+            method: 'POST',
+            body: new FormData(form),
+            credentials: 'same-origin',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(function (response) {
+                const nextUrl = response.url || window.location.href;
+
+                return fetch(nextUrl, {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    cache: 'no-store',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                });
+            })
+            .then(function (response) {
+                return response.text();
+            })
+            .then(function (html) {
+                document.open();
+                document.write(html);
+                document.close();
+            })
+            .catch(function () {
+                window.location.reload();
+            })
+            .finally(function () {
+                if (submitButton && document.body.contains(submitButton)) {
+                    submitButton.disabled = false;
+                    submitButton.textContent = originalLabel;
+                }
+            });
+    };
+
+    const bindAdminContentActions = function () {
+        const form = document.querySelector('[data-admin-content-form]');
+
+        if (form && !form.dataset.ajaxBound) {
+            form.dataset.ajaxBound = 'true';
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                submitAdminContentAction(form, '{{ app_lang == 'en' ? 'Saving...' : 'Enregistrement...' }}');
+            });
+        }
+
+        document.querySelectorAll('[data-admin-content-action]').forEach(function (actionForm) {
+            if (actionForm.dataset.ajaxBound) {
+                return;
+            }
+
+            actionForm.dataset.ajaxBound = 'true';
+            actionForm.addEventListener('submit', function (event) {
+                event.preventDefault();
+                submitAdminContentAction(actionForm, '{{ app_lang == 'en' ? 'Deleting...' : 'Suppression...' }}');
+            });
+        });
+    };
+
+    bindAdminContentActions();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,118 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ hero_text }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ title_text }}</h1>
+    <p>{{ intro_text }}</p>
+
+    <div class="residency-note">
+        <h2>{{ section_title }}</h2>
+        <p>{{ section_copy }}</p>
+    </div>
+
+    <section class="home-toc-shell restaurant-toc-shell">
+        <div class="home-toc-card">
+            <div class="home-toc-copy">
+                <p class="home-toc-eyebrow">{{ toc_eyebrow }}</p>
+                <h2>{{ toc_title }}</h2>
+                <p>{{ toc_copy }}</p>
+            </div>
+            <div class="home-toc-grid">
+                {% for category in guide_categories %}
+                    <a href="#guide-category-{{ loop.index }}" class="home-toc-link" data-guide-toc-target="guide-category-{{ loop.index }}">
+                        <span class="home-toc-link-title">{{ category.title }}</span>
+                        <span class="home-toc-link-copy">{{ category.items|length }} {{ app_lang == 'en' ? 'ideas' : 'idÃ©es' }}</span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <div class="guide-category-list">
+        {% for category in guide_categories %}
+            <section class="guide-category" id="guide-category-{{ loop.index }}">
+                <div class="guide-category-header">
+                    <h2>{{ category.title }}</h2>
+                    <span>{{ category.items|length }} {{ app_lang == 'en' ? 'ideas' : 'idÃ©es' }}</span>
+                </div>
+
+                <div class="guide-grid">
+                    {% for item in category.items %}
+                        <article class="guide-card">
+                            <div class="guide-card-top">
+                                <h3>{{ item.name }}</h3>
+                                {% if item.video_url %}
+                                    <a
+                                        href="{{ item.video_url }}"
+                                        class="guide-video-link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        aria-label="{{ app_lang == 'en' ? 'Watch video' : 'Voir la video' }}"
+                                        title="{{ app_lang == 'en' ? 'Watch video' : 'Voir la video' }}"
+                                    >
+                                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                            <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z"/>
+                                        </svg>
+                                    </a>
+                                {% endif %}
+                            </div>
+
+                            {% if item.area %}
+                                <p class="guide-area">
+                                    <a
+                                        href="https://www.google.com/maps/search/?api=1&query={{ (item.name ~ ' ' ~ item.area ~ ' Playa del Carmen')|url_encode }}"
+                                        class="restaurant-area-link"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        {{ app_lang == 'en' ? 'For the address, click here' : 'Pour l\'adresse, cliquez ici' }}
+                                    </a>
+                                </p>
+                            {% endif %}
+
+                            {% if item.note %}
+                                <p class="guide-note">{{ item.note }}</p>
+                            {% endif %}
+
+                            {% if item.url %}
+                                <a href="{{ item.url starts with '/' ? base_path ~ item.url : item.url }}" class="guide-link" target="_blank" rel="noopener noreferrer">{{ item.url_label }}</a>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+
+    <div class="page-home-actions">
+        <a href="{{ base_path }}/contact?lang={{ app_lang }}&project={{ title_text|url_encode }}" class="info-request-link">{{ contact_cta }}</a>
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tocLinks = document.querySelectorAll('[data-guide-toc-target]');
+
+    tocLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            const targetId = link.getAttribute('data-guide-toc-target');
+            const target = targetId ? document.getElementById(targetId) : null;
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+});
+</script>
+{% endblock %}

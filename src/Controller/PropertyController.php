@@ -40,22 +40,6 @@ class PropertyController
         return $this->renderAdminProperties($response, $editingProperty);
     }
 
-    public function publicIndex(Request $request, Response $response): Response
-    {
-        $queryParams = $request->getQueryParams();
-        $mode = strtolower((string) ($queryParams['mode'] ?? 'all'));
-
-        if (!in_array($mode, ['all', 'achat', 'location'], true)) {
-            $mode = 'all';
-        }
-
-        return $this->twig->render($response, 'properties.html.twig', [
-            'page_title_key' => 'properties.page_title',
-            'properties' => $this->propertyModel->findAllByMode($mode),
-            'selected_mode' => $mode,
-        ]);
-    }
-
     public function show(Request $request, Response $response, array $args): Response
     {
         $id = (int) ($args['id'] ?? 0);

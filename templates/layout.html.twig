@@ -22,9 +22,6 @@
             <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
             <a href="{{ base_path }}/about">{{ trans('nav.about') }}</a>
             <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
-            {% if is_admin_authenticated %}
-                <a href="{{ base_path }}/admin/properties">Admin</a>
-            {% endif %}
         </nav>
 
         <div class="header-right">
@@ -35,18 +32,36 @@
             {% endif %}
 
             <div class="header-auth-actions">
-                {% if is_user_authenticated or is_admin_authenticated %}
+                {% if is_admin_authenticated %}
                     <details class="account-menu">
-                        <summary class="user-chip">
-                            {{ trans('auth.hello') }}
-                            {{ is_admin_authenticated ? admin_username : user_name }}
+                        <summary class="header-auth-link admin-shortcuts-trigger">
+                            {{ app_lang == 'en' ? 'Manage content' : 'Gérer le contenu' }}
                         </summary>
 
                         <div class="account-menu-panel">
-                            {% if is_admin_authenticated %}
-                                <a href="{{ base_path }}/admin/properties" class="account-menu-link">{{ trans('nav.admin_mode') }}</a>
-                            {% endif %}
+                            <a href="{{ base_path }}/admin/properties?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Properties' : 'Proprietes' }}</a>
+                            <a href="{{ base_path }}/admin/content/restaurants?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Restaurants' : 'Restaurants' }}</a>
+                            <a href="{{ base_path }}/admin/content/excursions?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Excursions' : 'Excursions' }}</a>
+                            <a href="{{ base_path }}/admin/content/playa_guide?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Things to do' : 'Quoi faire à Playa' }}</a>
+                        </div>
+                    </details>
+                {% endif %}
 
+                {% if is_user_authenticated or is_admin_authenticated %}
+                    <details class="account-menu">
+                        <summary class="user-chip">
+                            <span class="user-chip-label">
+                                {{ trans('auth.hello') }}
+                                {{ is_admin_authenticated ? admin_username : user_name }}
+                            </span>
+                            <span class="user-chip-toggle" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" focusable="false">
+                                    <path d="M4 6.5 8 10.5 12 6.5" />
+                                </svg>
+                            </span>
+                        </summary>
+
+                        <div class="account-menu-panel">
                             <a href="{{ is_admin_authenticated ? base_path ~ '/admin/profile' : base_path ~ '/profile' }}" class="account-menu-link">{{ trans('nav.edit_profile') }}</a>
 
                             <form method="POST" action="{{ base_path }}/account/logout" class="account-menu-form">

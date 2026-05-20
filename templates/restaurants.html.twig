@@ -47,6 +47,8 @@
                             <img src="https://flagcdn.com/w40/th.png" alt="Thailande" class="restaurant-category-flag">
                         {% elseif category.flag == 'CA-QC' %}
                             <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Flag_of_Quebec.svg" alt="Quebec" class="restaurant-category-flag">
+                        {% elseif category.flag == 'CA' %}
+                            <img src="https://flagcdn.com/w40/ca.png" alt="Canada" class="restaurant-category-flag">
                         {% elseif category.flag == 'MX' %}
                             <img src="https://flagcdn.com/w40/mx.png" alt="Mexique" class="restaurant-category-flag">
                         {% elseif category.flag == 'JM' %}
@@ -63,6 +65,9 @@
                             <span class="restaurant-category-icon" aria-hidden="true">&#10024;</span>
                         {% endif %}
                         {{ category.title }}
+                        {% if category.flag == 'CA' %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Flag_of_Quebec.svg" alt="Quebec" class="restaurant-category-flag" style="margin-left: 6px;">
+                        {% endif %}
                     </h2>
                     <span>{{ category.items|length }} {{ app_lang == 'en' ? 'spots' : 'adresses' }}</span>
                 </div>
@@ -84,16 +89,45 @@
                                     target="_blank"
                                     rel="noopener noreferrer"
                                 >
-                                    {{ restaurant.area }}
+                                    {{ app_lang == 'en' ? 'For the address, click here' : 'Pour l\'adresse, cliquez ici' }}
                                 </a>
                             </p>
 
                             {% if restaurant.reference %}
-                                <p class="restaurant-reference">{{ restaurant.reference }}</p>
+                                {% set reference_lower = restaurant.reference|lower %}
+                                {% set has_tripadvisor = 'tripadvisor' in reference_lower %}
+                                {% set has_coup_de_coeur = 'coup de coeur' in reference_lower or 'coup de cœur' in reference_lower %}
+                                {% set has_favorite_pick = 'favorite pick' in reference_lower %}
+
+                                <div class="restaurant-reference" aria-label="{{ restaurant.reference }}">
+                                    {% if has_coup_de_coeur %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-heart">
+                                            <span class="restaurant-reference-heart" aria-hidden="true">&#10084;</span>
+                                            <span>Coup de coeur</span>
+                                        </span>
+                                    {% elseif has_favorite_pick %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-heart">
+                                            <span class="restaurant-reference-heart" aria-hidden="true">&#10084;</span>
+                                            <span>Favorite pick</span>
+                                        </span>
+                                    {% elseif not has_tripadvisor %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-text">{{ restaurant.reference }}</span>
+                                    {% endif %}
+
+                                    {% if has_tripadvisor %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-tripadvisor">
+                                            <img
+                                                src="{{ base_path }}/images/tripadvisor_logo.webp"
+                                                alt="Tripadvisor Travelers' Choice Awards 2025"
+                                                class="restaurant-reference-tripadvisor-logo"
+                                            >
+                                        </span>
+                                    {% endif %}
+                                </div>
                             {% endif %}
 
                             {% if restaurant.url %}
-                                <a href="{{ restaurant.url }}" class="restaurant-link" target="_blank" rel="noopener noreferrer">{{ restaurant.url_label }}</a>
+                                <a href="{{ restaurant.url starts with '/' ? base_path ~ restaurant.url : restaurant.url }}" class="restaurant-link" target="_blank" rel="noopener noreferrer">{{ restaurant.url_label }}</a>
                             {% endif %}
                         </article>
                     {% endfor %}

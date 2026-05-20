@@ -34,6 +34,14 @@
                 <span class="home-toc-link-title">{{ trans('home.toc_restaurants_title') }}</span>
                 <span class="home-toc-link-copy">{{ trans('home.toc_restaurants_copy') }}</span>
             </a>
+            <a href="#home-excursions" class="home-toc-link" data-home-toc-target="home-excursions">
+                <span class="home-toc-link-title">{{ trans('home.toc_excursions_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_excursions_copy') }}</span>
+            </a>
+            <a href="#home-playa-guide" class="home-toc-link" data-home-toc-target="home-playa-guide">
+                <span class="home-toc-link-title">{{ trans('home.toc_playa_guide_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_playa_guide_copy') }}</span>
+            </a>
         </div>
     </div>
 </section>
@@ -129,6 +137,26 @@
         <p class="info-request-copy">{{ trans('restaurants.copy') }}</p>
         <div class="info-request-actions">
             <a href="{{ base_path }}/restaurants-a-essayer?lang={{ app_lang }}" class="info-request-link">{{ trans('restaurants.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-excursions">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('excursions.title') }}</h2>
+        <p class="info-request-copy">{{ trans('excursions.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/excursions?lang={{ app_lang }}" class="info-request-link">{{ trans('excursions.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-playa-guide">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('playa_guide.title') }}</h2>
+        <p class="info-request-copy">{{ trans('playa_guide.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/quoi-faire-a-playa?lang={{ app_lang }}" class="info-request-link">{{ trans('playa_guide.home_cta') }}</a>
         </div>
     </div>
 </section>

@@ -52,12 +52,16 @@ class TodoController
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
+        $categories = $this->localizeCategoryTitles(
+            $this->todoModel->findAllByLanguage($language),
+            $language
+        );
 
         return $this->twig->render($response, 'admin/todo.html.twig', [
             'page_title' => $this->sectionConfig()['page_title'][$language],
             'section_config' => $this->sectionConfig(),
             'active_section' => 'playa_guide',
-            'categories' => $this->todoModel->findAllByLanguage($language),
+            'categories' => $categories,
             'editor_language' => $language,
             'editing_item' => $editingCategoryIndex !== null && $editingItemIndex !== null
                 ? $this->todoModel->findItemByIndexes($language, $editingCategoryIndex, $editingItemIndex)

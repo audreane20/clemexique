@@ -824,6 +824,54 @@ body {
     line-height: 1.5;
 }
 
+.property-file-input-shell {
+    position: relative;
+}
+
+.property-file-input-native {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 2;
+}
+
+.property-file-input-display {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #e5edf2;
+    border-radius: 14px;
+    background: #ffffff;
+    box-sizing: border-box;
+    min-height: 58px;
+}
+
+.property-file-input-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 14px;
+    border: 1px solid rgba(11, 53, 88, 0.2);
+    border-radius: 10px;
+    background: rgba(248, 251, 255, 0.96);
+    color: var(--navy);
+    font-size: 15px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.property-file-input-text {
+    color: #52606d;
+    font-size: 15px;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .property-upload-progress {
     display: grid;
     gap: 10px;
@@ -957,6 +1005,11 @@ body {
 .property-form select:focus,
 .property-form textarea:focus {
     outline: none;
+    border-color: var(--turquoise);
+    box-shadow: 0 0 0 4px rgba(31, 163, 179, 0.12);
+}
+
+.property-file-input-shell:focus-within .property-file-input-display {
     border-color: var(--turquoise);
     box-shadow: 0 0 0 4px rgba(31, 163, 179, 0.12);
 }

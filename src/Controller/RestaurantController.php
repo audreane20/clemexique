@@ -43,12 +43,16 @@ class RestaurantController
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
+        $categories = $this->localizeCategoryTitles(
+            $this->restaurantModel->findAllByLanguage($language),
+            $language
+        );
 
         return $this->twig->render($response, 'admin/restaurants.html.twig', [
             'page_title' => $this->sectionConfig()['page_title'][$language],
             'section_config' => $this->sectionConfig(),
             'active_section' => 'restaurants',
-            'categories' => $this->restaurantModel->findAllByLanguage($language),
+            'categories' => $categories,
             'editor_language' => $language,
             'editing_item' => $editingCategoryIndex !== null && $editingItemIndex !== null
                 ? $this->restaurantModel->findItemByIndexes($language, $editingCategoryIndex, $editingItemIndex)

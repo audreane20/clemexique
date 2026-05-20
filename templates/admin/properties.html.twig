@@ -70,7 +70,13 @@
                 <input type="hidden" name="upload_progress_token" value="" data-property-upload-token>
                 <label>
                     {{ trans('properties.pictures') }}
-                    <input type="file" name="image_files[]" accept="image/*,video/mp4,video/webm,video/quicktime,.zip,application/zip" multiple {{ editing_property ? '' : 'required' }} data-property-file-input>
+                    <div class="property-file-input-shell">
+                        <input type="file" name="image_files[]" accept="image/*,video/mp4,video/webm,video/quicktime,.zip,application/zip" multiple {{ editing_property ? '' : 'required' }} data-property-file-input class="property-file-input-native">
+                        <div class="property-file-input-display" aria-hidden="true">
+                            <span class="property-file-input-button">{{ trans('properties.file_picker_button') }}</span>
+                            <span class="property-file-input-text" data-property-file-input-text>{{ trans('properties.no_files_selected') }}</span>
+                        </div>
+                    </div>
                     <small class="property-field-help">{{ trans('properties.pictures_help') }}</small>
                 </label>
 
@@ -241,6 +247,7 @@
             }
 
             const fileInput = form.querySelector('[data-property-file-input]');
+            const fileInputText = form.querySelector('[data-property-file-input-text]');
             const progressShell = document.querySelector('[data-property-upload-progress]');
             const progressFill = document.querySelector('[data-property-upload-progress-fill]');
             const progressText = document.querySelector('[data-property-upload-progress-text]');
@@ -251,12 +258,35 @@
             const progressTokenInput = form.querySelector('[data-property-upload-token]');
             const submitButton = form.querySelector('button[type="submit"]');
 
-            if (!fileInput || !progressShell || !progressFill || !progressText || !processingStage || !processingFill || !processingText || !processingLabel || !progressTokenInput || !submitButton) {
+            if (!fileInput || !fileInputText || !progressShell || !progressFill || !progressText || !processingStage || !processingFill || !processingText || !processingLabel || !progressTokenInput || !submitButton) {
                 return;
             }
 
+            const noFilesSelectedLabel = {{ trans('properties.no_files_selected')|json_encode|raw }};
+            const oneFileSelectedLabel = {{ trans('properties.one_file_selected')|json_encode|raw }};
+            const multipleFilesSelectedLabel = {{ trans('properties.multiple_files_selected')|json_encode|raw }};
+
+            const updateFileInputText = () => {
+                const count = fileInput.files ? fileInput.files.length : 0;
+
+                if (count <= 0) {
+                    fileInputText.textContent = noFilesSelectedLabel;
+                    return;
+                }
+
+                if (count === 1) {
+                    fileInputText.textContent = oneFileSelectedLabel;
+                    return;
+                }
+
+                fileInputText.textContent = multipleFilesSelectedLabel.replace('%d', String(count));
+            };
+
             let pollTimer = null;
             let hasStartedProcessingPoll = false;
+
+            fileInput.addEventListener('change', updateFileInputText);
+            updateFileInputText();
 
             const stopPolling = () => {
                 if (pollTimer !== null) {

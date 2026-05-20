@@ -13,10 +13,26 @@
 {% if not (hide_site_header ?? false) %}
 <header class="site-header">
     <div class="header-container">
+        <div class="header-left">
+            <a href="{{ base_path }}/" class="logo">
+                <img src="{{ base_path }}/images/logo_t.png" alt="Riviera Maya Logo">
+            </a>
 
-        <a href="{{ base_path }}/" class="logo">
-            <img src="{{ base_path }}/images/logo_t.png" alt="Riviera Maya Logo">
-        </a>
+            {% if is_admin_authenticated %}
+                <details class="account-menu header-admin-menu">
+                    <summary class="header-auth-link admin-shortcuts-trigger">
+                        {{ app_lang == 'fr' ? 'Gerer le contenu' : (app_lang == 'es' ? 'Gestionar contenido' : 'Manage content') }}
+                    </summary>
+
+                    <div class="account-menu-panel">
+                        <a href="{{ base_path }}/admin/properties?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'fr' ? 'Proprietes' : (app_lang == 'es' ? 'Propiedades' : 'Properties') }}</a>
+                        <a href="{{ base_path }}/admin/content/restaurants?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'es' ? 'Restaurantes' : 'Restaurants' }}</a>
+                        <a href="{{ base_path }}/admin/content/excursions?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'es' ? 'Excursiones' : 'Excursions' }}</a>
+                        <a href="{{ base_path }}/admin/content/playa_guide?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'fr' ? 'Quoi faire a Playa' : (app_lang == 'es' ? 'Que hacer en Playa' : 'Things to do') }}</a>
+                    </div>
+                </details>
+            {% endif %}
+        </div>
 
         <nav class="main-nav">
             <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
@@ -32,21 +48,6 @@
             {% endif %}
 
             <div class="header-auth-actions">
-                {% if is_admin_authenticated %}
-                    <details class="account-menu">
-                        <summary class="header-auth-link admin-shortcuts-trigger">
-                            {{ app_lang == 'en' ? 'Manage content' : 'Gérer le contenu' }}
-                        </summary>
-
-                        <div class="account-menu-panel">
-                            <a href="{{ base_path }}/admin/properties?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Properties' : 'Proprietes' }}</a>
-                            <a href="{{ base_path }}/admin/content/restaurants?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Restaurants' : 'Restaurants' }}</a>
-                            <a href="{{ base_path }}/admin/content/excursions?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Excursions' : 'Excursions' }}</a>
-                            <a href="{{ base_path }}/admin/content/playa_guide?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'en' ? 'Things to do' : 'Quoi faire à Playa' }}</a>
-                        </div>
-                    </details>
-                {% endif %}
-
                 {% if is_user_authenticated or is_admin_authenticated %}
                     <details class="account-menu">
                         <summary class="user-chip">
@@ -75,6 +76,8 @@
             <div class="header-lang-group">
                 <div class="lang-switch">
                     <a href="?lang=en" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
+                    <span class="lang-divider">|</span>
+                    <a href="?lang=es" class="{{ app_lang == 'es' ? 'active' : '' }}">ES</a>
                     <span class="lang-divider">|</span>
                     <a href="?lang=fr" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
                 </div>

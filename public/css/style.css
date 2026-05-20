@@ -41,10 +41,18 @@ body {
     column-gap: 24px;
 }
 
+.header-left {
+    grid-area: logo;
+    display: flex;
+    align-items: center;
+    justify-self: start;
+    gap: 20px;
+    min-width: 0;
+}
+
 /* LOGO */
 .logo {
-    grid-area: logo;
-    justify-self: start;
+    flex: 0 0 auto;
 }
 
 .logo img {
@@ -84,6 +92,10 @@ body {
     align-items: center;
     justify-self: end;
     gap: 14px;
+}
+
+.header-admin-menu {
+    flex: 0 0 auto;
 }
 
 /* LANGUAGE SWITCH */
@@ -3479,6 +3491,13 @@ body {
         display: flex;
         flex-direction: column;
         gap: 10px;
+    }
+
+    .header-left {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 12px;
     }
 
     .main-nav {

@@ -2,6 +2,7 @@
 
 namespace App\Model;
 
+use App\Helper\Locale;
 use InvalidArgumentException;
 use PDO;
 
@@ -322,7 +323,7 @@ class RestaurantModel
 
     private function normalizeLanguage(string $language): string
     {
-        return in_array($language, ['fr', 'en'], true) ? $language : 'fr';
+        return Locale::normalize($language);
     }
 
     private function labelFromUrl(string $url): string
@@ -381,3 +382,4 @@ class RestaurantModel
         return $messages[$key][$this->normalizeLanguage($language)] ?? $messages[$key]['fr'] ?? $key;
     }
 }
+

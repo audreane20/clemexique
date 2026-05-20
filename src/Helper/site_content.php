@@ -1,5 +1,7 @@
 <?php
 
+use App\Helper\Locale;
+
 function siteContentFilePath(): string
 {
     return dirname(__DIR__, 2) . '/data/site_content.php';
@@ -7,20 +9,17 @@ function siteContentFilePath(): string
 
 function siteContentEmptyState(): array
 {
-    return [
-        'restaurants' => [
-            'en' => [],
-            'fr' => [],
-        ],
-        'excursions' => [
-            'en' => [],
-            'fr' => [],
-        ],
-        'playa_guide' => [
-            'en' => [],
-            'fr' => [],
-        ],
-    ];
+    $empty = [];
+
+    foreach (['restaurants', 'excursions', 'playa_guide'] as $section) {
+        $empty[$section] = [];
+
+        foreach (Locale::all() as $language) {
+            $empty[$section][$language] = [];
+        }
+    }
+
+    return $empty;
 }
 
 function siteContentTableMap(): array
@@ -76,6 +75,7 @@ function setSiteContentPdo(PDO $pdo): void
     $GLOBALS['site_content_pdo'] = $pdo;
     ensureSiteContentTables($pdo);
     migrateLegacySiteContentFileToDatabase($pdo);
+    seedMissingSiteContentLanguage($pdo, 'es', 'en');
 }
 
 function siteContentPdo(): ?PDO
@@ -261,7 +261,7 @@ function saveSiteContentToDatabase(PDO $pdo, array $content): void
                  VALUES (:category_id, :' . implode(', :', $itemColumns) . ', :sort_order)'
             );
 
-            foreach (['en', 'fr'] as $language) {
+            foreach (Locale::all() as $language) {
                 foreach (($content[$section][$language] ?? []) as $categoryOrder => $category) {
                     $categoryInsert->execute([
                         'language_code' => $language,
@@ -285,6 +285,96 @@ function saveSiteContentToDatabase(PDO $pdo, array $content): void
 
                         $itemInsert->execute($payload);
                     }
+                }
+            }
+        }
+
+        $pdo->commit();
+    } catch (\Throwable $throwable) {
+        if ($pdo->inTransaction()) {
+            $pdo->rollBack();
+        }
+
+        throw $throwable;
+    }
+}
+
+function seedMissingSiteContentLanguage(PDO $pdo, string $targetLanguage, string $sourceLanguage): void
+{
+    $targetLanguage = Locale::normalize($targetLanguage);
+    $sourceLanguage = Locale::normalize($sourceLanguage);
+
+    if ($targetLanguage === $sourceLanguage) {
+        return;
+    }
+
+    $pdo->beginTransaction();
+
+    try {
+        foreach (siteContentTableMap() as $config) {
+            $countStmt = $pdo->prepare(
+                'SELECT COUNT(*) FROM ' . $config['categories_table'] . ' WHERE language_code = :language_code'
+            );
+            $countStmt->execute(['language_code' => $targetLanguage]);
+
+            if ((int) $countStmt->fetchColumn() > 0) {
+                continue;
+            }
+
+            $sourceCategoriesStmt = $pdo->prepare(
+                'SELECT id, ' . $config['category_title_column'] . ' AS title, ' . $config['category_icon_column'] . ' AS icon_code, sort_order
+                 FROM ' . $config['categories_table'] . '
+                 WHERE language_code = :language_code
+                 ORDER BY sort_order ASC, id ASC'
+            );
+            $sourceCategoriesStmt->execute(['language_code' => $sourceLanguage]);
+            $sourceCategories = $sourceCategoriesStmt->fetchAll(PDO::FETCH_ASSOC);
+
+            if ($sourceCategories === []) {
+                continue;
+            }
+
+            $categoryInsert = $pdo->prepare(
+                'INSERT INTO ' . $config['categories_table'] . ' (language_code, ' . $config['category_title_column'] . ', ' . $config['category_icon_column'] . ', sort_order)
+                 VALUES (:language_code, :title, :icon_code, :sort_order)'
+            );
+
+            $itemColumns = array_values($config['item_column_map']);
+            $itemInsert = $pdo->prepare(
+                'INSERT INTO ' . $config['items_table'] . ' (category_id, ' . implode(', ', $itemColumns) . ', sort_order)
+                 VALUES (:category_id, :' . implode(', :', $itemColumns) . ', :sort_order)'
+            );
+
+            foreach ($sourceCategories as $categoryRow) {
+                $categoryInsert->execute([
+                    'language_code' => $targetLanguage,
+                    'title' => $categoryRow['title'],
+                    'icon_code' => $categoryRow['icon_code'],
+                    'sort_order' => (int) $categoryRow['sort_order'],
+                ]);
+
+                $newCategoryId = (int) $pdo->lastInsertId();
+                $itemRowsStmt = $pdo->prepare(
+                    'SELECT ' . implode(', ', $itemColumns) . ', sort_order
+                     FROM ' . $config['items_table'] . '
+                     WHERE category_id = :category_id
+                     ORDER BY sort_order ASC, id ASC'
+                );
+                $itemRowsStmt->execute([
+                    'category_id' => (int) $categoryRow['id'],
+                ]);
+
+                foreach ($itemRowsStmt->fetchAll(PDO::FETCH_ASSOC) as $itemRow) {
+                    $payload = [
+                        'category_id' => $newCategoryId,
+                        'sort_order' => (int) $itemRow['sort_order'],
+                    ];
+
+                    foreach ($itemColumns as $columnName) {
+                        $payload[$columnName] = $itemRow[$columnName] ?? null;
+                    }
+
+                    $itemInsert->execute($payload);
                 }
             }
         }

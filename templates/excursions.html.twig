@@ -25,7 +25,12 @@
                 {% for category in guide_categories %}
                     <a href="#guide-category-{{ loop.index }}" class="home-toc-link" data-guide-toc-target="guide-category-{{ loop.index }}">
                         <span class="home-toc-link-title">{{ category.title }}</span>
-                        <span class="home-toc-link-copy">{{ category.items|length }} {{ app_lang == 'en' ? 'ideas' : 'idÃ©es' }}</span>
+                        <span class="home-toc-link-copy">
+                            {{ category.items|length }}
+                            {{ app_lang == 'fr'
+                                ? 'idees'
+                                : (category.items|length == 1 ? 'idea' : 'ideas') }}
+                        </span>
                     </a>
                 {% endfor %}
             </div>
@@ -37,7 +42,12 @@
             <section class="guide-category" id="guide-category-{{ loop.index }}">
                 <div class="guide-category-header">
                     <h2>{{ category.title }}</h2>
-                    <span>{{ category.items|length }} {{ app_lang == 'en' ? 'ideas' : 'idÃ©es' }}</span>
+                    <span>
+                        {{ category.items|length }}
+                        {{ app_lang == 'fr'
+                            ? 'idees'
+                            : (category.items|length == 1 ? 'idea' : 'ideas') }}
+                    </span>
                 </div>
 
                 <div class="guide-grid">
@@ -51,8 +61,8 @@
                                         class="guide-video-link"
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        aria-label="{{ app_lang == 'en' ? 'Watch video' : 'Voir la video' }}"
-                                        title="{{ app_lang == 'en' ? 'Watch video' : 'Voir la video' }}"
+                                        aria-label="{{ app_lang == 'fr' ? 'Voir la video' : (app_lang == 'es' ? 'Ver video' : 'Watch video') }}"
+                                        title="{{ app_lang == 'fr' ? 'Voir la video' : (app_lang == 'es' ? 'Ver video' : 'Watch video') }}"
                                     >
                                         <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
                                             <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z"/>
@@ -69,7 +79,7 @@
                                         target="_blank"
                                         rel="noopener noreferrer"
                                     >
-                                        {{ app_lang == 'en' ? 'For the address, click here' : 'Pour l\'adresse, cliquez ici' }}
+                                        {{ app_lang == 'fr' ? 'Pour l\'adresse, cliquez ici' : (app_lang == 'es' ? 'Para la direccion, haz clic aqui' : 'For the address, click here') }}
                                     </a>
                                 </p>
                             {% endif %}
@@ -116,3 +126,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 {% endblock %}
+

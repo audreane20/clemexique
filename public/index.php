@@ -4,6 +4,7 @@ use App\Controller\ExcursionController;
 use App\Controller\PropertyController;
 use App\Controller\RestaurantController;
 use App\Controller\TodoController;
+use App\Helper\Locale;
 use App\Helper\Translator;
 use App\Model\ExcursionModel;
 use App\Model\PropertyModel;
@@ -27,8 +28,7 @@ if (class_exists(\Dotenv\Dotenv::class) && file_exists(__DIR__ . '/../.env')) {
 
 session_start();
 
-$lang = $_GET['lang'] ?? $_SESSION['lang'] ?? 'fr';
-$lang = in_array($lang, ['fr', 'en'], true) ? $lang : 'fr';
+$lang = Locale::normalize($_GET['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
 $_SESSION['lang'] = $lang;
 
 $app = AppFactory::create();
@@ -220,7 +220,7 @@ $renderInquiryForm = function ($response, array $params = []) use ($twig, $trans
 };
 
 $buildLocalizedPath = function (string $path, string $language) use ($basePath): string {
-    $language = in_array($language, ['fr', 'en'], true) ? $language : 'fr';
+    $language = Locale::normalize($language);
 
     return $basePath . $path . '?lang=' . $language;
 };
@@ -304,10 +304,7 @@ $configureMailer = function () {
 };
 
 $formatPreferredLanguageForMail = function (string $language): string {
-    return match (strtolower($language)) {
-        'en' => 'Anglais',
-        default => 'Français',
-    };
+    return Locale::preferredLanguageLabel($language);
 };
 
 $app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {

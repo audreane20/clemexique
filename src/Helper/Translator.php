@@ -8,10 +8,11 @@ class Translator
 
     public function __construct(string $lang)
     {
-        $file = __DIR__ . '/../translations/messages.' . $lang . '.php';
+        $language = Locale::normalize($lang);
+        $file = __DIR__ . '/../translations/messages.' . $language . '.php';
 
         if (!file_exists($file)) {
-            $file = __DIR__ . '/../translations/messages.fr.php';
+            $file = __DIR__ . '/../translations/messages.' . Locale::DEFAULT . '.php';
         }
 
         if (file_exists($file)) {

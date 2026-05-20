@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Helper\Locale;
 use App\Helper\Translator;
 use App\Model\TodoModel;
 use Psr\Http\Message\ResponseInterface as Response;
@@ -24,6 +25,10 @@ class TodoController
     public function publicIndex(Request $request, Response $response): Response
     {
         $language = $this->currentLanguage($request);
+        $categories = $this->localizeCategoryTitles(
+            $this->todoModel->findAllByLanguage($language),
+            $language
+        );
 
         return $this->twig->render($response, 'todo.html.twig', [
             'page_title' => $this->translator->trans('playa_guide.page_title'),
@@ -36,7 +41,7 @@ class TodoController
             'toc_title' => $this->translator->trans('playa_guide.toc_title'),
             'toc_copy' => $this->translator->trans('playa_guide.toc_copy'),
             'contact_cta' => $this->translator->trans('playa_guide.contact_cta'),
-            'guide_categories' => $this->todoModel->findAllByLanguage($language),
+            'guide_categories' => $categories,
         ]);
     }
 
@@ -72,7 +77,7 @@ class TodoController
 
         try {
             $this->todoModel->createItem($language, $data);
-            $_SESSION[self::FLASH_KEY] = ['success' => $language === 'en' ? 'Item saved.' : 'Élément enregistré.'];
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -87,7 +92,7 @@ class TodoController
 
         try {
             $this->todoModel->updateItem($language, (int) $args['categoryIndex'], (int) $args['itemIndex'], $data);
-            $_SESSION[self::FLASH_KEY] = ['success' => $language === 'en' ? 'Item saved.' : 'Élément enregistré.'];
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -102,7 +107,7 @@ class TodoController
 
         try {
             $this->todoModel->deleteItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
-            $_SESSION[self::FLASH_KEY] = ['success' => $language === 'en' ? 'Item deleted.' : 'Élément supprimé.'];
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_deleted', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -117,7 +122,7 @@ class TodoController
 
         try {
             $this->todoModel->deleteCategoryByIndex($language, (int) $args['categoryIndex']);
-            $_SESSION[self::FLASH_KEY] = ['success' => $language === 'en' ? 'Category deleted.' : 'Catégorie supprimée.'];
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_deleted', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -128,29 +133,50 @@ class TodoController
     private function sectionConfig(): array
     {
         return [
-            'page_title' => ['en' => 'Things to do management', 'fr' => 'Gestion de Quoi faire à Playa'],
+            'page_title' => [
+                'en' => 'Things to do management',
+                'fr' => 'Gestion de Quoi faire a Playa',
+                'es' => 'Gestion de que hacer en Playa',
+            ],
             'page_copy' => [
                 'en' => 'Add, edit, or remove the categories and items on the things-to-do page.',
-                'fr' => 'Ajoutez, modifiez ou supprimez les catégories et les éléments sur la page Quoi faire à Playa.',
+                'fr' => 'Ajoutez, modifiez ou supprimez les categories et les elements sur la page Quoi faire a Playa.',
+                'es' => 'Agrega, edita o elimina las categorias y elementos de la pagina que hacer en Playa.',
             ],
             'category_fields' => [
                 [
                     'name' => 'title',
-                    'labels' => ['en' => 'Category title', 'fr' => 'Titre de la catégorie'],
-                    'placeholders' => ['en' => 'Ex. Shows and signature experiences', 'fr' => 'Ex. Spectacles et expériences'],
+                    'labels' => [
+                        'en' => 'Category title',
+                        'fr' => 'Titre de la categorie',
+                        'es' => 'Titulo de la categoria',
+                    ],
+                    'placeholders' => [
+                        'en' => 'Ex. Shows and signature experiences',
+                        'fr' => 'Ex. Spectacles et experiences',
+                        'es' => 'Ej. Espectaculos y experiencias destacadas',
+                    ],
                 ],
                 [
                     'name' => 'flag',
-                    'labels' => ['en' => 'Flag / icon code', 'fr' => 'Code du drapeau / icône'],
-                    'placeholders' => ['en' => 'Optional', 'fr' => 'Optionnel'],
+                    'labels' => [
+                        'en' => 'Flag / icon code',
+                        'fr' => 'Code du drapeau / icone',
+                        'es' => 'Codigo de bandera / icono',
+                    ],
+                    'placeholders' => [
+                        'en' => 'Optional',
+                        'fr' => 'Optionnel',
+                        'es' => 'Opcional',
+                    ],
                 ],
             ],
             'item_fields' => [
-                ['name' => 'name', 'labels' => ['en' => 'Name', 'fr' => 'Nom'], 'placeholders' => ['en' => 'Name', 'fr' => 'Nom']],
-                ['name' => 'area', 'labels' => ['en' => 'Address', 'fr' => 'Adresse'], 'placeholders' => ['en' => 'Playa del Carmen', 'fr' => 'Playa del Carmen']],
-                ['name' => 'url', 'labels' => ['en' => 'Website', 'fr' => 'Site web'], 'placeholders' => ['en' => 'https://...', 'fr' => 'https://...']],
-                ['name' => 'note', 'labels' => ['en' => 'Note', 'fr' => 'Note'], 'placeholders' => ['en' => 'Short note', 'fr' => 'Description courte']],
-                ['name' => 'video_url', 'labels' => ['en' => 'Video link', 'fr' => 'Lien vidéo'], 'placeholders' => ['en' => 'https://youtube.com/...', 'fr' => 'https://youtube.com/...']],
+                ['name' => 'name', 'labels' => ['en' => 'Name', 'fr' => 'Nom', 'es' => 'Nombre'], 'placeholders' => ['en' => 'Name', 'fr' => 'Nom', 'es' => 'Nombre']],
+                ['name' => 'area', 'labels' => ['en' => 'Address', 'fr' => 'Adresse', 'es' => 'Direccion'], 'placeholders' => ['en' => 'Playa del Carmen', 'fr' => 'Playa del Carmen', 'es' => 'Playa del Carmen']],
+                ['name' => 'url', 'labels' => ['en' => 'Website', 'fr' => 'Site web', 'es' => 'Sitio web'], 'placeholders' => ['en' => 'https://...', 'fr' => 'https://...', 'es' => 'https://...']],
+                ['name' => 'note', 'labels' => ['en' => 'Note', 'fr' => 'Note', 'es' => 'Nota'], 'placeholders' => ['en' => 'Short note', 'fr' => 'Description courte', 'es' => 'Nota breve']],
+                ['name' => 'video_url', 'labels' => ['en' => 'Video link', 'fr' => 'Lien video', 'es' => 'Enlace de video'], 'placeholders' => ['en' => 'https://youtube.com/...', 'fr' => 'https://youtube.com/...', 'es' => 'https://youtube.com/...']],
             ],
         ];
     }
@@ -161,22 +187,22 @@ class TodoController
             ['code' => 'IT', 'name' => 'Italie'],
             ['code' => 'FR', 'name' => 'France'],
             ['code' => 'IN', 'name' => 'Inde'],
-            ['code' => 'TH', 'name' => 'Thaïlande'],
-            ['code' => 'CA-QC', 'name' => 'Québec'],
+            ['code' => 'TH', 'name' => 'Thailande'],
+            ['code' => 'CA-QC', 'name' => 'Quebec'],
             ['code' => 'CA', 'name' => 'Canada'],
             ['code' => 'MX', 'name' => 'Mexique'],
-            ['code' => 'JM', 'name' => 'Jamaïque'],
+            ['code' => 'JM', 'name' => 'Jamaique'],
             ['code' => 'MUSIC', 'name' => 'Musique / nightlife'],
             ['code' => 'SEA', 'name' => 'Fruits de mer'],
             ['code' => 'GRILL', 'name' => 'Rotisserie'],
             ['code' => 'STEAK', 'name' => 'Grill'],
             ['code' => 'LUXE', 'name' => 'Fine dining'],
-            ['code' => 'PASTA', 'name' => 'Pâtes'],
+            ['code' => 'PASTA', 'name' => 'Pates'],
             ['code' => 'BAKERY', 'name' => 'Boulangerie'],
-            ['code' => 'COFFEE', 'name' => 'Café'],
+            ['code' => 'COFFEE', 'name' => 'Cafe'],
             ['code' => 'COCKTAIL', 'name' => 'Cocktail'],
             ['code' => 'TACO', 'name' => 'Tacos'],
-            ['code' => 'SPICE', 'name' => 'Épicé'],
+            ['code' => 'SPICE', 'name' => 'Epice'],
             ['code' => 'ROOFTOP', 'name' => 'Rooftop'],
             ['code' => 'BEACH', 'name' => 'Plage'],
         ];
@@ -186,19 +212,17 @@ class TodoController
     {
         $query = $request->getQueryParams();
 
-        return in_array(($query['lang'] ?? $_SESSION['lang'] ?? 'fr'), ['fr', 'en'], true)
-            ? (string) ($query['lang'] ?? $_SESSION['lang'] ?? 'fr')
-            : 'fr';
+        return Locale::normalize($query['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
     }
 
     private function postedLanguage(array $data): string
     {
-        return in_array(($data['editor_language'] ?? ''), ['fr', 'en'], true) ? (string) $data['editor_language'] : 'fr';
+        return Locale::normalize($data['editor_language'] ?? Locale::DEFAULT);
     }
 
     private function buildAdminUrl(string $language, array $query = []): string
     {
-        $language = in_array($language, ['fr', 'en'], true) ? $language : 'fr';
+        $language = Locale::normalize($language);
         $query = array_filter(array_merge(['lang' => $language], $query), static fn ($value) => $value !== null && $value !== '');
 
         return $this->basePath . '/admin/content/playa_guide?' . http_build_query($query);
@@ -223,5 +247,56 @@ class TodoController
         $response->getBody()->write('Not found');
 
         return $response->withStatus(404);
+    }
+
+    private function successMessage(string $key, string $language): string
+    {
+        $messages = [
+            'item_saved' => [
+                'en' => 'Item saved.',
+                'fr' => 'Element enregistre.',
+                'es' => 'Elemento guardado.',
+            ],
+            'item_deleted' => [
+                'en' => 'Item deleted.',
+                'fr' => 'Element supprime.',
+                'es' => 'Elemento eliminado.',
+            ],
+            'category_deleted' => [
+                'en' => 'Category deleted.',
+                'fr' => 'Categorie supprimee.',
+                'es' => 'Categoria eliminada.',
+            ],
+        ];
+
+        $language = Locale::normalize($language);
+
+        return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+    }
+
+    private function localizeCategoryTitles(array $categories, string $language): array
+    {
+        if (Locale::normalize($language) !== 'es') {
+            return $categories;
+        }
+
+        $translations = [
+            'Shows and signature experiences' => 'Espectaculos y experiencias destacadas',
+            'Nightlife and entertainment' => 'Vida nocturna y entretenimiento',
+            'Rooftops to try' => 'Rooftops para probar',
+            'Places to see' => 'Lugares para ver',
+        ];
+
+        foreach ($categories as &$category) {
+            $title = trim((string) ($category['title'] ?? ''));
+
+            if (isset($translations[$title])) {
+                $category['title'] = $translations[$title];
+            }
+        }
+
+        unset($category);
+
+        return $categories;
     }
 }

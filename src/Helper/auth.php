@@ -1,13 +1,13 @@
 <?php
 
+use App\Helper\Locale;
 use Psr\Http\Message\ResponseInterface as Response;
 
 function authTrans(string $key): string
 {
     static $messagesByLang = [];
 
-    $lang = $_SESSION['lang'] ?? 'fr';
-    $lang = in_array($lang, ['fr', 'en'], true) ? $lang : 'fr';
+    $lang = Locale::normalize($_SESSION['lang'] ?? Locale::DEFAULT);
 
     if (!isset($messagesByLang[$lang])) {
         $messagesByLang[$lang] = require __DIR__ . '/../translations/messages.' . $lang . '.php';

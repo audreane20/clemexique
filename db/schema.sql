@@ -37,33 +37,6 @@ CREATE TABLE property_card_images (
         ON DELETE CASCADE
 );
 
-CREATE TABLE favorites (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    property_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY uniq_favorites_user_property (user_id, property_id),
-    CONSTRAINT fk_favorites_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_favorites_property
-        FOREIGN KEY (property_id) REFERENCES property_cards(id)
-        ON DELETE CASCADE
-);
-
-CREATE TABLE inquiries (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    property_id INT NOT NULL,
-    message TEXT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_inquiries_user
-        FOREIGN KEY (user_id) REFERENCES users(id)
-        ON DELETE CASCADE,
-    CONSTRAINT fk_inquiries_property
-        FOREIGN KEY (property_id) REFERENCES property_cards(id)
-        ON DELETE CASCADE
-);
 
 CREATE TABLE restaurant_categories (
     id INT AUTO_INCREMENT PRIMARY KEY,

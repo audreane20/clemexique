@@ -60,7 +60,7 @@
             {% endif %}
 
             <div class="property-detail-actions page-home-actions">
-                <a href="{{ base_path }}/contact?lang={{ app_lang }}&project={{ property.name|url_encode }}" class="info-request-link">{{ trans('properties.detail_contact') }}</a>
+                <a href="{{ base_path }}/contact?lang={{ app_lang }}&subject={{ trans('properties.title')|url_encode }}&project={{ property.name|url_encode }}" class="info-request-link">{{ trans('properties.detail_contact') }}</a>
                 <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
             </div>
         </div>

@@ -341,7 +341,7 @@ $app->get('/contact', function ($request, $response) use ($twig, $translator) {
         'name' => '',
         'email' => '',
         'phone' => '',
-        'subject' => '',
+        'subject' => trim((string) ($queryParams['subject'] ?? '')),
         'project' => trim((string) ($queryParams['project'] ?? '')),
         'message' => '',
     ]);

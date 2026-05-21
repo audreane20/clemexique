@@ -138,7 +138,7 @@ class RestaurantModel
             'address' => trim((string) ($data['area'] ?? '')),
             'price' => trim((string) ($data['price'] ?? '')),
             'reference_label' => trim((string) ($data['reference'] ?? '')),
-            'website_url' => trim((string) ($data['url'] ?? '')),
+            'website_url' => $this->normalizeExternalUrl((string) ($data['url'] ?? '')),
             'website_label' => '',
         ];
 
@@ -311,12 +311,14 @@ class RestaurantModel
 
     private function mapItemRowToViewData(array $itemRow): array
     {
+        $url = $this->normalizeExternalUrl((string) ($itemRow['website_url'] ?? ''));
+
         return [
             'name' => $itemRow['name'] ?? null,
             'area' => $itemRow['address'] ?? null,
             'price' => $itemRow['price'] ?? null,
             'reference' => $itemRow['reference_label'] ?? null,
-            'url' => $itemRow['website_url'] ?? null,
+            'url' => $url !== '' ? $url : null,
             'url_label' => $itemRow['website_label'] ?? null,
         ];
     }
@@ -328,7 +330,7 @@ class RestaurantModel
 
     private function labelFromUrl(string $url): string
     {
-        $url = trim($url);
+        $url = $this->normalizeExternalUrl($url);
 
         if ($url === '') {
             return '';
@@ -352,6 +354,25 @@ class RestaurantModel
         }
 
         return $host !== '' ? $host . '/' . $path : $path;
+    }
+
+    private function normalizeExternalUrl(string $url): string
+    {
+        $url = trim($url);
+
+        if ($url === '') {
+            return '';
+        }
+
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url) === 1) {
+            return $url;
+        }
+
+        if (str_starts_with($url, '//')) {
+            return 'https:' . $url;
+        }
+
+        return 'https://' . ltrim($url, '/');
     }
 
     private function localizedMessage(string $key, string $language): string

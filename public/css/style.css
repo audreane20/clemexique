@@ -20,6 +20,10 @@ body {
     background: linear-gradient(180deg, #ffffff 0%, #f7fdff 100%);
 }
 
+body.mobile-menu-open {
+    overflow: hidden;
+}
+
 /* HEADER */
 .site-header {
     background: rgba(255, 255, 255, 0.95);
@@ -92,6 +96,49 @@ body {
     align-items: center;
     justify-self: end;
     gap: 14px;
+}
+
+.header-menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(11, 53, 88, 0.2);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 10px 24px rgba(11, 53, 88, 0.08);
+    cursor: pointer;
+}
+
+.header-menu-toggle-line {
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--navy);
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.header-menu-toggle.is-open .header-menu-toggle-line:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.header-menu-toggle.is-open .header-menu-toggle-line:nth-child(2) {
+    opacity: 0;
+}
+
+.header-menu-toggle.is-open .header-menu-toggle-line:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+.header-menu-panel {
+    display: contents;
+}
+
+.header-menu-backdrop {
+    display: none;
 }
 
 .header-admin-menu {
@@ -218,13 +265,7 @@ body {
         padding: 20px;
         border-radius: 15px;
         box-shadow: 0 10px 25px rgba(11, 53, 88, 0.08);
-        transition: 0.25s ease;
     }
-
-        .trust-list li:hover {
-            transform: translateY(-5px);
-            border-left-color: var(--gold);
-        }
 
 
 .contact-hero {
@@ -522,6 +563,90 @@ body {
     line-height: 1.6;
 }
 
+.admin-auth-helper {
+    margin: 18px 0 0;
+    color: #52606d;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+.admin-auth-delivery {
+    margin-top: 24px;
+    padding: 18px 18px 16px;
+    border: 1px solid rgba(25, 96, 143, 0.12);
+    border-radius: 18px;
+    background: linear-gradient(180deg, rgba(245, 251, 255, 0.96) 0%, rgba(239, 247, 252, 0.96) 100%);
+}
+
+.admin-auth-helper-label {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5e768d;
+}
+
+.admin-auth-helper-primary {
+    margin: 6px 0 0;
+    color: var(--navy);
+    font-size: 1rem;
+}
+
+.admin-auth-helper a {
+    color: var(--navy);
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.admin-auth-helper a:hover {
+    text-decoration: underline;
+}
+
+.admin-auth-secondary-form {
+    margin: 14px 0 0;
+}
+
+.admin-auth-secondary-link {
+    width: 100%;
+    display: grid;
+    gap: 4px;
+    padding: 14px 16px;
+    border: 1px solid rgba(31, 163, 179, 0.2);
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.9);
+    color: var(--navy);
+    font: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+}
+
+.admin-auth-secondary-link:hover {
+    border-color: rgba(31, 163, 179, 0.45);
+    box-shadow: 0 12px 24px rgba(20, 75, 116, 0.08);
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 1);
+}
+
+.admin-auth-secondary-eyebrow {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--turquoise);
+}
+
+.admin-auth-secondary-copy {
+    font-weight: 800;
+    color: var(--navy);
+}
+
+.admin-auth-secondary-email {
+    font-size: 0.92rem;
+    color: #4f6375;
+}
+
 .admin-auth-form {
     display: grid;
     gap: 14px;
@@ -649,6 +774,26 @@ body {
         radial-gradient(circle at top right, rgba(31, 163, 179, 0.14), transparent 32%),
         linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 251, 255, 0.96));
     box-shadow: 0 18px 40px rgba(11, 53, 88, 0.08);
+}
+
+.quick-scroll-highlight {
+    animation: quick-scroll-pulse 1.1s ease;
+    transform-origin: center top;
+}
+
+@keyframes quick-scroll-pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 18px 40px rgba(11, 53, 88, 0.08), 0 0 0 0 rgba(31, 163, 179, 0.42);
+    }
+    35% {
+        transform: scale(1.015);
+        box-shadow: 0 22px 44px rgba(11, 53, 88, 0.12), 0 0 0 10px rgba(31, 163, 179, 0.18);
+    }
+    100% {
+        transform: scale(1);
+        box-shadow: 0 18px 40px rgba(11, 53, 88, 0.08), 0 0 0 0 rgba(31, 163, 179, 0);
+    }
 }
 
 .home-toc-eyebrow {
@@ -3540,34 +3685,157 @@ body {
 
 /* MOBILE */
 @media (max-width: 768px) {
+    body {
+        font-size: 15px;
+    }
+
+    body {
+        overflow-x: hidden;
+    }
+
+    .site-header {
+        position: static;
+    }
+
     .header-container {
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        grid-template-areas:
+            "logo toggle"
+            "panel panel";
+        justify-items: stretch;
+        align-items: center;
+        column-gap: 12px;
+        row-gap: 10px;
+        padding: 8px 16px 10px;
     }
 
     .header-left {
-        width: 100%;
-        justify-content: center;
-        flex-wrap: wrap;
-        gap: 12px;
+        width: auto;
+        min-width: 0;
+        justify-content: flex-start;
+        flex-wrap: nowrap;
+        gap: 0;
+    }
+
+    .logo img {
+        height: 46px;
+    }
+
+    .header-menu-toggle {
+        grid-area: toggle;
+        display: inline-flex;
+        justify-self: end;
+        align-self: center;
+        width: 46px;
+        height: 46px;
+        position: relative;
+        z-index: 301;
+    }
+
+    .header-menu-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 300;
+        width: min(220px, 58vw);
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        padding: 88px 20px 24px;
+        border-left: 1px solid rgba(11, 53, 88, 0.08);
+        border-radius: 24px 0 0 24px;
+        background: #ffffff;
+        box-shadow: -18px 0 40px rgba(11, 53, 88, 0.16);
+    }
+
+    .header-menu-panel[hidden] {
+        display: none;
+    }
+
+    .header-menu-backdrop {
+        position: fixed;
+        inset: 0;
+        z-index: 250;
+        display: block;
+        border: 0;
+        background: rgba(11, 53, 88, 0.22);
+        padding: 0;
+        cursor: pointer;
+    }
+
+    .header-menu-backdrop[hidden] {
+        display: none;
     }
 
     .main-nav {
-        flex-wrap: wrap;
-        justify-content: center;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: flex-start;
+        gap: 10px;
+    }
+
+    .main-nav a {
+        width: 100%;
+        min-width: 0;
+        padding: 10px 14px;
+        text-align: left;
+        white-space: normal;
+        font-size: 17px;
+        line-height: 1.25;
+        border-radius: 14px;
     }
 
     .header-auth-actions {
+        width: 100%;
         flex-wrap: wrap;
-        justify-content: center;
+        justify-content: stretch;
     }
 
     .header-right {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: auto;
+    }
+
+    .header-lang-group,
+    .account-menu {
+        width: 100%;
+        display: flex;
+        justify-content: stretch;
+    }
+
+    .lang-switch {
+        width: 100%;
         flex-wrap: wrap;
         justify-content: center;
-        gap: 12px;
-        margin-right: 0;
+        padding: 6px 8px;
+    }
+
+    .header-auth-link,
+    .user-chip {
+        min-width: 0;
+        max-width: none;
+        width: 100%;
+    }
+
+    .header-auth-link {
+        padding: 10px 14px;
+        font-size: 16px;
+        text-align: center;
+    }
+
+    .account-menu-panel {
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: min(280px, calc(100vw - 32px));
     }
 
     .admin-properties-shell,
@@ -3576,7 +3844,18 @@ body {
     .property-detail-shell,
     .info-request-shell {
         width: min(100%, calc(100% - 32px));
-        padding: 36px 0 56px;
+        padding: 24px 0 40px;
+    }
+
+    .contact-container,
+    .residency-container,
+    .about-container {
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .contact-container {
+        margin: 24px auto 36px;
     }
 
     .admin-properties-header {
@@ -3584,7 +3863,6 @@ body {
     }
 
     .admin-properties-layout,
-    .property-public-grid,
     .property-admin-grid,
     .property-gallery-admin-grid,
     .property-form-row,
@@ -3603,8 +3881,107 @@ body {
         grid-template-columns: 1fr;
     }
 
+    .property-public-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
     .home-toc-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .home-toc-card,
+    .contact-form,
+    .auth-card,
+    .property-detail-copy,
+    .property-gallery-admin-card,
+    .property-detail-gallery-card,
+    .info-request-card,
+    .restaurant-category,
+    .guide-category,
+    .residency-step-card,
+    .residency-note {
+        padding: 18px 16px;
+    }
+
+    .home-toc-shell {
+        padding: 18px 0 14px;
+    }
+
+    .home-toc-card {
+        gap: 14px;
+        padding: 18px 16px;
+        border-radius: 22px;
+    }
+
+    .home-toc-eyebrow {
+        margin-bottom: 4px;
+        font-size: 11px;
+        letter-spacing: 0.06em;
+    }
+
+    .home-toc-copy h2 {
+        font-size: 22px;
+        line-height: 1.15;
+    }
+
+    .home-toc-copy p:last-child {
+        margin-top: 8px;
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .home-toc-link {
+        min-height: 0;
+        gap: 4px;
+        padding: 12px;
+        border-radius: 18px;
+    }
+
+    .home-toc-link-title {
+        font-size: 14px;
+        line-height: 1.2;
+    }
+
+    .home-toc-link-copy {
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .info-request-shell {
+        padding-bottom: 24px;
+    }
+
+    .info-request-shell-secondary {
+        margin-top: -18px;
+    }
+
+    .info-request-card,
+    .info-request-card-compact {
+        padding: 12px 12px 14px;
+        border-radius: 16px;
+    }
+
+    .info-request-card h2,
+    .info-request-secondary-title {
+        font-size: 16px;
+        line-height: 1.1;
+    }
+
+    .info-request-copy {
+        margin-top: 8px;
+        font-size: 12px;
+        line-height: 1.35;
+    }
+
+    .info-request-actions {
+        margin-top: 10px;
+    }
+
+    .info-request-link {
+        padding: 8px 12px;
+        font-size: 12px;
     }
 
     .property-detail-gallery-item {
@@ -3612,6 +3989,8 @@ body {
     }
 
     .property-gallery-nav {
+        width: 100%;
+        justify-content: flex-end;
         margin-top: 18px;
     }
 
@@ -3623,20 +4002,125 @@ body {
 
     .rental-question-card,
     .rental-form-intro {
-        padding: 22px 20px;
+        padding: 18px 16px;
+    }
+
+    .rental-form-page {
+        padding: 18px 14px 40px;
+    }
+
+    .rental-form-shell {
+        width: 100%;
+    }
+
+    .rental-question-title {
+        font-size: 18px;
+    }
+
+    .rental-options label {
+        font-size: 16px;
+    }
+
+    .rental-text-input,
+    .rental-date-input,
+    .rental-inline-input {
+        font-size: 16px;
+    }
+
+    .rental-form-actions {
+        justify-content: stretch;
+    }
+
+    .rental-submit-button {
+        width: 100%;
     }
 
     .property-filter-bar {
         align-items: start;
     }
 
+    .property-filter-actions {
+        width: 100%;
+    }
+
+    .property-filter-link {
+        flex: 1 1 calc(50% - 10px);
+    }
+
+    .property-public-card {
+        max-width: none;
+        width: 100%;
+        padding: 12px 10px 16px;
+        border-radius: 18px;
+    }
+
     .property-public-card h2 {
-        font-size: 30px;
+        margin-top: 14px;
+        font-size: 16px;
+        line-height: 1.15;
     }
 
     .property-admin-city,
     .property-public-city {
+        font-size: 14px;
+    }
+
+    .property-public-image {
+        max-width: none;
+        border-radius: 14px;
+    }
+
+    .property-public-card p {
+        margin-top: 8px;
+        font-size: 13px;
+    }
+
+    .property-public-price-secondary {
+        font-size: 13px;
+    }
+
+    .property-public-link {
+        min-height: 44px;
+        margin-top: 14px;
+        padding: 10px 12px;
+        font-size: 13px;
+        border-radius: 12px;
+    }
+
+    .property-detail-copy h1 {
+        font-size: 28px;
+    }
+
+    .property-detail-city,
+    .property-detail-price {
         font-size: 20px;
+    }
+
+    .property-detail-pricing {
+        padding: 14px 16px;
+    }
+
+    .property-lightbox {
+        padding: 16px;
+    }
+
+    .property-lightbox-nav {
+        width: 48px;
+        height: 48px;
+        font-size: 32px;
+    }
+
+    .property-lightbox-nav-prev {
+        left: 12px;
+    }
+
+    .property-lightbox-nav-next {
+        right: 12px;
+    }
+
+    .property-lightbox-close {
+        top: 12px;
+        right: 12px;
     }
 
     .inquiry-hero {
@@ -3646,7 +4130,7 @@ body {
 
     .inquiry-hero-content {
         width: min(100%, calc(100% - 32px));
-        padding: 28px 0;
+        padding: 18px 0;
     }
 
     .inquiry-brand-row {
@@ -3658,17 +4142,62 @@ body {
         margin-top: -18px;
     }
 
+    .inquiry-hero h1 {
+        line-height: 1;
+    }
+
+    .inquiry-hero-subtitle {
+        font-size: 18px;
+        line-height: 1.4;
+    }
+
+    .inquiry-subtitle-divider {
+        display: none;
+    }
+
     .inquiry-card-heading h2 {
-        font-size: 22px;
+        font-size: 18px;
     }
 
     .inquiry-submit-button {
         width: 100%;
-        font-size: 20px;
+        font-size: 17px;
     }
 
     .inquiry-option-layout,
     .inquiry-budget-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .inquiry-feature-icon {
+        min-height: 0;
+        justify-content: flex-start;
+    }
+
+    .inquiry-minutes-field {
+        width: 100%;
+        max-width: none;
+    }
+
+    .inquiry-location-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .inquiry-location-option {
+        min-height: 0;
+    }
+
+    .inquiry-location-thumb {
+        min-height: 88px;
+    }
+
+    .inquiry-location-custom-input {
+        width: 100%;
+        max-width: none;
+        font-size: 12px !important;
+    }
+
+    .inquiry-parking-fields {
         grid-template-columns: 1fr;
     }
 
@@ -3677,14 +4206,289 @@ body {
     }
 
     .about-hero {
-        padding: 60px 20px;
+        padding: 42px 16px;
     }
 
         .about-hero p {
-            font-size: 22px;
+            font-size: 18px;
         }
 
     .about-container h1 {
-        font-size: 32px;
+        font-size: 28px;
+    }
+
+    .about-container h2,
+    .contact-hero h1,
+    .residency-container h1 {
+        font-size: 26px;
+    }
+
+    .contact-hero,
+    .residency-hero {
+        padding: 40px 16px;
+    }
+
+    .contact-form {
+        padding: 16px 14px;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+    .form-group label {
+        margin-bottom: 6px;
+        font-size: 15px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 10px 12px;
+        border-radius: 12px;
+        font-size: 15px;
+    }
+
+    .contact-form textarea {
+        min-height: 120px;
+    }
+
+    .contact-btn {
+        padding: 13px;
+        font-size: 16px;
+    }
+
+    .contact-hero p,
+    .about-container p,
+    .residency-hero p,
+    .residency-container > p,
+    .residency-step-card p,
+    .residency-note p,
+    .restaurant-area,
+    .restaurant-reference,
+    .guide-area,
+    .guide-note {
+        font-size: 14px;
+    }
+
+    .about-container {
+        padding-top: 36px;
+        padding-bottom: 36px;
+    }
+
+    .about-container h1,
+    .residency-container h1,
+    .contact-hero h1,
+    .property-detail-copy h1 {
+        line-height: 1.1;
+    }
+
+    .about-container h2,
+    .residency-step-card h2,
+    .residency-note h2,
+    .restaurant-category-header h2,
+    .guide-category-header h2 {
+        font-size: 20px;
+        line-height: 1.15;
+    }
+
+    .page-home-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .page-home-link {
+        margin-left: 0;
+    }
+
+    .page-home-actions .info-request-link,
+    .page-home-link,
+    .property-detail-back-link {
+        width: 100%;
+        justify-content: center;
+        text-align: center;
+    }
+
+    .restaurant-category-header,
+    .guide-category-header,
+    .restaurant-card-top,
+    .guide-card-top {
+        align-items: flex-start;
+    }
+
+    .restaurant-card-top,
+    .guide-card-top {
+        flex-direction: column;
+    }
+
+    .restaurant-price {
+        white-space: normal;
+    }
+
+    .restaurant-reference-tripadvisor-logo {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-container {
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .logo img {
+        height: 42px;
+    }
+
+    .main-nav {
+        flex-direction: column;
+    }
+
+    .main-nav a,
+    .header-auth-link {
+        width: 100%;
+        text-align: left;
+    }
+
+    .lang-switch a {
+        padding: 6px 8px;
+    }
+
+    .header-right {
+        gap: 8px;
+    }
+
+    .home-toc-card,
+    .contact-form,
+    .auth-card,
+    .property-detail-copy,
+    .property-gallery-admin-card,
+    .property-detail-gallery-card,
+    .restaurant-category,
+    .guide-category,
+    .residency-step-card,
+    .residency-note,
+    .property-public-card {
+        padding: 14px;
+    }
+
+    .about-container h1,
+    .contact-hero h1,
+    .residency-container h1,
+    .property-detail-copy h1 {
+        font-size: 24px;
+    }
+
+    .contact-hero {
+        padding: 24px 14px;
+    }
+
+    .contact-hero p {
+        font-size: 13px;
+        line-height: 1.35;
+    }
+
+    .contact-form {
+        padding: 14px 12px;
+    }
+
+    .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-group label {
+        font-size: 14px;
+    }
+
+    .form-group input,
+    .form-group textarea {
+        padding: 9px 10px;
+        font-size: 14px;
+    }
+
+    .contact-form textarea {
+        min-height: 96px;
+    }
+
+    .about-container h2,
+    .residency-step-card h2,
+    .residency-note h2,
+    .restaurant-category-header h2,
+    .guide-category-header h2 {
+        font-size: 18px;
+    }
+
+    .home-toc-shell {
+        padding-top: 14px;
+    }
+
+    .home-toc-card {
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .home-toc-copy h2 {
+        font-size: 20px;
+    }
+
+    .home-toc-copy p:last-child {
+        font-size: 13px;
+    }
+
+    .home-toc-grid {
+        gap: 8px;
+    }
+
+    .home-toc-link {
+        padding: 10px;
+    }
+
+    .home-toc-link-title {
+        font-size: 13px;
+    }
+
+    .home-toc-link-copy {
+        font-size: 11px;
+    }
+
+    .info-request-card,
+    .info-request-card-compact {
+        padding: 10px;
+        border-radius: 14px;
+    }
+
+    .info-request-card h2,
+    .info-request-secondary-title {
+        font-size: 15px;
+    }
+
+    .info-request-copy {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+
+    .info-request-actions {
+        margin-top: 8px;
+    }
+
+    .info-request-link {
+        width: 100%;
+        padding: 7px 10px;
+        font-size: 11px;
+    }
+
+    .property-filter-link {
+        width: auto;
+        flex: 1 1 0;
+    }
+
+    .inquiry-location-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .property-lightbox-nav {
+        width: 42px;
+        height: 42px;
+        font-size: 28px;
     }
 }

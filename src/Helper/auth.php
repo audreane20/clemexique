@@ -42,6 +42,13 @@ function getAuthError(): ?string
     return is_string($error) && $error !== '' ? $error : null;
 }
 
+function getAuthSuccess(): ?string
+{
+    $message = $_SESSION['auth_success'] ?? null;
+
+    return is_string($message) && $message !== '' ? $message : null;
+}
+
 function getLastAuthUsername(): string
 {
     $username = $_SESSION['auth_last_username'] ?? '';
@@ -51,43 +58,424 @@ function getLastAuthUsername(): string
 
 function clearAuthFlash(): void
 {
-    unset($_SESSION['auth_error'], $_SESSION['auth_last_username']);
+    unset($_SESSION['auth_error'], $_SESSION['auth_success'], $_SESSION['auth_last_username']);
 }
 
-function attemptAdminLogin(array $data): bool
+function isAdminVerificationPending(): bool
 {
-    $username = trim((string) ($data['username'] ?? ''));
-    $password = (string) ($data['password'] ?? '');
+    return !empty($_SESSION['admin_2fa_pending']);
+}
 
-    $_SESSION['auth_last_username'] = $username;
+function getAdminTwoFactorEmail(): string
+{
+    return trim((string) ($_ENV['ADMIN_2FA_EMAIL'] ?? 'audreane20@hotmail.ca'));
+}
 
-    $configuredUsername = trim((string) ($_ENV['ADMIN_USERNAME'] ?? ''));
-    $configuredPassword = (string) ($_ENV['ADMIN_PASSWORD'] ?? '');
-    $configuredPasswordHash = (string) ($_ENV['ADMIN_PASSWORD_HASH'] ?? '');
+function getAdminBackupTwoFactorEmail(): string
+{
+    return trim((string) ($_ENV['ADMIN_2FA_BACKUP_EMAIL'] ?? ''));
+}
 
-    if ($configuredUsername === '' || ($configuredPassword === '' && $configuredPasswordHash === '')) {
-        $_SESSION['auth_error'] = authTrans('auth.admin_not_configured');
+function hasAdminBackupTwoFactorEmail(): bool
+{
+    $email = getAdminBackupTwoFactorEmail();
+
+    return $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false;
+}
+
+function getAdminTwoFactorRecipients(): array
+{
+    $recipients = array_values(array_unique(array_filter([
+        getAdminTwoFactorEmail(),
+        getAdminBackupTwoFactorEmail(),
+    ], static function ($email) {
+        return is_string($email) && $email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL);
+    })));
+
+    return $recipients;
+}
+
+function getMaskedAdminTwoFactorRecipients(): string
+{
+    $masked = array_map('maskEmailAddress', getAdminTwoFactorRecipients());
+
+    return implode(', ', $masked);
+}
+
+function getMaskedPrimaryAdminTwoFactorEmail(): string
+{
+    return maskEmailAddress(getAdminTwoFactorEmail());
+}
+
+function maskEmailAddress(string $email): string
+{
+    $email = trim($email);
+
+    if ($email === '' || !str_contains($email, '@')) {
+        return $email;
+    }
+
+    [$localPart, $domainPart] = explode('@', $email, 2);
+    $maskedLocal = strlen($localPart) <= 2
+        ? substr($localPart, 0, 1) . str_repeat('*', max(strlen($localPart) - 1, 1))
+        : substr($localPart, 0, 2) . str_repeat('*', max(strlen($localPart) - 4, 2)) . substr($localPart, -2);
+
+    $domainSegments = explode('.', $domainPart);
+    $domainName = array_shift($domainSegments) ?? '';
+    $domainSuffix = implode('.', $domainSegments);
+    $maskedDomainName = strlen($domainName) <= 2
+        ? substr($domainName, 0, 1) . str_repeat('*', max(strlen($domainName) - 1, 1))
+        : substr($domainName, 0, 1) . str_repeat('*', max(strlen($domainName) - 2, 3)) . substr($domainName, -1);
+
+    return $maskedLocal . '@' . $maskedDomainName . ($domainSuffix !== '' ? '.' . $domainSuffix : '');
+}
+
+function getAdminIdentityEmail(): string
+{
+    $email = getAdminTwoFactorEmail();
+
+    return $email !== '' ? $email : 'admin';
+}
+
+function getAdminIdentityDisplayName(): string
+{
+    $name = trim((string) ($_ENV['ADMIN_DISPLAY_NAME'] ?? 'Admin'));
+
+    return $name !== '' ? $name : 'Admin';
+}
+
+function configureAuthMailer(): \PHPMailer\PHPMailer\PHPMailer
+{
+    $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
+    $mail->isSMTP();
+    $mail->Host = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';
+    $mail->SMTPAuth = true;
+    $mail->Username = $_ENV['MAIL_USERNAME'] ?? 'audreane20@gmail.com';
+    $mail->Password = $_ENV['MAIL_PASSWORD'] ?? '';
+    $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
+    $mail->Port = (int) ($_ENV['MAIL_PORT'] ?? 587);
+    $mail->CharSet = 'UTF-8';
+
+    return $mail;
+}
+
+function sendAdminVerificationCodeToRecipient(string $toEmail, string $code): bool
+{
+    $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? 'audreane20@gmail.com');
+    $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'CLeMexique';
+
+    if ($toEmail === '') {
+        return false;
+    }
+
+    try {
+        $mail = configureAuthMailer();
+        $mail->setFrom($fromEmail, $fromName);
+        $mail->addAddress($toEmail);
+        $mail->Subject = authTrans('admin.2fa_mail_subject');
+        $mail->Body = authTrans('admin.2fa_mail_intro') . "\n\n"
+            . authTrans('admin.verification_code') . ': ' . $code . "\n\n"
+            . authTrans('admin.2fa_mail_expiry');
+        $mail->send();
+
+        return true;
+    } catch (\PHPMailer\PHPMailer\Exception $exception) {
+        return false;
+    }
+}
+
+function sendAdminVerificationCode(string $code): bool
+{
+    $primaryEmail = getAdminTwoFactorEmail();
+
+    if ($primaryEmail === '' || filter_var($primaryEmail, FILTER_VALIDATE_EMAIL) === false) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_not_configured');
 
         return false;
     }
 
-    $passwordMatches = $configuredPasswordHash !== ''
-        ? password_verify($password, $configuredPasswordHash)
-        : hash_equals($configuredPassword, $password);
+    if (!sendAdminVerificationCodeToRecipient($primaryEmail, $code)) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_send_failed');
 
-    if (!hash_equals($configuredUsername, $username) || !$passwordMatches) {
-        $_SESSION['auth_error'] = authTrans('auth.invalid_username_password');
+        return false;
+    }
+
+    return true;
+}
+
+function resendPendingAdminVerificationCodeToBackup(): bool
+{
+    if (!isAdminVerificationPending()) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_session_missing');
+
+        return false;
+    }
+
+    if (!hasAdminBackupTwoFactorEmail()) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_not_configured');
+
+        return false;
+    }
+
+    $expiresAt = (int) ($_SESSION['admin_2fa_expires_at'] ?? 0);
+
+    if ($expiresAt < time()) {
+        clearAdminTwoFactorPending();
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_code_expired');
+
+        return false;
+    }
+
+    $code = (string) ($_SESSION['admin_2fa_code'] ?? '');
+
+    if ($code === '') {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_session_missing');
+
+        return false;
+    }
+
+    if (!sendAdminVerificationCodeToRecipient(getAdminBackupTwoFactorEmail(), $code)) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_send_failed');
+
+        return false;
+    }
+
+    $_SESSION['auth_success'] = authTrans('admin.verify_backup_sent');
+
+    return true;
+}
+
+function startAdminEmailVerificationSession(): bool
+{
+    $identityEmail = getAdminIdentityEmail();
+    $identityDisplayName = getAdminIdentityDisplayName();
+    $verificationCode = (string) random_int(100000, 999999);
+
+    if (!sendAdminVerificationCode($verificationCode)) {
+        return false;
+    }
+
+    $_SESSION['admin_2fa_pending'] = true;
+    $_SESSION['admin_2fa_username'] = $identityEmail;
+    $_SESSION['admin_2fa_display_name'] = $identityDisplayName;
+    $_SESSION['admin_2fa_code'] = $verificationCode;
+    $_SESSION['admin_2fa_expires_at'] = time() + 600;
+
+    clearAuthFlash();
+
+    return true;
+}
+
+function updateEnvSetting(string $filePath, string $key, string $value): bool
+{
+    $value = trim($value);
+
+    if ($value === '') {
+        return false;
+    }
+
+    $contents = file_exists($filePath) ? (string) file_get_contents($filePath) : '';
+    $escapedKey = preg_quote($key, '/');
+    $replacementLine = $key . '=' . $value;
+
+    if (preg_match('/^' . $escapedKey . '=.*$/m', $contents) === 1) {
+        $updatedContents = preg_replace('/^' . $escapedKey . '=.*$/m', $replacementLine, $contents, 1);
+    } else {
+        $updatedContents = rtrim($contents);
+        $updatedContents .= ($updatedContents === '' ? '' : PHP_EOL) . $replacementLine . PHP_EOL;
+    }
+
+    if (!is_string($updatedContents)) {
+        return false;
+    }
+
+    return file_put_contents($filePath, $updatedContents) !== false;
+}
+
+function isAdminEmailChangePending(): bool
+{
+    return !empty($_SESSION['admin_email_change_pending']);
+}
+
+function clearAdminEmailChangePending(): void
+{
+    unset(
+        $_SESSION['admin_email_change_pending'],
+        $_SESSION['admin_email_change_new'],
+        $_SESSION['admin_email_change_current'],
+        $_SESSION['admin_email_change_current_code'],
+        $_SESSION['admin_email_change_new_code'],
+        $_SESSION['admin_email_change_expires_at']
+    );
+}
+
+function startAdminEmailChangeVerification(string $newEmail): bool
+{
+    $currentEmail = getAdminTwoFactorEmail();
+    $currentRecipients = getAdminTwoFactorRecipients();
+
+    if ($currentRecipients === []) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_not_configured');
+
+        return false;
+    }
+
+    if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['auth_error'] = authTrans('auth.register_invalid_email');
+
+        return false;
+    }
+
+    if (strcasecmp($currentEmail, $newEmail) === 0) {
+        $_SESSION['auth_error'] = authTrans('admin.change_email_same');
+
+        return false;
+    }
+
+    $currentCode = (string) random_int(100000, 999999);
+    $newCode = (string) random_int(100000, 999999);
+
+    $sentCurrentCode = false;
+
+    foreach ($currentRecipients as $recipient) {
+        $sentCurrentCode = sendAdminVerificationCodeToRecipient($recipient, $currentCode) || $sentCurrentCode;
+    }
+
+    if (!$sentCurrentCode) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_send_failed');
+
+        return false;
+    }
+
+    if (!sendAdminVerificationCodeToRecipient($newEmail, $newCode)) {
+        $_SESSION['auth_error'] = authTrans('admin.change_email_new_send_failed');
+
+        return false;
+    }
+
+    $_SESSION['admin_email_change_pending'] = true;
+    $_SESSION['admin_email_change_new'] = $newEmail;
+    $_SESSION['admin_email_change_current'] = $currentEmail;
+    $_SESSION['admin_email_change_current_code'] = $currentCode;
+    $_SESSION['admin_email_change_new_code'] = $newCode;
+    $_SESSION['admin_email_change_expires_at'] = time() + 600;
+
+    clearAuthFlash();
+
+    return true;
+}
+
+function attemptAdminEmailChangeVerification(array $data): bool
+{
+    $currentCode = trim((string) ($data['current_code'] ?? ''));
+    $newCode = trim((string) ($data['new_code'] ?? ''));
+    $expectedCurrentCode = (string) ($_SESSION['admin_email_change_current_code'] ?? '');
+    $expectedNewCode = (string) ($_SESSION['admin_email_change_new_code'] ?? '');
+    $newEmail = trim((string) ($_SESSION['admin_email_change_new'] ?? ''));
+    $expiresAt = (int) ($_SESSION['admin_email_change_expires_at'] ?? 0);
+
+    if (!isAdminAuthenticated()) {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_session_missing');
+
+        return false;
+    }
+
+    if (!isAdminEmailChangePending() || $expectedCurrentCode === '' || $expectedNewCode === '' || $newEmail === '') {
+        $_SESSION['auth_error'] = authTrans('admin.change_email_session_missing');
+
+        return false;
+    }
+
+    if ($expiresAt < time()) {
+        clearAdminEmailChangePending();
+        $_SESSION['auth_error'] = authTrans('admin.change_email_code_expired');
+
+        return false;
+    }
+
+    if (!hash_equals($expectedCurrentCode, $currentCode) || !hash_equals($expectedNewCode, $newCode)) {
+        $_SESSION['auth_error'] = authTrans('admin.change_email_invalid_codes');
+
+        return false;
+    }
+
+    $envPath = __DIR__ . '/../../.env';
+
+    if (!updateEnvSetting($envPath, 'ADMIN_2FA_EMAIL', $newEmail)) {
+        $_SESSION['auth_error'] = authTrans('admin.change_email_failed');
+
+        return false;
+    }
+
+    $_ENV['ADMIN_2FA_EMAIL'] = $newEmail;
+    $_SESSION['admin_username'] = getAdminIdentityEmail();
+
+    clearAdminEmailChangePending();
+    $_SESSION['auth_success'] = authTrans('admin.change_email_success');
+
+    return true;
+}
+
+function attemptAdminLogin(array $data): bool
+{
+    $pin = trim((string) ($data['pin'] ?? ''));
+    $configuredPin = '1690';
+
+    if (!hash_equals($configuredPin, $pin)) {
+        $_SESSION['auth_error'] = authTrans('auth.invalid_admin_pin');
+
+        return false;
+    }
+
+    return startAdminEmailVerificationSession();
+}
+
+function attemptAdminTwoFactorVerification(array $data): bool
+{
+    $code = trim((string) ($data['code'] ?? ''));
+    $expectedCode = (string) ($_SESSION['admin_2fa_code'] ?? '');
+    $expiresAt = (int) ($_SESSION['admin_2fa_expires_at'] ?? 0);
+    $pendingUsername = (string) ($_SESSION['admin_2fa_username'] ?? '');
+    $pendingDisplayName = (string) ($_SESSION['admin_2fa_display_name'] ?? $pendingUsername);
+
+    if (!isAdminVerificationPending() || $expectedCode === '' || $pendingUsername === '') {
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_session_missing');
+
+        return false;
+    }
+
+    if ($expiresAt < time()) {
+        clearAdminTwoFactorPending();
+        $_SESSION['auth_error'] = authTrans('auth.admin_2fa_code_expired');
+
+        return false;
+    }
+
+    if (!hash_equals($expectedCode, $code)) {
+        $_SESSION['auth_error'] = authTrans('auth.invalid_admin_code');
 
         return false;
     }
 
     $_SESSION['admin_authenticated'] = true;
-    $_SESSION['admin_username'] = $configuredUsername;
-    $_SESSION['admin_display_name'] = $_SESSION['admin_display_name'] ?? $configuredUsername;
+    $_SESSION['admin_username'] = $pendingUsername;
+    $_SESSION['admin_display_name'] = $pendingDisplayName;
 
+    clearAdminTwoFactorPending();
     clearAuthFlash();
 
     return true;
+}
+
+function clearAdminTwoFactorPending(): void
+{
+    unset(
+        $_SESSION['admin_2fa_pending'],
+        $_SESSION['admin_2fa_username'],
+        $_SESSION['admin_2fa_display_name'],
+        $_SESSION['admin_2fa_code'],
+        $_SESSION['admin_2fa_expires_at']
+    );
 }
 
 function logoutAdmin(): void
@@ -99,6 +487,8 @@ function logoutAdmin(): void
         $_SESSION['admin_profile_error'],
         $_SESSION['admin_profile_success']
     );
+    clearAdminTwoFactorPending();
+    clearAdminEmailChangePending();
 }
 
 function redirectTo(Response $response, string $location): Response

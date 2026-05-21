@@ -109,6 +109,69 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tocLinks = document.querySelectorAll('[data-guide-toc-target]');
+    let highlightTimer = null;
+    let highlightedElement = null;
+    let scrollStopTimer = null;
+
+    const resolveHighlightElement = function (target) {
+        if (!target) {
+            return null;
+        }
+
+        return target;
+    };
+
+    const highlightTarget = function (target) {
+        const element = resolveHighlightElement(target);
+
+        if (!element) {
+            return;
+        }
+
+        if (highlightedElement && highlightedElement !== element) {
+            highlightedElement.classList.remove('quick-scroll-highlight');
+        }
+
+        element.classList.remove('quick-scroll-highlight');
+        void element.offsetWidth;
+        element.classList.add('quick-scroll-highlight');
+        highlightedElement = element;
+
+        if (highlightTimer) {
+            window.clearTimeout(highlightTimer);
+        }
+
+        highlightTimer = window.setTimeout(function () {
+            element.classList.remove('quick-scroll-highlight');
+            if (highlightedElement === element) {
+                highlightedElement = null;
+            }
+        }, 1100);
+    };
+
+    const highlightAfterArrival = function (target) {
+        const finish = function () {
+            window.removeEventListener('scrollend', finish);
+            window.removeEventListener('scroll', onScroll);
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+                scrollStopTimer = null;
+            }
+            highlightTarget(target);
+        };
+
+        const onScroll = function () {
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+            }
+
+            scrollStopTimer = window.setTimeout(finish, 120);
+        };
+
+        window.addEventListener('scrollend', finish, { once: true });
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+    };
 
     tocLinks.forEach(function (link) {
         link.addEventListener('click', function (event) {
@@ -121,6 +184,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             event.preventDefault();
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            highlightAfterArrival(target);
         });
     });
 });

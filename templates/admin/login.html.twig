@@ -12,19 +12,11 @@
         {% endif %}
 
         <form method="POST" action="{{ base_path }}/admin/login" class="admin-auth-form">
-            <label for="username">{{ trans('admin.username') }}</label>
-            <input id="username" type="text" name="username" value="{{ last_username|default('') }}" autocomplete="username" required>
-
-            <label for="password">{{ trans('admin.password') }}</label>
-            <input id="password" type="password" name="password" autocomplete="current-password" required>
+            <label for="pin">{{ trans('admin.pin') }}</label>
+            <input id="pin" type="password" name="pin" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" required>
 
             <button type="submit" class="contact-btn">{{ trans('admin.login_submit') }}</button>
         </form>
-
-        <p class="auth-switch-copy">
-            {{ trans('auth.back_to_regular_prompt') }}
-            <a href="{{ base_path }}/login">{{ trans('auth.back_to_regular_link') }}</a>
-        </p>
     </div>
 </section>
 {% endblock %}

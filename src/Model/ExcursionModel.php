@@ -137,7 +137,7 @@ class ExcursionModel
             'name' => trim((string) ($data['name'] ?? '')),
             'address' => trim((string) ($data['area'] ?? '')),
             'note' => trim((string) ($data['note'] ?? '')),
-            'website_url' => trim((string) ($data['url'] ?? '')),
+            'website_url' => $this->normalizeExternalUrl((string) ($data['url'] ?? '')),
             'website_label' => '',
             'video_url' => trim((string) ($data['video_url'] ?? '')),
         ];
@@ -311,11 +311,13 @@ class ExcursionModel
 
     private function mapItemRowToViewData(array $itemRow): array
     {
+        $url = $this->normalizeExternalUrl((string) ($itemRow['website_url'] ?? ''));
+
         return [
             'name' => $itemRow['name'] ?? null,
             'area' => $itemRow['address'] ?? null,
             'note' => $itemRow['note'] ?? null,
-            'url' => $itemRow['website_url'] ?? null,
+            'url' => $url !== '' ? $url : null,
             'url_label' => $itemRow['website_label'] ?? null,
             'video_url' => $itemRow['video_url'] ?? null,
         ];
@@ -328,7 +330,7 @@ class ExcursionModel
 
     private function labelFromUrl(string $url): string
     {
-        $url = trim($url);
+        $url = $this->normalizeExternalUrl($url);
 
         if ($url === '') {
             return '';
@@ -352,6 +354,25 @@ class ExcursionModel
         }
 
         return $host !== '' ? $host . '/' . $path : $path;
+    }
+
+    private function normalizeExternalUrl(string $url): string
+    {
+        $url = trim($url);
+
+        if ($url === '') {
+            return '';
+        }
+
+        if (preg_match('#^[a-z][a-z0-9+.-]*://#i', $url) === 1) {
+            return $url;
+        }
+
+        if (str_starts_with($url, '//')) {
+            return 'https:' . $url;
+        }
+
+        return 'https://' . ltrim($url, '/');
     }
 
     private function localizedMessage(string $key, string $language): string

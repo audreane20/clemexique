@@ -1062,96 +1062,31 @@ $app->post('/gestion-immobiliere/formulaire', function ($request, $response) use
     }
 });
 
-$app->get('/login', function ($request, $response) use ($twig, $translator, $basePath) {
-    if (isUserAuthenticated()) {
-        return redirectTo($response, $basePath . '/');
-    }
-
-    $error = consumeUserAuthError();
-    $success = consumeUserAuthSuccess();
-    $lastEmail = getLastUserEmail();
-    unset($_SESSION['user_auth_last_email']);
-
-    return $twig->render($response, 'login.html.twig', [
-        'page_title' => $translator->trans('auth.login_title'),
-        'error' => $error,
-        'success' => $success,
-        'last_email' => $lastEmail,
-    ]);
-});
-
-$app->post('/login', function ($request, $response) use ($userModel, $basePath) {
-    if (!attemptUserLogin((array) $request->getParsedBody(), $userModel)) {
-        return redirectTo($response, $basePath . '/login');
-    }
-
+$app->get('/login', function ($request, $response) use ($basePath) {
     return redirectTo($response, $basePath . '/');
 });
 
-$app->get('/register', function ($request, $response) use ($twig, $translator, $basePath) {
-    if (isUserAuthenticated()) {
-        return redirectTo($response, $basePath . '/');
-    }
-
-    $error = consumeUserAuthError();
-    $lastName = getLastUserName();
-    $lastEmail = getLastUserEmail();
-    unset($_SESSION['user_auth_last_name'], $_SESSION['user_auth_last_email']);
-
-    return $twig->render($response, 'register.html.twig', [
-        'page_title' => $translator->trans('auth.register_title'),
-        'error' => $error,
-        'last_name' => $lastName,
-        'last_email' => $lastEmail,
-    ]);
+$app->post('/login', function ($request, $response) use ($basePath) {
+    return redirectTo($response, $basePath . '/');
 });
 
-$app->post('/register', function ($request, $response) use ($userModel, $basePath) {
-    if (!attemptUserRegistration((array) $request->getParsedBody(), $userModel)) {
-        return redirectTo($response, $basePath . '/register');
-    }
-
-    return redirectTo($response, $basePath . '/profile');
+$app->get('/register', function ($request, $response) use ($basePath) {
+    return redirectTo($response, $basePath . '/');
 });
 
-$app->get('/profile', function ($request, $response) use ($twig, $translator, $userModel, $basePath) {
-    $user = $userModel->findById((int) getUserId());
+$app->post('/register', function ($request, $response) use ($basePath) {
+    return redirectTo($response, $basePath . '/');
+});
 
-    if ($user === null) {
-        logoutUser();
+$app->get('/profile', function ($request, $response) use ($basePath) {
+    return redirectTo($response, $basePath . '/');
+});
 
-        return redirectTo($response, $basePath . '/login');
-    }
-
-    return $twig->render($response, 'profile.html.twig', [
-        'page_title' => $translator->trans('profile.title'),
-        'success' => consumeUserProfileSuccess(),
-        'error' => consumeUserProfileError(),
-        'profile_name' => $user['name'],
-        'profile_email' => $user['email'],
-    ]);
-})->add($userAuthMiddleware);
-
-$app->post('/profile', function ($request, $response) use ($userModel, $basePath, $translator) {
-    $name = trim((string) (((array) $request->getParsedBody())['name'] ?? ''));
-    $userId = (int) getUserId();
-
-    if ($name === '') {
-        $_SESSION['user_profile_error'] = $translator->trans('profile.error_name_required');
-
-        return redirectTo($response, $basePath . '/profile');
-    }
-
-    $userModel->updateName($userId, $name);
-    $_SESSION['user_name'] = $name;
-    $_SESSION['user_profile_success'] = $translator->trans('profile.success_updated');
-
-    return redirectTo($response, $basePath . '/profile');
-})->add($userAuthMiddleware);
+$app->post('/profile', function ($request, $response) use ($basePath) {
+    return redirectTo($response, $basePath . '/');
+});
 
 $app->post('/logout', function ($request, $response) use ($basePath) {
-    logoutUser();
-
     return redirectTo($response, $basePath . '/');
 });
 
@@ -1166,15 +1101,21 @@ $app->get('/admin/login', function ($request, $response) use ($twig, $basePath, 
         return redirectTo($response, $basePath . '/admin/properties');
     }
 
+    if (isAdminVerificationPending()) {
+        return redirectTo($response, $basePath . '/admin/verify');
+    }
+
     $error = getAuthError();
-    $lastUsername = getLastAuthUsername();
     clearAuthFlash();
 
     return $twig->render($response, 'admin/login.html.twig', [
         'page_title' => $translator->trans('admin.login_title'),
         'error' => $error,
-        'last_username' => $lastUsername,
     ]);
+});
+
+$app->get('/rmadmin', function ($request, $response) use ($basePath) {
+    return redirectTo($response, $basePath . '/admin/login');
 });
 
 $app->post('/admin/login', function ($request, $response) use ($basePath) {
@@ -1182,8 +1123,82 @@ $app->post('/admin/login', function ($request, $response) use ($basePath) {
         return redirectTo($response, $basePath . '/admin/login');
     }
 
+    return redirectTo($response, $basePath . '/admin/verify');
+});
+
+$app->get('/admin/verify', function ($request, $response) use ($twig, $basePath, $translator) {
+    if (isAdminAuthenticated()) {
+        return redirectTo($response, $basePath . '/admin/properties');
+    }
+
+    if (!isAdminVerificationPending()) {
+        return redirectTo($response, $basePath . '/admin/login');
+    }
+
+    $error = getAuthError();
+    $success = getAuthSuccess();
+    clearAuthFlash();
+
+    return $twig->render($response, 'admin/verify.html.twig', [
+        'page_title' => $translator->trans('admin.verify_title'),
+        'error' => $error,
+        'success' => $success,
+        'admin_email' => getMaskedPrimaryAdminTwoFactorEmail(),
+        'secondary_admin_email' => hasAdminBackupTwoFactorEmail() ? maskEmailAddress(getAdminBackupTwoFactorEmail()) : '',
+    ]);
+});
+
+$app->post('/admin/verify', function ($request, $response) use ($basePath) {
+    if (!attemptAdminTwoFactorVerification((array) $request->getParsedBody())) {
+        return redirectTo($response, $basePath . '/admin/verify');
+    }
+
     return redirectTo($response, $basePath . '/admin/properties');
 });
+
+$app->post('/admin/verify/use-backup', function ($request, $response) use ($basePath) {
+    if (!resendPendingAdminVerificationCodeToBackup()) {
+        return redirectTo($response, $basePath . '/admin/verify');
+    }
+
+    return redirectTo($response, $basePath . '/admin/verify');
+});
+
+$app->get('/admin/change-email', function ($request, $response) use ($twig, $basePath, $translator) {
+    $error = getAuthError();
+    $success = getAuthSuccess();
+    clearAuthFlash();
+
+    return $twig->render($response, 'admin/change-email.html.twig', [
+        'page_title' => $translator->trans('admin.change_email_title'),
+        'error' => $error,
+        'success' => $success,
+        'current_email' => getAdminTwoFactorEmail(),
+        'backup_email' => getAdminBackupTwoFactorEmail(),
+        'pending_new_email' => isAdminEmailChangePending() ? ($_SESSION['admin_email_change_new'] ?? '') : '',
+        'is_change_verification_pending' => isAdminEmailChangePending(),
+    ]);
+})->add($adminAuthMiddleware);
+
+$app->post('/admin/change-email/start', function ($request, $response) use ($basePath) {
+    $newEmail = strtolower(trim((string) (((array) $request->getParsedBody())['email'] ?? '')));
+
+    if (!startAdminEmailChangeVerification($newEmail)) {
+        return redirectTo($response, $basePath . '/admin/change-email');
+    }
+
+    $_SESSION['auth_success'] = authTrans('admin.change_email_verify_success');
+
+    return redirectTo($response, $basePath . '/admin/change-email');
+})->add($adminAuthMiddleware);
+
+$app->post('/admin/change-email/verify', function ($request, $response) use ($basePath) {
+    if (!attemptAdminEmailChangeVerification((array) $request->getParsedBody())) {
+        return redirectTo($response, $basePath . '/admin/change-email');
+    }
+
+    return redirectTo($response, $basePath . '/admin/profile');
+})->add($adminAuthMiddleware);
 
 $app->post('/admin/logout', function ($request, $response) use ($basePath) {
     logoutAdmin();

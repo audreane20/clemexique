@@ -30,33 +30,14 @@
             </div>
         {% endif %}
 
-        <form class="inquiry-form" method="POST" action="{{ base_path }}/demande-information?lang={{ app_lang }}">
+        <form class="inquiry-form" method="POST" action="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}">
             <input type="hidden" name="preferred_language" value="{{ app_lang }}">
-
-            <section class="inquiry-intent-row">
-                <div class="inquiry-interest-label">
-                    <span class="inquiry-step">1</span>
-                    <span>{{ trans('info_request.intent_title') }}</span>
-                </div>
-
-                <div class="inquiry-pill-options">
-                    <label class="inquiry-pill-option">
-                        <input type="radio" name="intent" value="achat" {% if form_data.intent == 'achat' %}checked{% endif %} required>
-                        <img src="{{ base_path }}/images/Icon_house.png" alt="" class="inquiry-pill-icon-image">
-                        <span>{{ trans('properties.mode_buy') }}</span>
-                    </label>
-                    <label class="inquiry-pill-option">
-                        <input type="radio" name="intent" value="location" {% if form_data.intent == 'location' %}checked{% endif %} required>
-                        <img src="{{ base_path }}/images/Icon_Key.png" alt="" class="inquiry-pill-icon-image">
-                        <span>{{ trans('properties.mode_rent') }}</span>
-                    </label>
-                </div>
-            </section>
+            <input type="hidden" name="intent" value="achat">
 
             <div class="inquiry-grid inquiry-grid-top">
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">2</span>
+                        <span class="inquiry-step">1</span>
                         <h2>{{ trans('info_request.client_title') }}</h2>
                     </div>
 
@@ -86,7 +67,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">3</span>
+                        <span class="inquiry-step">2</span>
                         <h2>{{ trans('info_request.location_title') }}</h2>
                     </div>
 
@@ -123,7 +104,7 @@
             <div class="inquiry-grid inquiry-grid-middle">
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">4</span>
+                        <span class="inquiry-step">3</span>
                         <h2>{{ trans('info_request.bedrooms_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -140,7 +121,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">5</span>
+                        <span class="inquiry-step">4</span>
                         <h2>{{ trans('info_request.bathrooms_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -156,7 +137,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">6</span>
+                        <span class="inquiry-step">5</span>
                         <h2>{{ trans('info_request.pool_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -171,7 +152,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">7</span>
+                        <span class="inquiry-step">6</span>
                         <h2>{{ trans('info_request.beach_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -196,7 +177,7 @@
             <div class="inquiry-grid inquiry-grid-bottom">
                 <section class="inquiry-card inquiry-parking-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">8</span>
+                        <span class="inquiry-step">7</span>
                         <h2>{{ trans('info_request.parking_title') }}</h2>
                     </div>
 
@@ -220,7 +201,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">9</span>
+                        <span class="inquiry-step">8</span>
                         <h2>{{ trans('info_request.elevator_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -235,7 +216,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">10</span>
+                        <span class="inquiry-step">9</span>
                         <h2>{{ trans('info_request.animals_title') }}</h2>
                     </div>
                     <div class="inquiry-option-layout">
@@ -250,7 +231,7 @@
 
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">11</span>
+                        <span class="inquiry-step">10</span>
                         <h2>{{ trans('info_request.project_name_title') }}</h2>
                     </div>
                     <div class="inquiry-budget-layout">
@@ -266,7 +247,7 @@
             <div class="inquiry-grid inquiry-grid-footer">
                 <section class="inquiry-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">12</span>
+                        <span class="inquiry-step">11</span>
                         <h2>{{ trans('info_request.budget_title') }}</h2>
                     </div>
 
@@ -292,7 +273,7 @@
 
                 <section class="inquiry-card inquiry-comments-card">
                     <div class="inquiry-card-heading">
-                        <span class="inquiry-step">13</span>
+                        <span class="inquiry-step">12</span>
                         <h2>{{ trans('info_request.comments_title') }}</h2>
                     </div>
                     <div class="inquiry-budget-layout">

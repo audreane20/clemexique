@@ -748,10 +748,11 @@ body.mobile-menu-open {
 }
 
 .admin-properties-shell,
+.admin-content-shell,
 .property-public-shell {
-    width: min(1200px, calc(100% - 48px));
+    width: min(1040px, calc(100% - 48px));
     margin: 0 auto;
-    padding: 32px 0 72px;
+    padding: 32px 0 44px;
 }
 
 .home-toc-shell {
@@ -823,6 +824,18 @@ body.mobile-menu-open {
     display: grid;
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 16px;
+}
+
+#home-properties,
+#home-info-request,
+#home-info-request-rent,
+#home-residency,
+#home-rental,
+#home-management,
+#home-restaurants,
+#home-excursions,
+#home-playa-guide {
+    scroll-margin-top: 120px;
 }
 
 .home-toc-link {
@@ -903,7 +916,9 @@ body.mobile-menu-open {
 }
 
 .property-form-card,
-.property-admin-preview {
+.property-admin-preview,
+.admin-content-card,
+.admin-content-preview-panel {
     background: rgba(255, 255, 255, 0.96);
     border-radius: 28px;
     padding: 28px;
@@ -918,13 +933,24 @@ body.mobile-menu-open {
     padding: 0;
 }
 
-.admin-content-preview .property-admin-preview-header {
+.admin-content-preview-panel.admin-content-preview {
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: 0 18px 40px rgba(11, 53, 88, 0.12);
+    border: 1px solid rgba(11, 53, 88, 0.08);
+}
+
+.admin-content-preview .property-admin-preview-header,
+.admin-content-preview .admin-content-preview-header {
     margin-bottom: 18px;
     padding: 0 4px;
 }
 
 .property-form-card h2,
-.property-admin-preview-header h2 {
+.admin-content-card h2,
+.property-admin-preview-header h2,
+.admin-content-preview-header h2 {
     margin: 0 0 18px;
     color: var(--navy);
     font-size: 28px;
@@ -1357,7 +1383,7 @@ body.mobile-menu-open {
 }
 
 #home-properties .property-public-header {
-    margin-bottom: 8px;
+    margin-bottom: 32px;
 }
 
 #home-properties .property-filter-bar {
@@ -1413,54 +1439,80 @@ body.mobile-menu-open {
 }
 
 .property-public-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 36px;
-    align-items: start;
+    display: flex;
+    flex-direction: column;
+    gap: 26px;
+    align-items: center;
+}
+
+.property-public-row {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    width: fit-content;
+    max-width: 100%;
 }
 
 .property-public-card {
-    display: grid;
-    justify-items: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
-    max-width: 340px;
+    flex: 0 1 220px;
+    max-width: 220px;
     margin: 0 auto;
-    padding: 18px 18px 28px;
+    width: 100%;
+    padding: 14px 14px 20px;
     border: 1.5px solid rgba(11, 53, 88, 0.14);
-    border-radius: 26px;
+    border-radius: 22px;
     background: rgba(255, 255, 255, 0.92);
     box-shadow: 0 12px 28px rgba(11, 53, 88, 0.08);
 }
 
+.property-public-row-3 .property-public-card {
+    flex-basis: 260px;
+    max-width: 260px;
+}
+
+.property-public-row-4 .property-public-card {
+    flex-basis: 235px;
+    max-width: 235px;
+}
+
+.property-public-row-5 .property-public-card {
+    flex-basis: 220px;
+    max-width: 220px;
+}
+
 .property-public-image {
     width: 100%;
-    max-width: 300px;
     aspect-ratio: 1 / 1;
     object-fit: cover;
     display: block;
-    border-radius: 20px;
+    border-radius: 18px;
 }
 
 .property-public-card h2 {
-    margin: 22px 0 0;
+    margin: 16px 0 0;
     color: #000000;
-    font-size: 30px;
-    line-height: 1.08;
+    font-size: 21px;
+    line-height: 1.12;
     font-weight: 800;
 }
 
 .property-public-card p {
-    margin: 12px 0 0;
+    margin: 8px 0 0;
 }
 
 .property-public-price-primary {
     font-weight: 800;
+    font-size: 14px;
 }
 
 .property-public-price-secondary {
-    margin-top: 6px;
+    margin-top: 4px;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 500;
 }
 
@@ -1468,25 +1520,30 @@ body.mobile-menu-open {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-height: 60px;
+    min-height: 50px;
     width: 100%;
     max-width: 100%;
-    margin-top: 26px;
-    padding: 14px 20px;
+    margin-top: auto;
+    padding: 12px 14px;
+    margin-bottom: 0;
     border: 1px solid rgba(11, 53, 88, 0.18);
-    border-radius: 16px;
+    border-radius: 14px;
     background: linear-gradient(135deg, var(--turquoise-light), #ffffff 70%);
     color: var(--navy);
     text-decoration: none;
     text-align: center;
-    font-size: 17px;
+    font-size: 14px;
     font-weight: 800;
-    line-height: 1.25;
+    line-height: 1.2;
     box-sizing: border-box;
     word-break: normal;
     overflow-wrap: anywhere;
     box-shadow: 0 10px 24px rgba(11, 53, 88, 0.08);
     transition: 0.2s ease;
+}
+
+.property-public-card .property-public-price-secondary {
+    margin-bottom: 14px;
 }
 
 .property-public-link:hover {
@@ -1901,26 +1958,26 @@ body.mobile-menu-open {
 }
 
 .info-request-shell {
-    width: min(1200px, calc(100% - 48px));
+    width: min(1040px, calc(100% - 48px));
     margin: 0 auto;
-    padding: 0 0 72px;
+    padding: 0 0 28px;
 }
 
 .info-request-shell-secondary {
     padding-top: 0;
-    margin-top: -36px;
+    margin-top: -12px;
 }
 
 .info-request-card {
-    padding: 36px;
+    padding: 28px 30px;
     border: 1px solid rgba(11, 53, 88, 0.1);
-    border-radius: 28px;
+    border-radius: 24px;
     background: rgba(255, 255, 255, 0.96);
     box-shadow: 0 18px 40px rgba(11, 53, 88, 0.08);
 }
 
 .info-request-card-compact {
-    padding: 28px 36px 32px;
+    padding: 24px 30px 28px;
 }
 
 .info-request-eyebrow {
@@ -1935,7 +1992,94 @@ body.mobile-menu-open {
 .info-request-card h2 {
     margin: 0;
     color: var(--navy);
-    font-size: clamp(30px, 3vw, 40px);
+    font-size: clamp(24px, 2.4vw, 34px);
+}
+
+.purchase-guide-card {
+    margin-top: 26px;
+    padding: 24px;
+    border: 1px solid rgba(11, 53, 88, 0.1);
+    border-radius: 24px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(244, 251, 255, 0.94));
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.purchase-guide-card h2,
+.purchase-guide-card h3 {
+    margin: 0 0 12px;
+    color: var(--navy);
+    font-size: clamp(24px, 2.4vw, 30px);
+}
+
+.purchase-guide-card p {
+    margin: 0;
+    color: #52606d;
+    line-height: 1.7;
+}
+
+.purchase-guide-card p + p {
+    margin-top: 10px;
+}
+
+.purchase-guide-table-wrap {
+    margin-top: 18px;
+}
+
+.purchase-guide-table-title {
+    font-weight: 800;
+    color: var(--navy);
+}
+
+.purchase-guide-table-subtitle {
+    margin-top: 6px;
+    font-size: 14px;
+}
+
+.purchase-guide-table {
+    width: 100%;
+    margin-top: 16px;
+    border-collapse: collapse;
+    border-radius: 18px;
+    overflow: hidden;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.purchase-guide-table th,
+.purchase-guide-table td {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(11, 53, 88, 0.08);
+    text-align: left;
+}
+
+.purchase-guide-table th {
+    color: var(--navy);
+    font-weight: 700;
+}
+
+.purchase-guide-table td {
+    color: #1e425e;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.purchase-guide-table tfoot th,
+.purchase-guide-table tfoot td {
+    border-bottom: 0;
+    background: rgba(31, 163, 179, 0.1);
+    font-size: 17px;
+}
+
+.purchase-guide-table-note {
+    margin-top: 12px;
+    font-size: 14px;
+}
+
+.purchase-guide-card-form {
+    margin-bottom: 28px;
+}
+
+.purchase-guide-card-page {
+    margin-top: 24px;
 }
 
 .info-request-secondary-title {
@@ -1946,15 +2090,20 @@ body.mobile-menu-open {
     max-width: 760px;
     margin: 14px 0 0;
     color: #52606d;
-    font-size: 18px;
+    font-size: 16px;
     line-height: 1.6;
+}
+
+.info-request-copy-emphasis {
+    color: var(--navy);
+    font-size: 17px;
 }
 
 .info-request-actions {
     display: flex;
     flex-wrap: wrap;
     gap: 14px;
-    margin-top: 24px;
+    margin-top: 18px;
 }
 
 .info-request-link {
@@ -1967,6 +2116,14 @@ body.mobile-menu-open {
     color: #ffffff;
     font-weight: 700;
     text-decoration: none;
+}
+
+.info-request-link-disabled {
+    background: linear-gradient(135deg, rgba(229, 237, 242, 0.98), rgba(245, 249, 252, 0.98));
+    color: #6b7c93;
+    border: 1px solid rgba(11, 53, 88, 0.12);
+    cursor: default;
+    pointer-events: none;
 }
 
 .residency-hero {
@@ -3693,8 +3850,25 @@ body.mobile-menu-open {
         overflow-x: hidden;
     }
 
+    .page-content,
+    .admin-properties-shell,
+    .admin-properties-layout,
+    .property-form-card,
+    .property-admin-preview,
+    .property-gallery-admin-card,
+    .admin-content-layout,
+    .admin-content-create-card,
+    .admin-content-preview {
+        min-width: 0;
+        max-width: 100%;
+        overflow-x: hidden;
+        box-sizing: border-box;
+    }
+
     .site-header {
-        position: static;
+        position: sticky;
+        top: 0;
+        z-index: 100;
     }
 
     .header-container {
@@ -3838,7 +4012,18 @@ body.mobile-menu-open {
         width: min(280px, calc(100vw - 32px));
     }
 
+    .header-admin-menu .account-menu-panel {
+        top: auto;
+        bottom: calc(100% + 10px);
+        left: 50%;
+        right: auto;
+        transform: translateX(-50%);
+        width: min(280px, calc(100vw - 32px));
+        min-width: 210px;
+    }
+
     .admin-properties-shell,
+    .admin-content-shell,
     .home-toc-shell,
     .property-public-shell,
     .property-detail-shell,
@@ -3863,8 +4048,7 @@ body.mobile-menu-open {
     }
 
     .admin-properties-layout,
-    .property-admin-grid,
-    .property-gallery-admin-grid,
+    .admin-content-layout,
     .property-form-row,
     .property-radio-group,
     .residency-steps,
@@ -3881,9 +4065,33 @@ body.mobile-menu-open {
         grid-template-columns: 1fr;
     }
 
+    .property-admin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+    }
+
+    .property-gallery-admin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
     .property-public-grid {
+        display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 14px;
+        align-items: stretch;
+    }
+
+    .property-public-row {
+        display: contents;
+    }
+
+    .property-public-card,
+    .property-public-row-3 .property-public-card,
+    .property-public-row-4 .property-public-card,
+    .property-public-row-5 .property-public-card {
+        flex-basis: auto;
+        max-width: none;
     }
 
     .home-toc-grid {
@@ -3903,6 +4111,280 @@ body.mobile-menu-open {
     .residency-step-card,
     .residency-note {
         padding: 18px 16px;
+    }
+
+    .purchase-guide-card {
+        padding: 20px;
+    }
+
+    .property-form-card,
+    .admin-content-card,
+    .admin-content-create-card,
+    .admin-content-preview,
+    .admin-content-preview-panel,
+    .property-gallery-admin-card {
+        padding: 12px 10px;
+        border-radius: 18px;
+    }
+
+    .property-form-card h2,
+    .admin-content-card h2,
+    .admin-content-form-header h2,
+    .admin-content-form-header h4,
+    .admin-properties-header h1 {
+        font-size: 16px;
+        line-height: 1.1;
+    }
+
+    .property-form {
+        gap: 10px;
+    }
+
+    .property-form label {
+        gap: 6px;
+        font-size: 14px;
+    }
+
+    .property-field-help {
+        font-size: 11px;
+        line-height: 1.35;
+    }
+
+    .property-file-input-display {
+        padding: 8px 10px;
+        border-radius: 14px;
+    }
+
+    .property-file-input-button {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+
+    .property-file-input-text {
+        font-size: 12px;
+        line-height: 1.25;
+    }
+
+    .property-admin-card {
+        border-radius: 18px;
+    }
+
+    .property-admin-card-body {
+        padding: 8px;
+    }
+
+    .property-admin-card-body h3 {
+        font-size: 13px;
+        line-height: 1.15;
+    }
+
+    .property-admin-city {
+        margin-top: 4px;
+        font-size: 12px;
+        line-height: 1.2;
+    }
+
+    .property-admin-price {
+        margin-top: 4px;
+        font-size: 11px;
+    }
+
+    .property-admin-count {
+        margin-top: 4px;
+        font-size: 10px;
+    }
+
+    .property-admin-actions {
+        gap: 6px;
+        margin-top: 8px;
+    }
+
+    .property-admin-secondary-actions {
+        gap: 6px;
+    }
+
+    .property-admin-actions .header-auth-link,
+    .property-admin-actions .account-menu-button,
+    .property-edit-link,
+    .property-delete-button {
+        min-height: 32px;
+        padding: 6px 8px;
+        font-size: 11px;
+        line-height: 1.15;
+    }
+
+    .property-gallery-admin-help,
+    .admin-content-form-header p,
+    .admin-content-inline-title p,
+    .admin-content-category-header p,
+    .admin-content-item-summary-main p,
+    .admin-content-item-meta,
+    .admin-content-empty-items,
+    .admin-content-field-note {
+        font-size: 13px;
+        line-height: 1.4;
+    }
+
+    .property-gallery-admin-tools {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr;
+        justify-content: stretch;
+        gap: 8px;
+    }
+
+    .property-gallery-admin-card .property-admin-preview-header {
+        display: grid;
+        gap: 10px;
+        margin-bottom: 14px;
+        padding: 0;
+    }
+
+    .property-gallery-admin-card .property-admin-preview-header > div:first-child {
+        min-width: 0;
+    }
+
+    .property-gallery-admin-card .property-admin-preview-header h2 {
+        margin: 0;
+        font-size: 16px;
+        line-height: 1.15;
+        overflow-wrap: anywhere;
+    }
+
+    .property-gallery-toggle-button {
+        width: 100%;
+        min-height: 40px;
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    .property-gallery-admin-item {
+        min-width: 0;
+    }
+
+    .property-gallery-admin-item *,
+    .property-admin-card *,
+    .admin-content-category-card *,
+    .admin-content-item-card * {
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
+    .property-gallery-admin-item input {
+        inset: 6px auto auto 6px;
+        width: 16px;
+        height: 16px;
+    }
+
+    .property-gallery-admin-primary {
+        top: 6px;
+        right: 6px;
+    }
+
+    .property-gallery-admin-primary-button,
+    .property-gallery-admin-primary-badge {
+        padding: 6px 8px;
+        font-size: 11px;
+        max-width: calc(100% - 12px);
+        white-space: normal;
+        text-align: center;
+        line-height: 1.15;
+    }
+
+    .property-gallery-admin-item img,
+    .property-gallery-admin-item video {
+        border-radius: 12px;
+    }
+
+    .property-delete-selected-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .admin-content-section-links,
+    .admin-content-language-links,
+    .admin-content-quick-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        width: 100%;
+    }
+
+    .admin-content-section-link,
+    .admin-content-language-link,
+    .admin-content-quick-link {
+        min-height: 0;
+        width: 100%;
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.25;
+        text-align: center;
+    }
+
+    .admin-content-category-card {
+        padding: 14px;
+        border-radius: 18px;
+        gap: 12px;
+    }
+
+    .admin-content-category-header,
+    .admin-content-item-summary {
+        display: grid;
+        gap: 10px;
+    }
+
+    .admin-content-category-title-row {
+        flex-wrap: wrap;
+    }
+
+    .admin-content-category-header h3,
+    .admin-content-add-item h4,
+    .admin-content-item-summary-main h4 {
+        font-size: 16px;
+        line-height: 1.2;
+    }
+
+    .admin-content-card-actions {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .admin-content-card-actions form {
+        width: 100%;
+    }
+
+    .admin-content-card-actions .header-auth-link,
+    .admin-content-card-actions .property-delete-button,
+    .admin-content-add-item .contact-btn,
+    .admin-content-form .contact-btn,
+    .admin-content-form .header-auth-link,
+    .admin-content-form-inline .contact-btn,
+    .admin-content-form-inline .header-auth-link {
+        width: 100%;
+        min-height: 40px;
+        padding-inline: 12px;
+        font-size: 13px;
+    }
+
+    .admin-content-form input:not([type="hidden"]),
+    .admin-content-form select,
+    .admin-content-item-card input:not([type="hidden"]),
+    .admin-content-item-card select,
+    .property-form input,
+    .property-form select,
+    .property-form textarea,
+    .admin-content-reference-trigger {
+        min-height: 40px;
+        padding: 9px 11px;
+        font-size: 14px;
+        border-radius: 12px;
+    }
+
+    .property-form textarea {
+        min-height: 88px;
+        line-height: 1.35;
     }
 
     .home-toc-shell {
@@ -3961,6 +4443,11 @@ body.mobile-menu-open {
     .info-request-card-compact {
         padding: 12px 12px 14px;
         border-radius: 16px;
+    }
+
+    .purchase-guide-table th,
+    .purchase-guide-table td {
+        padding: 12px 14px;
     }
 
     .info-request-card h2,
@@ -4370,6 +4857,69 @@ body.mobile-menu-open {
     .residency-note,
     .property-public-card {
         padding: 14px;
+    }
+
+    .property-form-card,
+    .admin-content-card,
+    .admin-content-create-card,
+    .admin-content-preview,
+    .admin-content-preview-panel,
+    .property-gallery-admin-card {
+        padding: 10px 8px;
+        border-radius: 16px;
+    }
+
+    .property-form-card h2,
+    .admin-content-card h2,
+    .admin-content-form-header h2,
+    .admin-content-form-header h4,
+    .admin-properties-header h1 {
+        font-size: 15px;
+    }
+
+    .property-form {
+        gap: 8px;
+    }
+
+    .property-form label,
+    .property-field-help,
+    .property-file-input-text {
+        font-size: 11px;
+    }
+
+    .property-form input,
+    .property-form select,
+    .property-form textarea {
+        min-height: 36px;
+        padding: 8px 10px;
+        font-size: 13px;
+    }
+
+    .property-form textarea {
+        min-height: 72px;
+    }
+
+    .property-admin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .property-gallery-admin-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .property-gallery-admin-primary-button,
+    .property-gallery-admin-primary-badge {
+        padding: 5px 7px;
+        font-size: 10px;
+    }
+
+    .admin-content-section-links,
+    .admin-content-language-links,
+    .admin-content-quick-links,
+    .admin-content-card-actions {
+        grid-template-columns: 1fr;
     }
 
     .about-container h1,

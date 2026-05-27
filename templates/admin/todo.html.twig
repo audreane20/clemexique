@@ -142,7 +142,7 @@
 {% set is_editing_item = editing_item is not null %}
 {% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
 {% set selected_category_choice = is_editing_item ? editing_item_category_index : '' %}
-<section class="admin-properties-shell">
+<section class="admin-content-shell">
     <div class="admin-properties-header">
         <div>
             <p class="admin-properties-eyebrow">{{ ui[app_lang].eyebrow }}</p>
@@ -160,7 +160,7 @@
     {% endif %}
 
     <div class="admin-content-layout">
-        <section class="property-form-card admin-content-create-card">
+        <section class="admin-content-card admin-content-create-card">
             <div class="admin-content-form-header">
                 <div>
                     <h2>
@@ -333,8 +333,8 @@
             </form>
         </section>
 
-        <section class="property-admin-preview admin-content-preview">
-            <div class="property-admin-preview-header">
+        <section class="admin-content-preview-panel admin-content-preview">
+            <div class="admin-content-preview-header">
                 <div>
                     <p class="property-preview-label">{{ ui[app_lang].current_sections }}</p>
                     <h2>{{ categories|length }} {{ ui[app_lang].categories }}</h2>

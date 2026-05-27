@@ -1,0 +1,47 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ trans('purchase_guide.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('purchase_guide.page_title') }}</h1>
+    <p>{{ trans('purchase_guide.intro') }}</p>
+
+    <div class="residency-note">
+        <h2>{{ trans('purchase_guide.fideicomiso_title') }}</h2>
+        <p>{{ trans('purchase_guide.fideicomiso_copy_1') }}</p>
+        <p>{{ trans('purchase_guide.fideicomiso_copy_2') }}</p>
+    </div>
+
+    <div class="purchase-guide-card purchase-guide-card-page">
+        <div class="purchase-guide-table-wrap">
+            <p class="purchase-guide-table-title">{{ trans('purchase_guide.fees_title') }}</p>
+            <p class="purchase-guide-table-subtitle">{{ trans('purchase_guide.fees_subtitle') }}</p>
+
+            <table class="purchase-guide-table">
+                <tbody>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_fideicomiso') }}</th><td>750 $ CAD</td></tr>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_water') }}</th><td>300 $ CAD</td></tr>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_electricity') }}</th><td>1 800 $ CAD</td></tr>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_condo') }}</th><td>3 780 $ CAD</td></tr>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_internet') }}</th><td>480 $ CAD</td></tr>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_banking') }}</th><td>500 $ CAD</td></tr>
+                    <tr><th scope="row">{{ trans('purchase_guide.fee_taxes') }}</th><td>800 $ CAD</td></tr>
+                </tbody>
+                <tfoot>
+                    <tr><th scope="row">{{ trans('purchase_guide.total_label') }}</th><td>8 410 $ CAD</td></tr>
+                </tfoot>
+            </table>
+
+            <p class="purchase-guide-table-note">{{ trans('purchase_guide.condo_note') }}</p>
+        </div>
+    </div>
+
+    <div class="page-home-actions">
+        <a href="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}" class="info-request-link">{{ trans('info_request.form_cta') }}</a>
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+    </div>
+</section>
+{% endblock %}

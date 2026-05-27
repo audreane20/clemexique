@@ -194,7 +194,7 @@ $renderInquiryForm = function ($response, array $params = []) use ($twig, $trans
         'success' => false,
         'error' => null,
         'form_data' => [
-            'intent' => '',
+            'intent' => 'achat',
             'name' => '',
             'email' => '',
             'phone' => '',
@@ -356,6 +356,12 @@ $app->get('/location-automobiles', function ($request, $response) use ($twig, $t
     ]);
 });
 
+$app->get('/demande-information', function ($request, $response) use ($twig, $translator) {
+    return $twig->render($response, 'purchase-guide.html.twig', [
+        'page_title' => $translator->trans('purchase_guide.page_title'),
+    ]);
+});
+
 $app->get('/gestion-immobiliere', function ($request, $response) use ($twig, $translator) {
     return $twig->render($response, 'property-management.html.twig', [
         'page_title' => $translator->trans('property_management.page_title'),
@@ -385,7 +391,7 @@ $app->get('/location-automobiles/formulaire', function ($request, $response) use
     ]);
 });
 
-$app->get('/demande-information', function ($request, $response) use ($renderInquiryForm, $consumeInquiryFlash) {
+$app->get('/demande-information/formulaire', function ($request, $response) use ($renderInquiryForm, $consumeInquiryFlash) {
     $flash = $consumeInquiryFlash();
 
     return $renderInquiryForm($response, [
@@ -498,12 +504,12 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
     }
 });
 
-$app->post('/demande-information', function ($request, $response) use ($translator, $mailTranslator, $configureMailer, $formatPreferredLanguageForMail, $buildLocalizedPath) {
+$app->post('/demande-information/formulaire', function ($request, $response) use ($translator, $mailTranslator, $configureMailer, $formatPreferredLanguageForMail, $buildLocalizedPath) {
     $data = $request->getParsedBody();
 
     $formData = [
         'preferred_language' => trim((string) ($data['preferred_language'] ?? 'fr')),
-        'intent' => trim((string) ($data['intent'] ?? '')),
+        'intent' => 'achat',
         'name' => trim((string) ($data['name'] ?? '')),
         'email' => trim((string) ($data['email'] ?? '')),
         'phone' => trim((string) ($data['phone'] ?? '')),
@@ -524,14 +530,13 @@ $app->post('/demande-information', function ($request, $response) use ($translat
         'comments' => trim((string) ($data['comments'] ?? '')),
     ];
 
-    $redirectTarget = $buildLocalizedPath('/demande-information', $formData['preferred_language']);
+    $redirectTarget = $buildLocalizedPath('/demande-information/formulaire', $formData['preferred_language']);
 
     if ($formData['city'] === '' && $formData['other_city'] !== '') {
         $formData['city'] = 'other';
     }
 
     $requiredFields = [
-        'intent',
         'name',
         'email',
         'phone',

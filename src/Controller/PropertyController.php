@@ -1359,7 +1359,7 @@ class PropertyController
             'name' => trim((string) ($data['name'] ?? '')),
             'city' => trim((string) ($data['city'] ?? '')),
             'description' => trim((string) ($data['description'] ?? '')),
-            'listing_mode' => trim((string) ($data['listing_mode'] ?? 'achat')),
+            'listing_mode' => 'achat',
             'price_amount' => trim((string) ($data['price_amount'] ?? '')),
             'price_currency' => trim((string) ($data['price_currency'] ?? 'CAD')),
         ];

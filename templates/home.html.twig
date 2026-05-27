@@ -15,8 +15,12 @@
                 <span class="home-toc-link-copy">{{ trans('home.toc_properties_copy') }}</span>
             </a>
             <a href="#home-info-request" class="home-toc-link" data-home-toc-target="home-info-request">
-                <span class="home-toc-link-title">{{ trans('home.toc_info_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_info_copy') }}</span>
+                <span class="home-toc-link-title">{{ app_lang == 'fr' ? 'Demande d’achat' : (app_lang == 'es' ? 'Solicitud de compra' : 'Buying request') }}</span>
+                <span class="home-toc-link-copy">{{ app_lang == 'fr' ? 'Ouvrez le formulaire pour votre projet d’achat immobilier.' : (app_lang == 'es' ? 'Abre el formulario inmobiliario para tu proyecto de compra.' : 'Open the real estate inquiry form for your buying project.') }}</span>
+            </a>
+            <a href="#home-info-request-rent" class="home-toc-link" data-home-toc-target="home-info-request-rent">
+                <span class="home-toc-link-title">{{ trans('home.toc_info_rent_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_info_rent_copy') }}</span>
             </a>
             <a href="#home-residency" class="home-toc-link" data-home-toc-target="home-residency">
                 <span class="home-toc-link-title">{{ trans('home.toc_residency_title') }}</span>
@@ -51,41 +55,46 @@
         <h1>{{ trans('properties.title') }}</h1>
     </div>
 
-    <div class="property-filter-bar">
-        <span class="property-filter-label">{{ trans('properties.filter_label') }}</span>
-        <div class="property-filter-actions">
-            <a href="{{ base_path }}/?lang={{ app_lang }}&mode=all" class="property-filter-link {{ selected_mode == 'all' ? 'active' : '' }}">
-                {{ trans('properties.filter_all') }}
-            </a>
-            <a href="{{ base_path }}/?lang={{ app_lang }}&mode=achat" class="property-filter-link {{ selected_mode == 'achat' ? 'active' : '' }}">
-                {{ trans('properties.mode_buy') }}
-            </a>
-            <a href="{{ base_path }}/?lang={{ app_lang }}&mode=location" class="property-filter-link {{ selected_mode == 'location' ? 'active' : '' }}">
-                {{ trans('properties.mode_rent') }}
-            </a>
-        </div>
-    </div>
-
     {% if properties is empty %}
         <div class="property-empty-state property-empty-state-public">
             <p>{{ trans('properties.empty') }}</p>
         </div>
     {% else %}
+        {% set property_count = properties|length %}
+        {% if property_count <= 5 %}
+            {% set property_rows = [properties] %}
+        {% elseif property_count == 6 %}
+            {% set property_rows = [properties|slice(0, 3), properties|slice(3, 3)] %}
+        {% elseif property_count == 7 %}
+            {% set property_rows = [properties|slice(0, 3), properties|slice(3, 4)] %}
+        {% elseif property_count == 8 %}
+            {% set property_rows = [properties|slice(0, 4), properties|slice(4, 4)] %}
+        {% elseif property_count == 9 %}
+            {% set property_rows = [properties|slice(0, 4), properties|slice(4, 5)] %}
+        {% elseif property_count == 10 %}
+            {% set property_rows = [properties|slice(0, 5), properties|slice(5, 5)] %}
+        {% else %}
+            {% set property_rows = properties|batch(5) %}
+        {% endif %}
+
         <div class="property-public-grid">
-            {% for property in properties %}
-                <article class="property-public-card">
-                    <img src="{{ property.image_url }}" alt="{{ property.name }}" class="property-public-image">
+            {% for property_row in property_rows %}
+                <div class="property-public-row property-public-row-{{ property_row|length }}">
+                    {% for property in property_row %}
+                        <article class="property-public-card">
+                            <img src="{{ property.image_url }}" alt="{{ property.name }}" class="property-public-image">
 
-                    <p class="property-public-mode">{{ property.listing_mode == 'location' ? trans('properties.mode_rent') : trans('properties.mode_buy') }}</p>
-                    <h2>{{ property.name }}</h2>
-                    <p class="property-public-city">{{ property.city }}</p>
-                    <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
-                    <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
+                            <h2>{{ property.name }}</h2>
+                            <p class="property-public-city">{{ property.city }}</p>
+                            <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                            <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
 
-                    <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
-                        {{ trans('properties.cta') }}
-                    </a>
-                </article>
+                            <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
+                                {{ trans('properties.cta') }}
+                            </a>
+                        </article>
+                    {% endfor %}
+                </div>
             {% endfor %}
         </div>
     {% endif %}
@@ -97,6 +106,22 @@
         <p class="info-request-copy">{{ trans('info_request.copy') }}</p>
         <div class="info-request-actions">
             <a href="{{ base_path }}/demande-information?lang={{ app_lang }}" class="info-request-link">{{ trans('info_request.cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-info-request-rent">
+    <div class="info-request-card">
+        <h2>{{ trans('info_request_rent.title') }}</h2>
+        <p class="info-request-copy">{{ trans('info_request_rent.copy') }}</p>
+        <p class="info-request-copy info-request-copy-emphasis">
+            <strong>
+                {{ trans('info_request_rent.note_prefix') }}<em>{{ trans('info_request_rent.note_emphasis') }}</em>{{ trans('info_request_rent.note_middle') }}<em>{{ trans('info_request_rent.note_emphasis_secondary') }}</em>{{ trans('info_request_rent.note_suffix') }}<br>
+                {{ trans('info_request_rent.note_code_line') }}
+            </strong>
+        </p>
+        <div class="info-request-actions">
+            <a href="https://saleah.stays.net/" class="info-request-link" target="_blank" rel="noopener noreferrer">{{ trans('info_request_rent.cta') }}</a>
         </div>
     </div>
 </section>

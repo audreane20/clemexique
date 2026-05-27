@@ -95,21 +95,6 @@
                     <textarea name="description" rows="8" placeholder="{{ trans('properties.description_placeholder') }}" required>{{ form_data.description ?? editing_property.description ?? '' }}</textarea>
                 </label>
 
-                <fieldset class="property-form-choice">
-                    <legend>{{ trans('properties.type') }}</legend>
-                    <div class="property-radio-group">
-                        <label class="property-radio-option">
-                            <input type="radio" name="listing_mode" value="achat" {{ (form_data.listing_mode ?? editing_property.listing_mode ?? 'achat') == 'achat' ? 'checked' : '' }}>
-                            <span>{{ trans('properties.mode_buy') }}</span>
-                        </label>
-
-                        <label class="property-radio-option">
-                            <input type="radio" name="listing_mode" value="location" {{ (form_data.listing_mode ?? editing_property.listing_mode ?? 'achat') == 'location' ? 'checked' : '' }}>
-                            <span>{{ trans('properties.mode_rent') }}</span>
-                        </label>
-                    </div>
-                </fieldset>
-
                 <div class="property-form-row">
                     <label>
                         {{ trans('properties.price') }}
@@ -153,7 +138,6 @@
                             <img src="{{ property.image_url }}" alt="{{ property.name }}">
 
                             <div class="property-admin-card-body">
-                                <p class="property-admin-mode">{{ property.listing_mode == 'location' ? trans('properties.mode_rent') : trans('properties.mode_buy') }}</p>
                                 <h3>{{ property.name }}</h3>
                                 <p class="property-admin-city">{{ property.city }}</p>
                                 <p class="property-admin-price">{{ property.price_display }}</p>

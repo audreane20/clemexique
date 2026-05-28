@@ -105,6 +105,14 @@
     {% block content %}{% endblock %}
 </main>
 
+{% if not (hide_site_footer ?? false) %}
+<footer class="site-footer">
+    <div class="site-footer-inner">
+        <p>&copy; {{ "now"|date("Y") }} Clemexique. All rights reserved.</p>
+    </div>
+</footer>
+{% endif %}
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.querySelector('[data-header-menu-toggle]');

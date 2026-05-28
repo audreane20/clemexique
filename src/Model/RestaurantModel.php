@@ -319,7 +319,7 @@ class RestaurantModel
             'price' => $itemRow['price'] ?? null,
             'reference' => $itemRow['reference_label'] ?? null,
             'url' => $url !== '' ? $url : null,
-            'url_label' => $itemRow['website_label'] ?? null,
+            'url_label' => $url !== '' ? $this->labelFromUrl($url) : null,
         ];
     }
 
@@ -342,7 +342,7 @@ class RestaurantModel
             return $url;
         }
 
-        $host = $parts['host'] ?? '';
+        $host = preg_replace('/^www\./i', '', (string) ($parts['host'] ?? '')) ?? '';
         $path = isset($parts['path']) ? trim(urldecode((string) $parts['path']), '/') : '';
 
         if ($host === '' && $path === '') {

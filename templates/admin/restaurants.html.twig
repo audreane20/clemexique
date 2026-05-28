@@ -303,7 +303,12 @@
                                 </div>
                             </div>
                         {% else %}
-                            <input type="text" name="{{ field.name }}" value="{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}" placeholder="{{ field.placeholders[app_lang] }}">
+                            <input
+                                type="text"
+                                name="{{ field.name }}"
+                                value="{% if is_editing_item %}{% if field.name == 'url' %}{{ editing_item.url_label|default(attribute(editing_item, field.name)|default('')) }}{% else %}{{ attribute(editing_item, field.name)|default('') }}{% endif %}{% endif %}"
+                                placeholder="{{ field.placeholders[app_lang] }}"
+                            >
                         {% endif %}
                     </label>
                     {% endif %}

@@ -185,7 +185,7 @@ class RestaurantController
                 [
                     'name' => 'url',
                     'labels' => ['en' => 'Website', 'fr' => 'Site web', 'es' => 'Sitio web'],
-                    'placeholders' => ['en' => 'https://...', 'fr' => 'https://...', 'es' => 'https://...'],
+                    'placeholders' => ['en' => 'name.com', 'fr' => 'nom.com', 'es' => 'nombre.com'],
                 ],
                 [
                     'name' => 'reference',

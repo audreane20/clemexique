@@ -37,6 +37,32 @@
         </div>
     </section>
 
+    <section class="guide-map-card" aria-labelledby="guide-map-title">
+        <div class="guide-map-copy">
+            <p class="guide-map-eyebrow">{{ trans('playa_guide.map_eyebrow') }}</p>
+            <h2 id="guide-map-title">{{ trans('playa_guide.map_title') }}</h2>
+            <p>{{ trans('playa_guide.map_copy') }}</p>
+        </div>
+        <figure class="guide-map-figure">
+            <button
+                type="button"
+                class="guide-map-link property-lightbox-trigger"
+                data-map-lightbox-trigger
+                data-lightbox-image="{{ base_path }}/Images/Map_CLeMexique.png"
+                data-lightbox-alt="{{ trans('playa_guide.map_alt') }}"
+                aria-label="{{ trans('playa_guide.map_caption') }}"
+            >
+                <img
+                    src="{{ base_path }}/Images/Map_CLeMexique.png"
+                    alt="{{ trans('playa_guide.map_alt') }}"
+                    class="guide-map-image"
+                    loading="lazy"
+                >
+            </button>
+            <figcaption>{{ trans('playa_guide.map_caption') }}</figcaption>
+        </figure>
+    </section>
+
     <div class="guide-category-list">
         {% for category in guide_categories %}
             <section class="guide-category" id="guide-category-{{ loop.index }}">
@@ -103,15 +129,58 @@
         <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
     </div>
 </section>
+
+<div class="property-lightbox" data-property-lightbox hidden>
+    <button type="button" class="property-lightbox-close" data-property-lightbox-close aria-label="{{ trans('properties.close_gallery') }}">X</button>
+    <div class="property-lightbox-backdrop" data-property-lightbox-close></div>
+    <div class="property-lightbox-dialog" role="dialog" aria-modal="true" aria-label="{{ trans('playa_guide.map_title') }}">
+        <img src="" alt="" data-property-lightbox-image>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const lightbox = document.querySelector('[data-property-lightbox]');
+    const lightboxImage = document.querySelector('[data-property-lightbox-image]');
+    const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
     const tocLinks = document.querySelectorAll('[data-guide-toc-target]');
     let highlightTimer = null;
     let highlightedElement = null;
     let scrollStopTimer = null;
+
+    if (lightbox && lightboxImage && mapTrigger) {
+        const openLightbox = function () {
+            lightboxImage.src = mapTrigger.dataset.lightboxImage || '';
+            lightboxImage.alt = mapTrigger.dataset.lightboxAlt || '';
+            lightbox.hidden = false;
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeLightbox = function () {
+            lightbox.hidden = true;
+            lightboxImage.src = '';
+            lightboxImage.alt = '';
+            document.body.style.overflow = '';
+        };
+
+        mapTrigger.addEventListener('click', openLightbox);
+
+        document.querySelectorAll('[data-property-lightbox-close]').forEach(function (closer) {
+            closer.addEventListener('click', closeLightbox);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (lightbox.hidden) {
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    }
 
     const resolveHighlightElement = function (target) {
         if (!target) {

@@ -363,7 +363,7 @@
                                 </div>
 
                                 <div class="admin-content-card-actions">
-                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" onsubmit="return confirm('{{ ui[app_lang].delete_category_confirm }}');" data-admin-content-action>
+                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" data-admin-content-action data-confirm-message="{{ ui[app_lang].delete_category_confirm }}">
                                         <input type="hidden" name="editor_language" value="{{ editor_language }}">
                                         <button type="submit" class="account-menu-button property-delete-button">{{ ui[app_lang].delete }}</button>
                                     </form>
@@ -392,7 +392,7 @@
                                                 <div class="admin-content-card-actions">
                                                     <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_item_category={{ category_index }}&edit_item={{ item_index }}" class="header-auth-link">{{ ui[app_lang].edit }}</a>
 
-                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" onsubmit="return confirm('{{ ui[app_lang].delete_item_confirm }}');" data-admin-content-action>
+                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" data-admin-content-action data-confirm-message="{{ ui[app_lang].delete_item_confirm }}">
                                                         <input type="hidden" name="editor_language" value="{{ editor_language }}">
                                                         <button type="submit" class="account-menu-button property-delete-button">{{ ui[app_lang].delete }}</button>
                                                     </form>
@@ -415,6 +415,19 @@
         </section>
     </div>
 </section>
+
+<div class="admin-confirm-modal" data-admin-confirm-modal hidden>
+    <button type="button" class="admin-confirm-backdrop" data-admin-confirm-cancel aria-label="{{ ui[app_lang].cancel }}"></button>
+    <div class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
+        <p class="admin-confirm-eyebrow" id="admin-confirm-title">{{ ui[app_lang].eyebrow }}</p>
+        <h3>{{ ui[app_lang].delete }}</h3>
+        <p data-admin-confirm-message></p>
+        <div class="admin-confirm-actions">
+            <button type="button" class="admin-content-cancel-link" data-admin-confirm-cancel>{{ ui[app_lang].cancel }}</button>
+            <button type="button" class="account-menu-button property-delete-button" data-admin-confirm-submit>{{ ui[app_lang].delete }}</button>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block scripts %}
@@ -571,6 +584,12 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const confirmModal = document.querySelector('[data-admin-confirm-modal]');
+    const confirmMessage = document.querySelector('[data-admin-confirm-message]');
+    const confirmSubmitButton = document.querySelector('[data-admin-confirm-submit]');
+    const confirmCancelButtons = document.querySelectorAll('[data-admin-confirm-cancel]');
+    let pendingActionForm = null;
+
     const submitAdminContentAction = function (form, loadingLabel) {
         const submitButton = form.querySelector('button[type="submit"]');
         const originalLabel = submitButton ? submitButton.textContent : '';
@@ -619,6 +638,51 @@ document.addEventListener('DOMContentLoaded', function () {
             });
     };
 
+    const closeConfirmModal = function () {
+        if (!confirmModal) {
+            return;
+        }
+
+        confirmModal.hidden = true;
+        document.body.classList.remove('admin-confirm-open');
+        pendingActionForm = null;
+    };
+
+    const openConfirmModal = function (form) {
+        if (!confirmModal || !confirmMessage) {
+            return false;
+        }
+
+        pendingActionForm = form;
+        confirmMessage.textContent = form.dataset.confirmMessage || '';
+        confirmModal.hidden = false;
+        document.body.classList.add('admin-confirm-open');
+        return true;
+    };
+
+    if (confirmSubmitButton) {
+        confirmSubmitButton.addEventListener('click', function () {
+            if (!pendingActionForm) {
+                closeConfirmModal();
+                return;
+            }
+
+            const formToSubmit = pendingActionForm;
+            closeConfirmModal();
+            submitAdminContentAction(formToSubmit, '{{ ui[app_lang].deleting }}');
+        });
+    }
+
+    confirmCancelButtons.forEach(function (button) {
+        button.addEventListener('click', closeConfirmModal);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && confirmModal && !confirmModal.hidden) {
+            closeConfirmModal();
+        }
+    });
+
     const bindAdminContentActions = function () {
         const form = document.querySelector('[data-admin-content-form]');
 
@@ -638,6 +702,10 @@ document.addEventListener('DOMContentLoaded', function () {
             actionForm.dataset.ajaxBound = 'true';
             actionForm.addEventListener('submit', function (event) {
                 event.preventDefault();
+                if (actionForm.dataset.confirmMessage && openConfirmModal(actionForm)) {
+                    return;
+                }
+
                 submitAdminContentAction(actionForm, '{{ ui[app_lang].deleting }}');
             });
         });

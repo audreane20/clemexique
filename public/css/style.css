@@ -2538,6 +2538,11 @@ body.mobile-menu-open {
     box-shadow: 0 14px 28px rgba(11, 53, 88, 0.06);
 }
 
+.home-toc-shell .guide-map-card,
+.info-request-shell .guide-map-card {
+    margin: 0;
+}
+
 .guide-map-copy {
     display: grid;
     gap: 10px;

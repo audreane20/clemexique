@@ -46,6 +46,10 @@
                 <span class="home-toc-link-title">{{ trans('home.toc_playa_guide_title') }}</span>
                 <span class="home-toc-link-copy">{{ trans('home.toc_playa_guide_copy') }}</span>
             </a>
+            <a href="#home-map-guide" class="home-toc-link" data-home-toc-target="home-map-guide">
+                <span class="home-toc-link-title">{{ trans('playa_guide.map_title') }}</span>
+                <span class="home-toc-link-copy">{{ app_lang == 'fr' ? 'Cliquez ici pour voir la carte repère rapide.' : (app_lang == 'es' ? 'Haz clic aqui para ver el mapa guia rapida.' : 'Click here to view the quick guide map.') }}</span>
+            </a>
         </div>
     </div>
 </section>
@@ -186,12 +190,83 @@
     </div>
 </section>
 
+<section class="info-request-shell info-request-shell-secondary" id="home-map-guide">
+    <div class="guide-map-card" aria-labelledby="home-guide-map-title">
+        <div class="guide-map-copy">
+            <p class="guide-map-eyebrow">{{ trans('playa_guide.map_eyebrow') }}</p>
+            <h2 id="home-guide-map-title">{{ trans('playa_guide.map_title') }}</h2>
+            <p>{{ trans('playa_guide.map_copy') }}</p>
+        </div>
+        <figure class="guide-map-figure">
+            <button
+                type="button"
+                class="guide-map-link property-lightbox-trigger"
+                data-map-lightbox-trigger
+                data-lightbox-image="{{ base_path }}/Images/Map_CLeMexique.png"
+                data-lightbox-alt="{{ trans('playa_guide.map_alt') }}"
+                aria-label="{{ trans('playa_guide.map_caption') }}"
+            >
+                <img
+                    src="{{ base_path }}/Images/Map_CLeMexique.png"
+                    alt="{{ trans('playa_guide.map_alt') }}"
+                    class="guide-map-image"
+                    loading="lazy"
+                >
+            </button>
+            <figcaption>{{ trans('playa_guide.map_caption') }}</figcaption>
+        </figure>
+    </div>
+</section>
+
+<div class="property-lightbox" data-property-lightbox hidden>
+    <button type="button" class="property-lightbox-close" data-property-lightbox-close aria-label="{{ trans('properties.close_gallery') }}">X</button>
+    <div class="property-lightbox-backdrop" data-property-lightbox-close></div>
+    <div class="property-lightbox-dialog" role="dialog" aria-modal="true" aria-label="{{ trans('playa_guide.map_title') }}">
+        <img src="" alt="" data-property-lightbox-image>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const tocLinks = document.querySelectorAll('[data-home-toc-target]');
+    const lightbox = document.querySelector('[data-property-lightbox]');
+    const lightboxImage = document.querySelector('[data-property-lightbox-image]');
+    const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
     let highlightTimer = null;
     let highlightedElement = null;
     let scrollStopTimer = null;
+
+    if (lightbox && lightboxImage && mapTrigger) {
+        const openLightbox = function () {
+            lightboxImage.src = mapTrigger.dataset.lightboxImage || '';
+            lightboxImage.alt = mapTrigger.dataset.lightboxAlt || '';
+            lightbox.hidden = false;
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeLightbox = function () {
+            lightbox.hidden = true;
+            lightboxImage.src = '';
+            lightboxImage.alt = '';
+            document.body.style.overflow = '';
+        };
+
+        mapTrigger.addEventListener('click', openLightbox);
+
+        document.querySelectorAll('[data-property-lightbox-close]').forEach(function (closer) {
+            closer.addEventListener('click', closeLightbox);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (lightbox.hidden) {
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    }
 
     const resolveHighlightElement = function (target) {
         if (!target) {
@@ -269,7 +344,9 @@ document.addEventListener('DOMContentLoaded', function () {
             const rect = target.getBoundingClientRect();
             const targetTop = window.scrollY + rect.top;
             const centeredOffset = Math.max(80, (window.innerHeight - rect.height) / 2);
-            const scrollTop = Math.max(0, targetTop - centeredOffset - (headerHeight / 2));
+            const defaultScrollTop = Math.max(0, targetTop - centeredOffset - (headerHeight / 2));
+            const topAlignedScrollTop = Math.max(0, targetTop - headerHeight + 24);
+            const scrollTop = targetId === 'home-map-guide' ? topAlignedScrollTop : defaultScrollTop;
 
             window.history.replaceState(null, '', '#' + targetId);
             window.scrollTo({

@@ -112,11 +112,11 @@
         'categories': 'categorias',
         'no_categories': 'Todavia no hay categorias.',
         'items': 'elementos',
-        'delete_category_confirm': 'Eliminar esta categoria?',
+        'delete_category_confirm': '¿Eliminar esta categoría?',
         'delete': 'Eliminar',
         'empty_restaurants': 'Todavia no hay restaurantes en esta categoria.',
         'empty_items': 'Todavia no hay elementos en esta categoria.',
-        'delete_item_confirm': 'Eliminar este elemento?',
+        'delete_item_confirm': '¿Eliminar este elemento?',
         'saving': 'Guardando...',
         'deleting': 'Eliminando...'
     }
@@ -583,7 +583,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmMessage = document.querySelector('[data-admin-confirm-message]');
     const confirmSubmitButton = document.querySelector('[data-admin-confirm-submit]');
     const confirmCancelButtons = document.querySelectorAll('[data-admin-confirm-cancel]');
+    const quickLinks = document.querySelectorAll('.admin-content-quick-link');
     let pendingActionForm = null;
+    let highlightTimer = null;
+    let highlightedElement = null;
 
     const submitAdminContentAction = function (form, loadingLabel) {
         const submitButton = form.querySelector('button[type="submit"]');
@@ -676,6 +679,74 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.key === 'Escape' && confirmModal && !confirmModal.hidden) {
             closeConfirmModal();
         }
+    });
+
+    const highlightTarget = function (target) {
+        if (!target) {
+            return;
+        }
+
+        if (highlightedElement && highlightedElement !== target) {
+            highlightedElement.classList.remove('quick-scroll-highlight');
+        }
+
+        target.classList.remove('quick-scroll-highlight');
+        void target.offsetWidth;
+        target.classList.add('quick-scroll-highlight');
+        highlightedElement = target;
+
+        if (highlightTimer) {
+            window.clearTimeout(highlightTimer);
+        }
+
+        highlightTimer = window.setTimeout(function () {
+            target.classList.remove('quick-scroll-highlight');
+            if (highlightedElement === target) {
+                highlightedElement = null;
+            }
+        }, 1100);
+    };
+
+    const highlightAfterArrival = function (target) {
+        const finish = function () {
+            window.removeEventListener('scrollend', finish);
+            window.removeEventListener('scroll', onScroll);
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+                scrollStopTimer = null;
+            }
+            highlightTarget(target);
+        };
+
+        const onScroll = function () {
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+            }
+
+            scrollStopTimer = window.setTimeout(finish, 120);
+        };
+
+        let scrollStopTimer = null;
+        window.addEventListener('scrollend', finish, { once: true });
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+    };
+
+    quickLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            const href = link.getAttribute('href') || '';
+            const targetId = href.startsWith('#') ? href.slice(1) : '';
+            const target = targetId ? document.getElementById(targetId) : null;
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            window.history.replaceState(null, '', '#' + targetId);
+            highlightAfterArrival(target);
+        });
     });
 
     const bindAdminContentActions = function () {

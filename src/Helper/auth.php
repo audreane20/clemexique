@@ -68,7 +68,13 @@ function isAdminVerificationPending(): bool
 
 function getAdminTwoFactorEmail(): string
 {
-    return trim((string) ($_ENV['ADMIN_2FA_EMAIL'] ?? 'audreane20@hotmail.ca'));
+    $configuredEmail = trim((string) ($_ENV['ADMIN_2FA_EMAIL'] ?? ''));
+
+    if ($configuredEmail !== '') {
+        return $configuredEmail;
+    }
+
+    return trim((string) ($_ENV['MAIL_TO_EMAIL'] ?? ''));
 }
 
 function getAdminBackupTwoFactorEmail(): string
@@ -148,9 +154,9 @@ function configureAuthMailer(): \PHPMailer\PHPMailer\PHPMailer
 {
     $mail = new \PHPMailer\PHPMailer\PHPMailer(true);
     $mail->isSMTP();
-    $mail->Host = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';
+    $mail->Host = $_ENV['MAIL_HOST'] ?? '';
     $mail->SMTPAuth = true;
-    $mail->Username = $_ENV['MAIL_USERNAME'] ?? 'audreane20@gmail.com';
+    $mail->Username = $_ENV['MAIL_USERNAME'] ?? '';
     $mail->Password = $_ENV['MAIL_PASSWORD'] ?? '';
     $mail->SMTPSecure = \PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = (int) ($_ENV['MAIL_PORT'] ?? 587);
@@ -161,7 +167,7 @@ function configureAuthMailer(): \PHPMailer\PHPMailer\PHPMailer
 
 function sendAdminVerificationCodeToRecipient(string $toEmail, string $code): bool
 {
-    $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? 'audreane20@gmail.com');
+    $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? '');
     $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'CLeMexique';
 
     if ($toEmail === '') {
@@ -419,7 +425,7 @@ function attemptAdminEmailChangeVerification(array $data): bool
 function attemptAdminLogin(array $data): bool
 {
     $pin = trim((string) ($data['pin'] ?? ''));
-    $configuredPin = '1690';
+    $configuredPin = trim((string) ($_ENV['ADMIN_PIN'] ?? '1690'));
 
     if (!hash_equals($configuredPin, $pin)) {
         $_SESSION['auth_error'] = authTrans('auth.invalid_admin_pin');

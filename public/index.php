@@ -26,6 +26,38 @@ if (class_exists(\Dotenv\Dotenv::class) && file_exists(__DIR__ . '/../.env')) {
     $dotenv->load();
 }
 
+function envFlag(string $key, bool $default = false): bool
+{
+    $value = $_ENV[$key] ?? null;
+
+    if ($value === null) {
+        return $default;
+    }
+
+    $normalized = strtolower(trim((string) $value));
+
+    if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
+        return true;
+    }
+
+    if (in_array($normalized, ['0', 'false', 'no', 'off'], true)) {
+        return false;
+    }
+
+    return $default;
+}
+
+function normalizeBasePath(?string $basePath): string
+{
+    $basePath = trim((string) $basePath);
+
+    if ($basePath === '' || $basePath === '/') {
+        return '';
+    }
+
+    return '/' . trim($basePath, '/');
+}
+
 session_start();
 
 $lang = Locale::normalize($_GET['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
@@ -33,7 +65,7 @@ $_SESSION['lang'] = $lang;
 
 $app = AppFactory::create();
 
-$basePath = '/clemexique/public';
+$basePath = normalizeBasePath($_ENV['APP_BASE_PATH'] ?? '');
 $app->setBasePath($basePath);
 
 $twig = Twig::create(__DIR__ . '/../templates', [
@@ -113,18 +145,42 @@ $twig->getEnvironment()->addFunction(
 
 $app->add(TwigMiddleware::create($app, $twig));
 
+$databaseHost = trim((string) ($_ENV['DB_HOST'] ?? '127.0.0.1'));
+$databasePort = (int) ($_ENV['DB_PORT'] ?? 3306);
+$databaseName = trim((string) ($_ENV['DB_NAME'] ?? 'clemexique'));
+$databaseUser = trim((string) ($_ENV['DB_USER'] ?? 'root'));
+$databasePassword = (string) ($_ENV['DB_PASSWORD'] ?? '');
+$databaseCharset = trim((string) ($_ENV['DB_CHARSET'] ?? 'utf8mb4'));
+$shouldAutoCreateDatabase = envFlag('APP_AUTO_CREATE_DATABASE', true);
+
 $pdo = new PDO(
-    'mysql:host=localhost;charset=utf8mb4',
-    'root',
-    '',
+    sprintf(
+        'mysql:host=%s;port=%d;charset=%s',
+        $databaseHost,
+        $databasePort,
+        $databaseCharset
+    ),
+    $databaseUser,
+    $databasePassword,
     [
         PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
         PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     ]
 );
 
-$pdo->exec("CREATE DATABASE IF NOT EXISTS clemexique CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci");
-$pdo->exec("USE clemexique");
+$quotedDatabaseName = '`' . str_replace('`', '``', $databaseName) . '`';
+$quotedDatabaseCharset = preg_replace('/[^A-Za-z0-9_]+/', '', $databaseCharset) ?: 'utf8mb4';
+
+if ($shouldAutoCreateDatabase) {
+    $pdo->exec(sprintf(
+        'CREATE DATABASE IF NOT EXISTS %s CHARACTER SET %s COLLATE %s_unicode_ci',
+        $quotedDatabaseName,
+        $quotedDatabaseCharset,
+        $quotedDatabaseCharset
+    ));
+}
+
+$pdo->exec(sprintf('USE %s', $quotedDatabaseName));
 $pdo->exec("
     CREATE TABLE IF NOT EXISTS users (
         id INT AUTO_INCREMENT PRIMARY KEY,
@@ -292,9 +348,9 @@ $consumeManagementFlash = function (): array {
 $configureMailer = function () {
     $mail = new PHPMailer(true);
     $mail->isSMTP();
-    $mail->Host = $_ENV['MAIL_HOST'] ?? 'smtp.gmail.com';
+    $mail->Host = $_ENV['MAIL_HOST'] ?? '';
     $mail->SMTPAuth = true;
-    $mail->Username = $_ENV['MAIL_USERNAME'] ?? 'audreane20@gmail.com';
+    $mail->Username = $_ENV['MAIL_USERNAME'] ?? '';
     $mail->Password = $_ENV['MAIL_PASSWORD'] ?? '';
     $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
     $mail->Port = (int) ($_ENV['MAIL_PORT'] ?? 587);
@@ -458,9 +514,9 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
     try {
         $mail = $configureMailer();
 
-        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? 'audreane20@gmail.com';
+        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? '');
         $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'CLeMexique';
-        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? 'audreane20@gmail.com';
+        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? '';
 
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($toEmail);
@@ -723,9 +779,9 @@ $app->post('/demande-information/formulaire', function ($request, $response) use
     try {
         $mail = $configureMailer();
 
-        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? 'audreane20@gmail.com';
+        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? '');
         $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'CLeMexique';
-        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? 'audreane20@gmail.com';
+        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? '';
 
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($toEmail);
@@ -893,9 +949,9 @@ $app->post('/location-automobiles/formulaire', function ($request, $response) us
     try {
         $mail = $configureMailer();
 
-        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? 'audreane20@gmail.com';
+        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? '');
         $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'CLeMexique';
-        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? 'audreane20@gmail.com';
+        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? '';
 
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($toEmail);
@@ -1038,9 +1094,9 @@ $app->post('/gestion-immobiliere/formulaire', function ($request, $response) use
     try {
         $mail = $configureMailer();
 
-        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? 'audreane20@gmail.com';
+        $fromEmail = $_ENV['MAIL_FROM_EMAIL'] ?? ($_ENV['MAIL_USERNAME'] ?? '');
         $fromName = $_ENV['MAIL_FROM_NAME'] ?? 'CLeMexique';
-        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? 'audreane20@gmail.com';
+        $toEmail = $_ENV['MAIL_TO_EMAIL'] ?? '';
 
         $mail->setFrom($fromEmail, $fromName);
         $mail->addAddress($toEmail);

@@ -1,6 +1,8 @@
 /vendor/
 /.vs/
 .env
+/public/uploads/
+/var/
 config.php
 config.local.php
 send-email.local.php

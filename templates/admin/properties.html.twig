@@ -135,7 +135,7 @@
                 <div class="property-admin-grid">
                     {% for property in properties %}
                         <article class="property-admin-card">
-                            <img src="{{ property.image_url }}" alt="{{ property.name }}">
+                            <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}">
 
                             <div class="property-admin-card-body">
                                 <h3>{{ property.name }}</h3>
@@ -206,7 +206,7 @@
                                     <source src="{{ media.url }}" type="{{ media.mime_type ?? 'video/mp4' }}">
                                 </video>
                             {% else %}
-                                <img src="{{ media.url }}" alt="{{ editing_property.name }} photo {{ loop.index }}">
+                                <img src="{{ media.url starts with '/uploads/' ? base_path ~ media.url : media.url }}" alt="{{ editing_property.name }} photo {{ loop.index }}">
                             {% endif %}
                         </div>
                     {% endfor %}

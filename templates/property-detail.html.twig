@@ -33,7 +33,7 @@
                                     </video>
                                 {% else %}
                                     <button type="button" class="property-lightbox-trigger" data-lightbox-index="{{ loop.index0 }}" data-lightbox-image="{{ media.url }}" data-lightbox-alt="{{ property.name }} photo {{ loop.index }}">
-                                        <img src="{{ media.url }}" alt="{{ property.name }} photo {{ loop.index }}">
+                                        <img src="{{ media.url starts with '/uploads/' ? base_path ~ media.url : media.url }}" alt="{{ property.name }} photo {{ loop.index }}">
                                     </button>
                                 {% endif %}
                             </figure>

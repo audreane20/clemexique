@@ -6,3 +6,5 @@ config.local.php
 send-email.local.php
 email-debug.log
 config.example.php
+/public/uploads/
+/var/upload-progress/

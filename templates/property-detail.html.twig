@@ -1,0 +1,199 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="property-detail-shell">
+    {% if property %}
+        <div class="property-detail-back-row">
+            <a href="{{ base_path }}/?lang={{ app_lang }}" class="property-detail-back-link">{{ trans('properties.back_to_list') }}</a>
+        </div>
+
+        {% if property.images is not empty %}
+            <div class="property-detail-gallery-card">
+                <div class="property-admin-preview-header">
+                    <div>
+                        <p class="property-preview-label">{{ trans('properties.gallery') }}</p>
+                        <h2>{{ property.media_count }} {{ property.media_count == 1 ? trans('properties.media_singular') : trans('properties.media_plural') }}</h2>
+                    </div>
+
+                    {% if property.media_count > 4 %}
+                        <div class="property-gallery-nav">
+                            <button type="button" class="property-gallery-nav-button" data-gallery-prev aria-label="{{ trans('properties.previous_images') }}">&#8249;</button>
+                            <button type="button" class="property-gallery-nav-button" data-gallery-next aria-label="{{ trans('properties.next_images') }}">&#8250;</button>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <div class="property-detail-gallery-viewport">
+                    <div class="property-detail-gallery-grid" data-gallery-track>
+                        {% for media in property.media_items %}
+                            <figure class="property-detail-gallery-item">
+                                {% if media.is_video %}
+                                    <video controls preload="metadata" playsinline class="property-detail-gallery-video">
+                                        <source src="{{ media.url }}" type="{{ media.mime_type ?? 'video/mp4' }}">
+                                    </video>
+                                {% else %}
+                                    <button type="button" class="property-lightbox-trigger" data-lightbox-index="{{ loop.index0 }}" data-lightbox-image="{{ media.url }}" data-lightbox-alt="{{ property.name }} photo {{ loop.index }}">
+                                        <img src="{{ media.url }}" alt="{{ property.name }} photo {{ loop.index }}">
+                                    </button>
+                                {% endif %}
+                            </figure>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <div class="property-detail-copy">
+            <div class="property-detail-heading">
+                <h1>{{ property.name }}</h1>
+                <p class="property-detail-city">{{ property.city }}</p>
+            </div>
+
+            <div class="property-detail-pricing">
+                <p class="property-detail-price">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                <p class="property-detail-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
+            </div>
+
+            {% if property.description %}
+                <div class="property-detail-description">{{ property.description|nl2br }}</div>
+            {% endif %}
+
+            <div class="property-detail-actions page-home-actions">
+                <a href="{{ base_path }}/contact?lang={{ app_lang }}&subject={{ trans('properties.title')|url_encode }}&project={{ property.name|url_encode }}" class="info-request-link">{{ trans('properties.detail_contact') }}</a>
+                <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+            </div>
+        </div>
+    {% else %}
+        <div class="property-empty-state property-empty-state-public">
+            <p>{{ trans('properties.not_found') }}</p>
+            <div class="page-home-actions">
+                <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+            </div>
+        </div>
+    {% endif %}
+</section>
+
+<div class="property-lightbox" data-property-lightbox hidden>
+    <button type="button" class="property-lightbox-nav property-lightbox-nav-prev" data-property-lightbox-prev aria-label="{{ trans('properties.previous_image') }}">&#8249;</button>
+    <button type="button" class="property-lightbox-nav property-lightbox-nav-next" data-property-lightbox-next aria-label="{{ trans('properties.next_image') }}">&#8250;</button>
+    <button type="button" class="property-lightbox-close" data-property-lightbox-close aria-label="{{ trans('properties.close_gallery') }}">X</button>
+    <div class="property-lightbox-backdrop" data-property-lightbox-close></div>
+    <div class="property-lightbox-dialog" role="dialog" aria-modal="true" aria-label="{{ trans('properties.gallery') }}">
+        <img src="" alt="" data-property-lightbox-image>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const lightbox = document.querySelector('[data-property-lightbox]');
+    const lightboxImage = document.querySelector('[data-property-lightbox-image]');
+    const triggers = Array.from(document.querySelectorAll('.property-lightbox-trigger'));
+    const galleryTrack = document.querySelector('[data-gallery-track]');
+    const galleryPrevButton = document.querySelector('[data-gallery-prev]');
+    const galleryNextButton = document.querySelector('[data-gallery-next]');
+    let currentIndex = 0;
+    let galleryPage = 0;
+
+    if (!lightbox || !lightboxImage || triggers.length === 0) {
+        return;
+    }
+
+    const renderLightboxImage = function () {
+        const trigger = triggers[currentIndex];
+
+        if (!trigger) {
+            return;
+        }
+
+        lightboxImage.src = trigger.dataset.lightboxImage || '';
+        lightboxImage.alt = trigger.dataset.lightboxAlt || '';
+    };
+
+    const openLightbox = function (index) {
+        currentIndex = index;
+        renderLightboxImage();
+        lightbox.hidden = false;
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeLightbox = function () {
+        lightbox.hidden = true;
+        lightboxImage.src = '';
+        lightboxImage.alt = '';
+        document.body.style.overflow = '';
+    };
+
+    const showPrevious = function () {
+        currentIndex = (currentIndex - 1 + triggers.length) % triggers.length;
+        renderLightboxImage();
+    };
+
+    const showNext = function () {
+        currentIndex = (currentIndex + 1) % triggers.length;
+        renderLightboxImage();
+    };
+
+    triggers.forEach(function (trigger, index) {
+        trigger.addEventListener('click', function () {
+            openLightbox(index);
+        });
+    });
+
+    document.querySelectorAll('[data-property-lightbox-close]').forEach(function (closer) {
+        closer.addEventListener('click', closeLightbox);
+    });
+
+    const previousButton = document.querySelector('[data-property-lightbox-prev]');
+    const nextButton = document.querySelector('[data-property-lightbox-next]');
+
+    if (previousButton) {
+        previousButton.addEventListener('click', showPrevious);
+    }
+
+    if (nextButton) {
+        nextButton.addEventListener('click', showNext);
+    }
+
+    if (galleryTrack && galleryPrevButton && galleryNextButton) {
+        const galleryViewport = galleryTrack.parentElement;
+        const itemsPerPage = 4;
+        const totalItems = galleryTrack.children.length;
+        const totalPages = Math.ceil(totalItems / itemsPerPage);
+
+        const updateGalleryPosition = function () {
+            const viewportWidth = galleryViewport ? galleryViewport.clientWidth : 0;
+            galleryTrack.style.transform = 'translateX(-' + (galleryPage * viewportWidth) + 'px)';
+            galleryPrevButton.disabled = galleryPage === 0;
+            galleryNextButton.disabled = galleryPage >= totalPages - 1;
+        };
+
+        galleryPrevButton.addEventListener('click', function () {
+            galleryPage = Math.max(0, galleryPage - 1);
+            updateGalleryPosition();
+        });
+
+        galleryNextButton.addEventListener('click', function () {
+            galleryPage = Math.min(totalPages - 1, galleryPage + 1);
+            updateGalleryPosition();
+        });
+
+        window.addEventListener('resize', updateGalleryPosition);
+        updateGalleryPosition();
+    }
+
+    document.addEventListener('keydown', function (event) {
+        if (lightbox.hidden) {
+            return;
+        }
+
+        if (event.key === 'Escape') {
+            closeLightbox();
+        } else if (event.key === 'ArrowLeft') {
+            showPrevious();
+        } else if (event.key === 'ArrowRight') {
+            showNext();
+        }
+    });
+});
+</script>
+{% endblock %}

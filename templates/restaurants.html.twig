@@ -1,0 +1,242 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ trans('restaurants.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('restaurants.title') }}</h1>
+    <p>{{ trans('restaurants.intro') }}</p>
+
+    <div class="residency-note">
+        <h2>{{ trans('restaurants.section_title') }}</h2>
+        <p>{{ trans('restaurants.section_copy') }}</p>
+    </div>
+
+    <section class="home-toc-shell restaurant-toc-shell">
+        <div class="home-toc-card">
+            <div class="home-toc-copy">
+                <p class="home-toc-eyebrow">{{ trans('restaurants.toc_eyebrow') }}</p>
+                <h2>{{ trans('restaurants.toc_title') }}</h2>
+                <p>{{ trans('restaurants.toc_copy') }}</p>
+            </div>
+            <div class="home-toc-grid">
+                {% for category in restaurant_categories %}
+                    <a href="#restaurant-category-{{ loop.index }}" class="home-toc-link" data-restaurant-toc-target="restaurant-category-{{ loop.index }}">
+                        <span class="home-toc-link-title">{{ category.title }}</span>
+                        <span class="home-toc-link-copy">
+                            {{ category.items|length }}
+                            {{ app_lang == 'fr'
+                                ? 'adresses'
+                                : (app_lang == 'es'
+                                    ? (category.items|length == 1 ? 'lugar' : 'lugares')
+                                    : (category.items|length == 1 ? 'spot' : 'spots')) }}
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <div class="restaurant-category-list">
+        {% for category in restaurant_categories %}
+            <section class="restaurant-category" id="restaurant-category-{{ loop.index }}">
+                <div class="restaurant-category-header">
+                    <h2>
+                        {% if category.flag == 'IT' %}
+                            <img src="https://flagcdn.com/w40/it.png" alt="Italie" class="restaurant-category-flag">
+                        {% elseif category.flag == 'FR' %}
+                            <img src="https://flagcdn.com/w40/fr.png" alt="France" class="restaurant-category-flag">
+                        {% elseif category.flag == 'IN' %}
+                            <img src="https://flagcdn.com/w40/in.png" alt="Inde" class="restaurant-category-flag">
+                        {% elseif category.flag == 'TH' %}
+                            <img src="https://flagcdn.com/w40/th.png" alt="Thailande" class="restaurant-category-flag">
+                        {% elseif category.flag == 'CA-QC' %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Flag_of_Quebec.svg" alt="Quebec" class="restaurant-category-flag">
+                        {% elseif category.flag == 'CA' %}
+                            <img src="https://flagcdn.com/w40/ca.png" alt="Canada" class="restaurant-category-flag">
+                        {% elseif category.flag == 'MX' %}
+                            <img src="https://flagcdn.com/w40/mx.png" alt="Mexique" class="restaurant-category-flag">
+                        {% elseif category.flag == 'JM' %}
+                            <img src="https://flagcdn.com/w40/jm.png" alt="Jamaique" class="restaurant-category-flag">
+                        {% elseif category.flag == 'MUSIC' %}
+                            <span class="restaurant-category-icon" aria-hidden="true">&#127911;</span>
+                        {% elseif category.flag == 'SEA' %}
+                            <span class="restaurant-category-icon" aria-hidden="true">&#129424;</span>
+                        {% elseif category.flag == 'GRILL' %}
+                            <span class="restaurant-category-icon" aria-hidden="true">&#127831;</span>
+                        {% elseif category.flag == 'STEAK' %}
+                            <span class="restaurant-category-icon" aria-hidden="true">&#129385;</span>
+                        {% elseif category.flag == 'LUXE' %}
+                            <span class="restaurant-category-icon" aria-hidden="true">&#10024;</span>
+                        {% endif %}
+                        {{ category.title }}
+                        {% if category.flag == 'CA' %}
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/5/5f/Flag_of_Quebec.svg" alt="Quebec" class="restaurant-category-flag" style="margin-left: 6px;">
+                        {% endif %}
+                    </h2>
+                    <span>
+                        {{ category.items|length }}
+                        {{ app_lang == 'fr'
+                            ? 'adresses'
+                            : (app_lang == 'es'
+                                ? (category.items|length == 1 ? 'lugar' : 'lugares')
+                                : (category.items|length == 1 ? 'spot' : 'spots')) }}
+                    </span>
+                </div>
+
+                <div class="restaurant-grid">
+                    {% for restaurant in category.items %}
+                        <article class="restaurant-card">
+                            <div class="restaurant-card-top">
+                                <h3>{{ restaurant.name }}</h3>
+                                {% if restaurant.price %}
+                                    <span class="restaurant-price">{{ restaurant.price }}</span>
+                                {% endif %}
+                            </div>
+
+                            <p class="restaurant-area">
+                                <a
+                                    href="https://www.google.com/maps/search/?api=1&query={{ (restaurant.name ~ ' ' ~ restaurant.area ~ ' Playa del Carmen')|url_encode }}"
+                                    class="restaurant-area-link"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    {{ app_lang == 'fr' ? 'Pour l\'adresse, cliquez ici' : (app_lang == 'es' ? 'Para la direccion, haz clic aqui' : 'For the address, click here') }}
+                                </a>
+                            </p>
+
+                            {% if restaurant.reference %}
+                                {% set reference_lower = restaurant.reference|lower %}
+                                {% set has_tripadvisor = 'tripadvisor' in reference_lower %}
+                                {% set has_coup_de_coeur = 'coup de coeur' in reference_lower or 'coup de cœur' in reference_lower %}
+                                {% set has_favorite_pick = 'favorite pick' in reference_lower %}
+
+                                <div class="restaurant-reference" aria-label="{{ restaurant.reference }}">
+                                    {% if has_coup_de_coeur %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-heart">
+                                            <span class="restaurant-reference-heart" aria-hidden="true">&#10084;</span>
+                                            <span>{{ app_lang == 'es' ? 'Favorito' : 'Coup de coeur' }}</span>
+                                        </span>
+                                    {% elseif has_favorite_pick %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-heart">
+                                            <span class="restaurant-reference-heart" aria-hidden="true">&#10084;</span>
+                                            <span>{{ app_lang == 'es' ? 'Favorito' : 'Favorite pick' }}</span>
+                                        </span>
+                                    {% elseif not has_tripadvisor %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-text">{{ restaurant.reference }}</span>
+                                    {% endif %}
+
+                                    {% if has_tripadvisor %}
+                                        <span class="restaurant-reference-badge restaurant-reference-badge-tripadvisor">
+                                            <img
+                                                src="{{ base_path }}/images/tripadvisor_logo.webp"
+                                                alt="Tripadvisor Travelers' Choice Awards 2025"
+                                                class="restaurant-reference-tripadvisor-logo"
+                                            >
+                                        </span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+
+                            {% if restaurant.url %}
+                                <a href="{{ restaurant.url starts with '/' ? base_path ~ restaurant.url : restaurant.url }}" class="restaurant-link" target="_blank" rel="noopener noreferrer">{{ restaurant.url_label }}</a>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </div>
+            </section>
+        {% endfor %}
+    </div>
+
+    <div class="page-home-actions">
+        <a href="{{ base_path }}/contact?lang={{ app_lang }}&subject={{ trans('restaurants.title')|url_encode }}" class="info-request-link">{{ trans('restaurants.contact_cta') }}</a>
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tocLinks = document.querySelectorAll('[data-restaurant-toc-target]');
+    let highlightTimer = null;
+    let highlightedElement = null;
+    let scrollStopTimer = null;
+
+    const resolveHighlightElement = function (target) {
+        if (!target) {
+            return null;
+        }
+
+        return target;
+    };
+
+    const highlightTarget = function (target) {
+        const element = resolveHighlightElement(target);
+
+        if (!element) {
+            return;
+        }
+
+        if (highlightedElement && highlightedElement !== element) {
+            highlightedElement.classList.remove('quick-scroll-highlight');
+        }
+
+        element.classList.remove('quick-scroll-highlight');
+        void element.offsetWidth;
+        element.classList.add('quick-scroll-highlight');
+        highlightedElement = element;
+
+        if (highlightTimer) {
+            window.clearTimeout(highlightTimer);
+        }
+
+        highlightTimer = window.setTimeout(function () {
+            element.classList.remove('quick-scroll-highlight');
+            if (highlightedElement === element) {
+                highlightedElement = null;
+            }
+        }, 1100);
+    };
+
+    const highlightAfterArrival = function (target) {
+        const finish = function () {
+            window.removeEventListener('scrollend', finish);
+            window.removeEventListener('scroll', onScroll);
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+                scrollStopTimer = null;
+            }
+            highlightTarget(target);
+        };
+
+        const onScroll = function () {
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+            }
+
+            scrollStopTimer = window.setTimeout(finish, 120);
+        };
+
+        window.addEventListener('scrollend', finish, { once: true });
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+    };
+
+    tocLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            const targetId = link.getAttribute('data-restaurant-toc-target');
+            const target = targetId ? document.getElementById(targetId) : null;
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            highlightAfterArrival(target);
+        });
+    });
+});
+</script>
+{% endblock %}

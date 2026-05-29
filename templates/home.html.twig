@@ -1,0 +1,361 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="home-toc-shell">
+    <div class="home-toc-card">
+        <div class="home-toc-copy">
+            <p class="home-toc-eyebrow">{{ trans('home.toc_eyebrow') }}</p>
+            <h2>{{ trans('home.toc_title') }}</h2>
+            <p>{{ trans('home.toc_copy') }}</p>
+        </div>
+
+        <div class="home-toc-grid">
+            <a href="#home-properties" class="home-toc-link" data-home-toc-target="home-properties">
+                <span class="home-toc-link-title">{{ trans('home.toc_properties_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_properties_copy') }}</span>
+            </a>
+            <a href="#home-info-request" class="home-toc-link" data-home-toc-target="home-info-request">
+                <span class="home-toc-link-title">{{ trans('home.toc_buy_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_buy_copy') }}</span>
+            </a>
+            <a href="#home-info-request-rent" class="home-toc-link" data-home-toc-target="home-info-request-rent">
+                <span class="home-toc-link-title">{{ trans('home.toc_info_rent_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_info_rent_copy') }}</span>
+            </a>
+            <a href="#home-residency" class="home-toc-link" data-home-toc-target="home-residency">
+                <span class="home-toc-link-title">{{ trans('home.toc_residency_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_residency_copy') }}</span>
+            </a>
+            <a href="#home-rental" class="home-toc-link" data-home-toc-target="home-rental">
+                <span class="home-toc-link-title">{{ trans('home.toc_rental_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_rental_copy') }}</span>
+            </a>
+            <a href="#home-management" class="home-toc-link" data-home-toc-target="home-management">
+                <span class="home-toc-link-title">{{ trans('home.toc_management_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_management_copy') }}</span>
+            </a>
+            <a href="#home-restaurants" class="home-toc-link" data-home-toc-target="home-restaurants">
+                <span class="home-toc-link-title">{{ trans('home.toc_restaurants_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_restaurants_copy') }}</span>
+            </a>
+            <a href="#home-excursions" class="home-toc-link" data-home-toc-target="home-excursions">
+                <span class="home-toc-link-title">{{ trans('home.toc_excursions_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_excursions_copy') }}</span>
+            </a>
+            <a href="#home-playa-guide" class="home-toc-link" data-home-toc-target="home-playa-guide">
+                <span class="home-toc-link-title">{{ trans('home.toc_playa_guide_title') }}</span>
+                <span class="home-toc-link-copy">{{ trans('home.toc_playa_guide_copy') }}</span>
+            </a>
+            <a href="#home-map-guide" class="home-toc-link" data-home-toc-target="home-map-guide">
+                <span class="home-toc-link-title">{{ trans('playa_guide.map_title') }}</span>
+                <span class="home-toc-link-copy">{{ app_lang == 'fr' ? 'Cliquez ici pour voir la carte repère rapide.' : (app_lang == 'es' ? 'Haz clic aqui para ver el mapa guia rapida.' : 'Click here to view the quick guide map.') }}</span>
+            </a>
+        </div>
+    </div>
+</section>
+
+<section class="property-public-shell" id="home-properties">
+    <div class="property-public-header">
+        <h1>{{ trans('properties.title') }}</h1>
+    </div>
+
+    {% if properties is empty %}
+        <div class="property-empty-state property-empty-state-public">
+            <p>{{ trans('properties.empty') }}</p>
+        </div>
+    {% else %}
+        {% set property_count = properties|length %}
+        {% if property_count <= 5 %}
+            {% set property_rows = [properties] %}
+        {% elseif property_count == 6 %}
+            {% set property_rows = [properties|slice(0, 3), properties|slice(3, 3)] %}
+        {% elseif property_count == 7 %}
+            {% set property_rows = [properties|slice(0, 3), properties|slice(3, 4)] %}
+        {% elseif property_count == 8 %}
+            {% set property_rows = [properties|slice(0, 4), properties|slice(4, 4)] %}
+        {% elseif property_count == 9 %}
+            {% set property_rows = [properties|slice(0, 4), properties|slice(4, 5)] %}
+        {% elseif property_count == 10 %}
+            {% set property_rows = [properties|slice(0, 5), properties|slice(5, 5)] %}
+        {% else %}
+            {% set property_rows = properties|batch(5) %}
+        {% endif %}
+
+        <div class="property-public-grid">
+            {% for property_row in property_rows %}
+                <div class="property-public-row property-public-row-{{ property_row|length }}">
+                    {% for property in property_row %}
+                        <article class="property-public-card">
+                            <img src="{{ property.image_url }}" alt="{{ property.name }}" class="property-public-image">
+
+                            <h2>{{ property.name }}</h2>
+                            <p class="property-public-city">{{ property.city }}</p>
+                            <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                            <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
+
+                            <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
+                                {{ trans('properties.cta') }}
+                            </a>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+</section>
+
+<section class="info-request-shell" id="home-info-request">
+    <div class="info-request-card">
+        <h2>{{ trans('info_request.title') }}</h2>
+        <p class="info-request-copy">{{ trans('info_request.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/demande-information?lang={{ app_lang }}" class="info-request-link">{{ trans('info_request.cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-info-request-rent">
+    <div class="info-request-card">
+        <h2>{{ trans('info_request_rent.title') }}</h2>
+        <p class="info-request-copy">{{ trans('info_request_rent.copy') }}</p>
+        <p class="info-request-copy info-request-copy-emphasis">
+            <strong>
+                {{ trans('info_request_rent.note_prefix') }}<em>{{ trans('info_request_rent.note_emphasis') }}</em>{{ trans('info_request_rent.note_middle') }}<em>{{ trans('info_request_rent.note_emphasis_secondary') }}</em>{{ trans('info_request_rent.note_suffix') }}<br>
+                {{ trans('info_request_rent.note_code_line') }}
+            </strong>
+        </p>
+        <div class="info-request-actions">
+            <a href="https://saleah.stays.net/" class="info-request-link" target="_blank" rel="noopener noreferrer">{{ trans('info_request_rent.cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-residency">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('info_request.secondary_title') }}</h2>
+        <p class="info-request-copy">{{ trans('info_request.secondary_copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/residence-immigration?lang={{ app_lang }}" class="info-request-link">{{ trans('info_request.secondary_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-rental">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('auto_rental.title') }}</h2>
+        <p class="info-request-copy">{{ trans('auto_rental.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/location-automobiles?lang={{ app_lang }}" class="info-request-link">{{ trans('auto_rental.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-management">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('property_management.title') }}</h2>
+        <p class="info-request-copy">{{ trans('property_management.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/gestion-immobiliere?lang={{ app_lang }}" class="info-request-link">{{ trans('property_management.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-restaurants">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('restaurants.title') }}</h2>
+        <p class="info-request-copy">{{ trans('restaurants.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/restaurants-a-essayer?lang={{ app_lang }}" class="info-request-link">{{ trans('restaurants.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-excursions">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('excursions.title') }}</h2>
+        <p class="info-request-copy">{{ trans('excursions.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/excursions?lang={{ app_lang }}" class="info-request-link">{{ trans('excursions.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-playa-guide">
+    <div class="info-request-card info-request-card-compact">
+        <h2 class="info-request-secondary-title">{{ trans('playa_guide.title') }}</h2>
+        <p class="info-request-copy">{{ trans('playa_guide.copy') }}</p>
+        <div class="info-request-actions">
+            <a href="{{ base_path }}/quoi-faire-a-playa?lang={{ app_lang }}" class="info-request-link">{{ trans('playa_guide.home_cta') }}</a>
+        </div>
+    </div>
+</section>
+
+<section class="info-request-shell info-request-shell-secondary" id="home-map-guide">
+    <div class="guide-map-card" aria-labelledby="home-guide-map-title">
+        <div class="guide-map-copy">
+            <p class="guide-map-eyebrow">{{ trans('playa_guide.map_eyebrow') }}</p>
+            <h2 id="home-guide-map-title">{{ trans('playa_guide.map_title') }}</h2>
+            <p>{{ trans('playa_guide.map_copy') }}</p>
+        </div>
+        <figure class="guide-map-figure">
+            <button
+                type="button"
+                class="guide-map-link property-lightbox-trigger"
+                data-map-lightbox-trigger
+                data-lightbox-image="{{ base_path }}/Images/Map_CLeMexique.png"
+                data-lightbox-alt="{{ trans('playa_guide.map_alt') }}"
+                aria-label="{{ trans('playa_guide.map_caption') }}"
+            >
+                <img
+                    src="{{ base_path }}/Images/Map_CLeMexique.png"
+                    alt="{{ trans('playa_guide.map_alt') }}"
+                    class="guide-map-image"
+                    loading="lazy"
+                >
+            </button>
+            <figcaption>{{ trans('playa_guide.map_caption') }}</figcaption>
+        </figure>
+    </div>
+</section>
+
+<div class="property-lightbox" data-property-lightbox hidden>
+    <button type="button" class="property-lightbox-close" data-property-lightbox-close aria-label="{{ trans('properties.close_gallery') }}">X</button>
+    <div class="property-lightbox-backdrop" data-property-lightbox-close></div>
+    <div class="property-lightbox-dialog" role="dialog" aria-modal="true" aria-label="{{ trans('playa_guide.map_title') }}">
+        <img src="" alt="" data-property-lightbox-image>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tocLinks = document.querySelectorAll('[data-home-toc-target]');
+    const lightbox = document.querySelector('[data-property-lightbox]');
+    const lightboxImage = document.querySelector('[data-property-lightbox-image]');
+    const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
+    let highlightTimer = null;
+    let highlightedElement = null;
+    let scrollStopTimer = null;
+
+    if (lightbox && lightboxImage && mapTrigger) {
+        const openLightbox = function () {
+            lightboxImage.src = mapTrigger.dataset.lightboxImage || '';
+            lightboxImage.alt = mapTrigger.dataset.lightboxAlt || '';
+            lightbox.hidden = false;
+            document.body.style.overflow = 'hidden';
+        };
+
+        const closeLightbox = function () {
+            lightbox.hidden = true;
+            lightboxImage.src = '';
+            lightboxImage.alt = '';
+            document.body.style.overflow = '';
+        };
+
+        mapTrigger.addEventListener('click', openLightbox);
+
+        document.querySelectorAll('[data-property-lightbox-close]').forEach(function (closer) {
+            closer.addEventListener('click', closeLightbox);
+        });
+
+        document.addEventListener('keydown', function (event) {
+            if (lightbox.hidden) {
+                return;
+            }
+
+            if (event.key === 'Escape') {
+                closeLightbox();
+            }
+        });
+    }
+
+    const resolveHighlightElement = function (target) {
+        if (!target) {
+            return null;
+        }
+
+        return target.querySelector('.info-request-card, .property-empty-state, .property-public-grid, .property-public-header, .property-filter-bar') || target;
+    };
+
+    const highlightTarget = function (target) {
+        const element = resolveHighlightElement(target);
+
+        if (!element) {
+            return;
+        }
+
+        if (highlightedElement && highlightedElement !== element) {
+            highlightedElement.classList.remove('quick-scroll-highlight');
+        }
+
+        element.classList.remove('quick-scroll-highlight');
+        void element.offsetWidth;
+        element.classList.add('quick-scroll-highlight');
+        highlightedElement = element;
+
+        if (highlightTimer) {
+            window.clearTimeout(highlightTimer);
+        }
+
+        highlightTimer = window.setTimeout(function () {
+            element.classList.remove('quick-scroll-highlight');
+            if (highlightedElement === element) {
+                highlightedElement = null;
+            }
+        }, 1100);
+    };
+
+    const highlightAfterArrival = function (target) {
+        const finish = function () {
+            window.removeEventListener('scrollend', finish);
+            window.removeEventListener('scroll', onScroll);
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+                scrollStopTimer = null;
+            }
+            highlightTarget(target);
+        };
+
+        const onScroll = function () {
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+            }
+
+            scrollStopTimer = window.setTimeout(finish, 120);
+        };
+
+        window.addEventListener('scrollend', finish, { once: true });
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+    };
+
+    tocLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            const targetId = link.getAttribute('data-home-toc-target');
+            const target = targetId ? document.getElementById(targetId) : null;
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+
+            const header = document.querySelector('.site-header');
+            const headerHeight = header ? header.offsetHeight : 0;
+            const rect = target.getBoundingClientRect();
+            const targetTop = window.scrollY + rect.top;
+            const centeredOffset = Math.max(80, (window.innerHeight - rect.height) / 2);
+            const defaultScrollTop = Math.max(0, targetTop - centeredOffset - (headerHeight / 2));
+            const topAlignedScrollTop = Math.max(0, targetTop - headerHeight + 24);
+            const scrollTop = targetId === 'home-map-guide' ? topAlignedScrollTop : defaultScrollTop;
+
+            window.history.replaceState(null, '', '#' + targetId);
+            window.scrollTo({
+                top: scrollTop,
+                behavior: 'smooth'
+            });
+            highlightAfterArrival(target);
+        });
+    });
+});
+</script>
+{% endblock %}

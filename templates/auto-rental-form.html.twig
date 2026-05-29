@@ -1,0 +1,155 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="rental-form-page">
+    <section class="residency-hero">
+        <p>{{ trans('auto_rental.hero') }}</p>
+    </section>
+
+    <div class="rental-form-shell">
+        <div class="rental-form-intro">
+            <h1>{{ trans('rental_form.title') }}</h1>
+            <p>{{ trans('rental_form.subtitle') }}</p>
+            <p class="rental-form-required">{{ trans('rental_form.required_notice') }}</p>
+        </div>
+
+        {% if success %}
+            <div class="form-success">{{ trans('rental_form.success') }}</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ base_path }}/location-automobiles/formulaire?lang={{ app_lang }}" class="rental-form">
+            <input type="hidden" name="preferred_language" value="{{ app_lang }}">
+
+            <section class="rental-question-card">
+                <label class="rental-question-title" for="rental-full-name">{{ trans('rental_form.full_name') }} <span>*</span></label>
+                <input id="rental-full-name" type="text" name="full_name" value="{{ form_data.full_name }}" class="rental-text-input" required>
+            </section>
+
+            <section class="rental-question-card">
+                <fieldset class="rental-fieldset">
+                    <legend class="rental-question-title">{{ trans('rental_form.which_car') }} <span>*</span></legend>
+                    <div class="rental-options">
+                        <label><input type="radio" name="car_type" value="sedan_4" {{ form_data.car_type == 'sedan_4' ? 'checked' : '' }} required><span>{{ trans('rental_form.car_option_sedan_4') }}</span></label>
+                        <label><input type="radio" name="car_type" value="compact_suv_5" {{ form_data.car_type == 'compact_suv_5' ? 'checked' : '' }} required><span>{{ trans('rental_form.car_option_compact_suv_5') }}</span></label>
+                        <label><input type="radio" name="car_type" value="compact_jeep_5" {{ form_data.car_type == 'compact_jeep_5' ? 'checked' : '' }} required><span>{{ trans('rental_form.car_option_compact_jeep_5') }}</span></label>
+                        <label><input type="radio" name="car_type" value="suv_7" {{ form_data.car_type == 'suv_7' ? 'checked' : '' }} required><span>{{ trans('rental_form.car_option_suv_7') }}</span></label>
+                        <label><input type="radio" name="car_type" value="suv_9" {{ form_data.car_type == 'suv_9' ? 'checked' : '' }} required><span>{{ trans('rental_form.car_option_suv_9') }}</span></label>
+                        <label><input type="radio" name="car_type" value="suv_9_driver" {{ form_data.car_type == 'suv_9_driver' ? 'checked' : '' }} required><span>{{ trans('rental_form.car_option_suv_9_driver') }}</span></label>
+                        <div class="rental-other-row">
+                            <label><input type="radio" name="car_type" value="other" {{ form_data.car_type == 'other' ? 'checked' : '' }} required><span>{{ trans('rental_form.other') }}</span></label>
+                            <input type="text" name="car_type_other" value="{{ form_data.car_type_other }}" class="rental-inline-input" placeholder="{{ trans('rental_form.other_placeholder') }}">
+                        </div>
+                    </div>
+                </fieldset>
+            </section>
+
+            <section class="rental-question-card">
+                <label class="rental-question-title" for="rental-from">{{ trans('rental_form.from_what_date') }} <span>*</span></label>
+                <input id="rental-from" type="date" name="rental_from" value="{{ form_data.rental_from }}" class="rental-date-input" required>
+            </section>
+
+            <section class="rental-question-card">
+                <label class="rental-question-title" for="rental-until">{{ trans('rental_form.until_when') }} <span>*</span></label>
+                <p class="rental-help-copy">{{ trans('rental_form.until_when_help') }}</p>
+                <input id="rental-until" type="date" name="rental_until" value="{{ form_data.rental_until }}" class="rental-date-input" required>
+            </section>
+
+            <section class="rental-question-card">
+                <fieldset class="rental-fieldset">
+                    <legend class="rental-question-title">{{ trans('rental_form.pickup_city') }} <span>*</span></legend>
+                    <p class="rental-help-copy">{{ trans('rental_form.pickup_city_help') }}</p>
+                    <div class="rental-options">
+                        <label><input type="radio" name="pickup_city" value="playa_del_carmen" {{ form_data.pickup_city == 'playa_del_carmen' ? 'checked' : '' }} required><span>{{ trans('rental_form.city_playa_del_carmen') }}</span></label>
+                        <label><input type="radio" name="pickup_city" value="cancun" {{ form_data.pickup_city == 'cancun' ? 'checked' : '' }} required><span>{{ trans('rental_form.city_cancun') }}</span></label>
+                        <label><input type="radio" name="pickup_city" value="tulum" {{ form_data.pickup_city == 'tulum' ? 'checked' : '' }} required><span>{{ trans('rental_form.city_tulum') }}</span></label>
+                        <div class="rental-other-row">
+                            <label><input type="radio" name="pickup_city" value="other" {{ form_data.pickup_city == 'other' ? 'checked' : '' }} required><span>{{ trans('rental_form.other') }}</span></label>
+                            <input type="text" name="pickup_city_other" value="{{ form_data.pickup_city_other }}" class="rental-inline-input" placeholder="{{ trans('rental_form.other_placeholder') }}">
+                        </div>
+                    </div>
+                </fieldset>
+            </section>
+
+            <section class="rental-question-card">
+                <fieldset class="rental-fieldset">
+                    <legend class="rental-question-title">{{ trans('rental_form.return_city') }} <span>*</span></legend>
+                    <p class="rental-help-copy">{{ trans('rental_form.return_city_help') }}</p>
+                    <div class="rental-options">
+                        <label><input type="radio" name="return_city" value="playa_del_carmen" {{ form_data.return_city == 'playa_del_carmen' ? 'checked' : '' }} required><span>{{ trans('rental_form.city_playa_del_carmen') }}</span></label>
+                        <label><input type="radio" name="return_city" value="cancun" {{ form_data.return_city == 'cancun' ? 'checked' : '' }} required><span>{{ trans('rental_form.city_cancun') }}</span></label>
+                        <label><input type="radio" name="return_city" value="tulum" {{ form_data.return_city == 'tulum' ? 'checked' : '' }} required><span>{{ trans('rental_form.city_tulum') }}</span></label>
+                        <div class="rental-other-row">
+                            <label><input type="radio" name="return_city" value="other" {{ form_data.return_city == 'other' ? 'checked' : '' }} required><span>{{ trans('rental_form.other') }}</span></label>
+                            <input type="text" name="return_city_other" value="{{ form_data.return_city_other }}" class="rental-inline-input" placeholder="{{ trans('rental_form.other_placeholder') }}">
+                        </div>
+                    </div>
+                </fieldset>
+            </section>
+
+            <section class="rental-question-card">
+                <label class="rental-question-title" for="rental-email">{{ trans('rental_form.email') }} <span>*</span></label>
+                <input id="rental-email" type="email" name="email" value="{{ form_data.email }}" class="rental-text-input" required>
+            </section>
+
+            <section class="rental-question-card">
+                <label class="rental-question-title" for="rental-phone">{{ trans('rental_form.phone') }} <span>*</span></label>
+                <input id="rental-phone" type="text" name="phone" value="{{ form_data.phone }}" class="rental-text-input" required>
+            </section>
+
+            <section class="rental-question-card">
+                <fieldset class="rental-fieldset">
+                    <legend class="rental-question-title">{{ trans('rental_form.preferred_contact') }} <span>*</span></legend>
+                    <div class="rental-options">
+                        <label><input type="radio" name="preferred_contact" value="email" {{ form_data.preferred_contact == 'email' ? 'checked' : '' }} required><span>{{ trans('rental_form.contact_email') }}</span></label>
+                        <label><input type="radio" name="preferred_contact" value="whatsapp" {{ form_data.preferred_contact == 'whatsapp' ? 'checked' : '' }} required><span>{{ trans('rental_form.contact_whatsapp') }}</span></label>
+                    </div>
+                </fieldset>
+            </section>
+
+            <div class="rental-form-actions">
+                <button type="submit" class="info-request-link rental-submit-button">{{ trans('rental_form.submit') }}</button>
+            </div>
+        </form>
+
+        <div class="page-home-actions">
+            <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+        </div>
+    </div>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const syncOtherInput = function (groupName, inputName) {
+        const otherRadio = document.querySelector('input[name="' + groupName + '"][value="other"]');
+        const textInput = document.querySelector('input[name="' + inputName + '"]');
+
+        if (!otherRadio || !textInput) {
+            return;
+        }
+
+        const updateState = function () {
+            const isSelected = otherRadio.checked;
+            textInput.disabled = !isSelected;
+        };
+
+        document.querySelectorAll('input[name="' + groupName + '"]').forEach(function (radio) {
+            radio.addEventListener('change', updateState);
+        });
+
+        textInput.addEventListener('focus', function () {
+            otherRadio.checked = true;
+            updateState();
+        });
+
+        updateState();
+    };
+
+    syncOtherInput('car_type', 'car_type_other');
+    syncOtherInput('pickup_city', 'pickup_city_other');
+    syncOtherInput('return_city', 'return_city_other');
+});
+</script>
+{% endblock %}

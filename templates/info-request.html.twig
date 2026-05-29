@@ -1,0 +1,330 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="inquiry-page">
+    <div class="inquiry-hero">
+        <div class="inquiry-hero-content">
+            <div class="inquiry-brand-row">
+                <div>
+                    <h1>{{ trans('info_request.hero_title') }}</h1>
+                    <p class="inquiry-hero-subtitle">
+                        {{ trans('info_request.hero_subtitle') }}
+                        <span class="inquiry-subtitle-divider">|</span>
+                        <span>{{ trans('info_request.hero_subtitle_accent') }}</span>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="inquiry-shell">
+        {% if success %}
+            <div class="form-success">
+                {{ trans('info_request.success') }}
+            </div>
+        {% endif %}
+
+        {% if error %}
+            <div class="form-error">
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <form class="inquiry-form" method="POST" action="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}">
+            <input type="hidden" name="preferred_language" value="{{ app_lang }}">
+            <input type="hidden" name="intent" value="achat">
+
+            <div class="inquiry-grid inquiry-grid-top">
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">1</span>
+                        <h2>{{ trans('info_request.client_title') }}</h2>
+                    </div>
+
+                    <div class="inquiry-fields inquiry-fields-three inquiry-client-fields">
+                        <label>
+                            {{ trans('info_request.full_name') }}
+                            <input type="text" name="name" value="{{ form_data.name }}" placeholder="{{ trans('info_request.full_name_placeholder') }}" required>
+                        </label>
+                        <label>
+                            {{ trans('info_request.email') }}
+                            <input type="email" name="email" value="{{ form_data.email }}" placeholder="{{ trans('info_request.email_placeholder') }}" required>
+                        </label>
+                        <label>
+                            {{ trans('info_request.phone') }}
+                            <input type="tel" name="phone" value="{{ form_data.phone }}" placeholder="+1 (514) 123-4567" required>
+                        </label>
+                        <label>
+                            {{ trans('info_request.country') }}
+                            <select name="country" required>
+                                <option value="">{{ trans('info_request.country_placeholder') }}</option>
+                                <option value="canada" {% if form_data.country == 'canada' %}selected{% endif %}>{{ trans('info_request.country_canada') }}</option>
+                                <option value="united_states" {% if form_data.country == 'united_states' %}selected{% endif %}>{{ trans('info_request.country_united_states') }}</option>
+                            </select>
+                        </label>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">2</span>
+                        <h2>{{ trans('info_request.location_title') }}</h2>
+                    </div>
+
+                    <div class="inquiry-location-grid">
+                        <label class="inquiry-location-option">
+                            <div class="inquiry-location-label"><input type="radio" name="city" value="cancun" {% if form_data.city == 'cancun' %}checked{% endif %} required><span>Cancun</span></div>
+                            <div class="inquiry-location-thumb inquiry-location-thumb-cancun"></div>
+                        </label>
+                        <label class="inquiry-location-option">
+                            <div class="inquiry-location-label"><input type="radio" name="city" value="puerto-morelos" {% if form_data.city == 'puerto-morelos' %}checked{% endif %} required><span>Puerto Morelos</span></div>
+                            <div class="inquiry-location-thumb inquiry-location-thumb-morelos"></div>
+                        </label>
+                        <label class="inquiry-location-option">
+                            <div class="inquiry-location-label"><input type="radio" name="city" value="playa-del-carmen" {% if form_data.city == 'playa-del-carmen' %}checked{% endif %} required><span>Playa del Carmen</span></div>
+                            <div class="inquiry-location-thumb inquiry-location-thumb-playa"></div>
+                        </label>
+                        <label class="inquiry-location-option">
+                            <div class="inquiry-location-label"><input type="radio" name="city" value="puerto-aventuras" {% if form_data.city == 'puerto-aventuras' %}checked{% endif %} required><span>Puerto Aventuras</span></div>
+                            <div class="inquiry-location-thumb inquiry-location-thumb-aventuras"></div>
+                        </label>
+                        <label class="inquiry-location-option">
+                            <div class="inquiry-location-label"><input type="radio" name="city" value="tulum" {% if form_data.city == 'tulum' %}checked{% endif %} required><span>Tulum</span></div>
+                            <div class="inquiry-location-thumb inquiry-location-thumb-tulum"></div>
+                        </label>
+                        <label class="inquiry-location-option">
+                            <div class="inquiry-location-label"><input type="radio" name="city" value="other" {% if form_data.city == 'other' %}checked{% endif %} required><span>{{ trans('info_request.other_city') }}</span></div>
+                            <div class="inquiry-location-thumb inquiry-location-thumb-other"></div>
+                            <input type="text" name="other_city" value="{{ form_data.other_city }}" class="inquiry-location-custom-input" placeholder="{{ trans('info_request.other_city_placeholder') }}" {% if form_data.city != 'other' %}disabled{% endif %}>
+                        </label>
+                    </div>
+                </section>
+            </div>
+
+            <div class="inquiry-grid inquiry-grid-middle">
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">3</span>
+                        <h2>{{ trans('info_request.bedrooms_title') }}</h2>
+                    </div>
+                    <div class="inquiry-option-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Rooms.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <div class="inquiry-list-options">
+                        <label><input type="radio" name="bedrooms" value="studio" {% if form_data.bedrooms == 'studio' %}checked{% endif %} required><span>{{ trans('info_request.studio') }}</span></label>
+                        <label><input type="radio" name="bedrooms" value="1" {% if form_data.bedrooms == '1' %}checked{% endif %} required><span>1 {{ trans('info_request.bedroom_unit') }}</span></label>
+                        <label><input type="radio" name="bedrooms" value="2" {% if form_data.bedrooms == '2' %}checked{% endif %} required><span>2 {{ trans('info_request.bedroom_unit_plural') }}</span></label>
+                        <label><input type="radio" name="bedrooms" value="3" {% if form_data.bedrooms == '3' %}checked{% endif %} required><span>3 {{ trans('info_request.bedroom_unit_plural') }}</span></label>
+                        <label><input type="radio" name="bedrooms" value="4_plus" {% if form_data.bedrooms == '4_plus' %}checked{% endif %} required><span>{{ trans('info_request.more_than_three') }}</span></label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">4</span>
+                        <h2>{{ trans('info_request.bathrooms_title') }}</h2>
+                    </div>
+                    <div class="inquiry-option-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Shower.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <div class="inquiry-list-options">
+                        <label><input type="radio" name="bathrooms" value="1" {% if form_data.bathrooms == '1' %}checked{% endif %} required><span>1 {{ trans('info_request.bathroom_unit') }}</span></label>
+                        <label><input type="radio" name="bathrooms" value="2" {% if form_data.bathrooms == '2' %}checked{% endif %} required><span>2 {{ trans('info_request.bathroom_unit_plural') }}</span></label>
+                        <label><input type="radio" name="bathrooms" value="3" {% if form_data.bathrooms == '3' %}checked{% endif %} required><span>3 {{ trans('info_request.bathroom_unit_plural') }}</span></label>
+                        <label><input type="radio" name="bathrooms" value="4_plus" {% if form_data.bathrooms == '4_plus' %}checked{% endif %} required><span>{{ trans('info_request.more_than_three_bathrooms') }}</span></label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">5</span>
+                        <h2>{{ trans('info_request.pool_title') }}</h2>
+                    </div>
+                    <div class="inquiry-option-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Pool.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <div class="inquiry-list-options">
+                        <label><input type="radio" name="pool" value="ground" {% if form_data.pool == 'ground' %}checked{% endif %} required><span>{{ trans('info_request.pool_ground') }}</span></label>
+                        <label><input type="radio" name="pool" value="rooftop" {% if form_data.pool == 'rooftop' %}checked{% endif %} required><span>{{ trans('info_request.pool_rooftop') }}</span></label>
+                        <label><input type="radio" name="pool" value="no_preference" {% if form_data.pool == 'no_preference' %}checked{% endif %} required><span>{{ trans('info_request.no_preference') }}</span></label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">6</span>
+                        <h2>{{ trans('info_request.beach_title') }}</h2>
+                    </div>
+                    <div class="inquiry-option-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Walk.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <label class="inquiry-select-field inquiry-minutes-field">
+                        <input
+                            type="number"
+                            name="beach_minutes"
+                            min="0"
+                            max="999"
+                            step="5"
+                            value="{{ form_data.beach_minutes }}"
+                            placeholder="0"
+                            required
+                        >
+                        <span>{{ trans('info_request.minutes') }}</span>
+                    </label>
+                    </div>
+                </section>
+            </div>
+
+            <div class="inquiry-grid inquiry-grid-bottom">
+                <section class="inquiry-card inquiry-parking-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">7</span>
+                        <h2>{{ trans('info_request.parking_title') }}</h2>
+                    </div>
+
+                    <div class="inquiry-budget-layout">
+                        <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_car.png" alt="" class="inquiry-feature-icon-image"></div>
+                        <div class="inquiry-fields inquiry-parking-fields">
+                        <div class="inquiry-list-options">
+                            <label><input type="radio" name="parking" value="indoor" {% if form_data.parking == 'indoor' %}checked{% endif %} required><span>{{ trans('info_request.parking_inside') }}</span></label>
+                            <label><input type="radio" name="parking" value="outdoor" {% if form_data.parking == 'outdoor' %}checked{% endif %} required><span>{{ trans('info_request.parking_outside') }}</span></label>
+                            <label><input type="radio" name="parking" value="both" {% if form_data.parking == 'both' %}checked{% endif %} required><span>{{ trans('info_request.parking_both') }}</span></label>
+                            <label><input type="radio" name="parking" value="none" {% if form_data.parking == 'none' %}checked{% endif %} required><span>{{ trans('info_request.parking_none') }}</span></label>
+                        </div>
+
+                        <label>
+                            {{ trans('info_request.parking_count') }}
+                            <textarea name="parking_count" rows="2" maxlength="200" placeholder="{{ trans('info_request.parking_count_placeholder') }}" required>{{ form_data.parking_count }}</textarea>
+                        </label>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">8</span>
+                        <h2>{{ trans('info_request.elevator_title') }}</h2>
+                    </div>
+                    <div class="inquiry-option-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Elevator.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <div class="inquiry-list-options">
+                        <label><input type="radio" name="elevator" value="yes" {% if form_data.elevator == 'yes' %}checked{% endif %} required><span>{{ trans('info_request.yes') }}</span></label>
+                        <label><input type="radio" name="elevator" value="no" {% if form_data.elevator == 'no' %}checked{% endif %} required><span>{{ trans('info_request.no') }}</span></label>
+                        <label><input type="radio" name="elevator" value="no_preference" {% if form_data.elevator == 'no_preference' %}checked{% endif %} required><span>{{ trans('info_request.no_preference') }}</span></label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">9</span>
+                        <h2>{{ trans('info_request.animals_title') }}</h2>
+                    </div>
+                    <div class="inquiry-option-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Paw.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <div class="inquiry-list-options">
+                        <label><input type="radio" name="animals" value="allowed" {% if form_data.animals == 'allowed' %}checked{% endif %} required><span>{{ trans('info_request.animals_allowed') }}</span></label>
+                        <label><input type="radio" name="animals" value="not_allowed" {% if form_data.animals == 'not_allowed' %}checked{% endif %} required><span>{{ trans('info_request.animals_not_allowed') }}</span></label>
+                        <label><input type="radio" name="animals" value="no_preference" {% if form_data.animals == 'no_preference' %}checked{% endif %} required><span>{{ trans('info_request.no_preference') }}</span></label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">10</span>
+                        <h2>{{ trans('info_request.project_name_title') }}</h2>
+                    </div>
+                    <div class="inquiry-budget-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_hotel.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <label>
+                        {{ trans('info_request.project_name') }}
+                        <input type="text" name="project_name" value="{{ form_data.project_name }}" placeholder="{{ trans('info_request.project_placeholder') }}">
+                    </label>
+                    </div>
+                </section>
+            </div>
+
+            <div class="inquiry-grid inquiry-grid-footer">
+                <section class="inquiry-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">11</span>
+                        <h2>{{ trans('info_request.budget_title') }}</h2>
+                    </div>
+
+                    <div class="inquiry-budget-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_wallet.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <div class="inquiry-fields inquiry-fields-two">
+                        <label>
+                            {{ trans('info_request.budget_amount') }}
+                            <input type="text" name="budget_amount" value="{{ form_data.budget_amount }}" placeholder="{{ trans('info_request.budget_placeholder') }}" required>
+                        </label>
+                        <label>
+                            {{ trans('info_request.budget_currency') }}
+                            <select name="budget_currency" required>
+                                <option value="">{{ trans('info_request.currency_placeholder') }}</option>
+                                <option value="CAD" {% if form_data.budget_currency == 'CAD' %}selected{% endif %}>{{ trans('info_request.currency_cad') }}</option>
+                                <option value="USD" {% if form_data.budget_currency == 'USD' %}selected{% endif %}>{{ trans('info_request.currency_usd') }}</option>
+                                <option value="MXN" {% if form_data.budget_currency == 'MXN' %}selected{% endif %}>{{ trans('info_request.currency_mxn') }}</option>
+                            </select>
+                        </label>
+                    </div>
+                    </div>
+                </section>
+
+                <section class="inquiry-card inquiry-comments-card">
+                    <div class="inquiry-card-heading">
+                        <span class="inquiry-step">12</span>
+                        <h2>{{ trans('info_request.comments_title') }}</h2>
+                    </div>
+                    <div class="inquiry-budget-layout">
+                    <div class="inquiry-feature-icon" aria-hidden="true"><img src="{{ base_path }}/images/Icon_Comment.png" alt="" class="inquiry-feature-icon-image"></div>
+                    <label>
+                        {{ trans('info_request.comments') }}
+                        <textarea name="comments" rows="5" maxlength="500" placeholder="{{ trans('info_request.comments_placeholder') }}">{{ form_data.comments }}</textarea>
+                    </label>
+                    </div>
+                </section>
+            </div>
+
+            <div class="inquiry-submit">
+                <button type="submit" class="inquiry-submit-button">{{ trans('info_request.submit') }}</button>
+                <a href="{{ base_path }}/?lang={{ app_lang }}" class="inquiry-return-button">{{ trans('info_request.return') }}</a>
+                <p>{{ trans('info_request.privacy') }}</p>
+            </div>
+        </form>
+    </div>
+</section>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const cityRadios = document.querySelectorAll('input[name="city"]');
+    const otherCityRadio = document.querySelector('input[name="city"][value="other"]');
+    const otherCityInput = document.querySelector('input[name="other_city"]');
+
+    if (!otherCityRadio || !otherCityInput) {
+        return;
+    }
+
+    const syncOtherCityInput = function () {
+        const isOtherSelected = otherCityRadio.checked;
+        otherCityInput.disabled = !isOtherSelected;
+
+        if (isOtherSelected) {
+            otherCityInput.focus();
+        }
+    };
+
+    cityRadios.forEach(function (radio) {
+        radio.addEventListener('change', syncOtherCityInput);
+    });
+
+    otherCityInput.addEventListener('focus', function () {
+        if (!otherCityRadio.checked) {
+            otherCityRadio.checked = true;
+            syncOtherCityInput();
+        }
+    });
+
+    syncOtherCityInput();
+});
+</script>
+{% endblock %}

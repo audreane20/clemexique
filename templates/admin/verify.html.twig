@@ -1,0 +1,61 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="admin-auth-shell">
+    <div class="admin-auth-card">
+        <p class="admin-auth-eyebrow">{{ trans('admin.login_eyebrow') }}</p>
+        <h1>{{ trans('admin.verify_title') }}</h1>
+        <p class="admin-auth-copy">{{ trans('admin.verify_copy') }}</p>
+
+        {% if success %}
+            <div class="form-success">{{ success }}</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ base_path }}/admin/verify" class="admin-auth-form">
+            <label for="code">{{ trans('admin.verification_code') }}</label>
+            <input id="code" type="text" name="code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+
+            <button type="submit" class="contact-btn">{{ trans('admin.verify_submit') }}</button>
+        </form>
+
+        <div class="admin-auth-delivery">
+            <p class="admin-auth-helper admin-auth-helper-label">
+                {{ app_lang == 'fr'
+                    ? 'Code de verification envoye a'
+                    : (app_lang == 'es'
+                        ? 'Codigo de verificacion enviado a'
+                        : 'Verification code sent to') }}
+            </p>
+            <p class="admin-auth-helper admin-auth-helper-primary">
+                <strong>{{ admin_email }}</strong>
+            </p>
+
+            {% if secondary_admin_email %}
+                <form method="POST" action="{{ base_path }}/admin/verify/use-backup" class="admin-auth-secondary-form">
+                    <button type="submit" class="admin-auth-secondary-link">
+                        <span class="admin-auth-secondary-eyebrow">
+                            {{ app_lang == 'fr'
+                                ? 'Option de secours'
+                                : (app_lang == 'es'
+                                    ? 'Opcion de respaldo'
+                                    : 'Backup option') }}
+                        </span>
+                        <span class="admin-auth-secondary-copy">
+                            {{ app_lang == 'fr'
+                                ? 'Utiliser le courriel secondaire'
+                                : (app_lang == 'es'
+                                    ? 'Usar correo secundario'
+                                    : 'Use secondary email') }}
+                        </span>
+                        <span class="admin-auth-secondary-email">{{ secondary_admin_email }}</span>
+                    </button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}

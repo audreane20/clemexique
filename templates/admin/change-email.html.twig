@@ -1,0 +1,114 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="admin-auth-shell">
+    <div class="admin-auth-card">
+        <p class="admin-auth-eyebrow">{{ trans('admin.login_eyebrow') }}</p>
+        <h1>
+            {{ app_lang == 'fr'
+                ? 'Changer le courriel admin'
+                : (app_lang == 'es'
+                    ? 'Cambiar correo admin'
+                    : 'Change admin email') }}
+        </h1>
+        <p class="admin-auth-copy">
+            {{ app_lang == 'fr'
+                ? 'Mettez a jour l adresse courriel utilisee pour les codes de verification administrateur.'
+                : (app_lang == 'es'
+                    ? 'Actualiza la direccion de correo utilizada para los codigos de verificacion del administrador.'
+                    : 'Update the email address used for admin verification codes.') }}
+        </p>
+
+        {% if success %}
+            <div class="form-success">{{ success }}</div>
+        {% endif %}
+
+        {% if error %}
+            <div class="form-error">{{ error }}</div>
+        {% endif %}
+
+        <p class="admin-auth-helper">
+            {{ app_lang == 'fr'
+                ? 'Courriel admin actuel :'
+                : (app_lang == 'es'
+                    ? 'Correo admin actual:'
+                    : 'Current admin email:') }}
+            <strong>{{ current_email }}</strong>
+        </p>
+        <p class="admin-auth-helper">
+            {{ app_lang == 'fr'
+                ? 'Courriel admin de secours :'
+                : (app_lang == 'es'
+                    ? 'Correo admin de respaldo:'
+                    : 'Backup admin email:') }}
+            <strong>{{ backup_email != '' ? backup_email : (app_lang == 'fr' ? 'Non configure' : (app_lang == 'es' ? 'No configurado' : 'Not configured')) }}</strong>
+        </p>
+
+        {% if is_change_verification_pending %}
+            <p class="admin-auth-helper">
+                {{ app_lang == 'fr'
+                    ? 'Nouveau courriel en attente :'
+                    : (app_lang == 'es'
+                        ? 'Nuevo correo pendiente:'
+                        : 'Pending new email:') }}
+                <strong>{{ pending_new_email }}</strong>
+            </p>
+
+            <p class="admin-auth-copy">
+                {{ app_lang == 'fr'
+                    ? 'Entrez le code recu sur le courriel admin actuel ainsi que celui recu sur le nouveau courriel pour confirmer le changement.'
+                    : (app_lang == 'es'
+                        ? 'Ingresa el codigo recibido en el correo admin actual y el codigo recibido en el nuevo correo para confirmar el cambio.'
+                        : 'Enter the code sent to the current admin email and the code sent to the new email to confirm the change.') }}
+            </p>
+
+            <form method="POST" action="{{ base_path }}/admin/change-email/verify" class="admin-auth-form">
+                <label for="current_code">
+                    {{ app_lang == 'fr'
+                        ? 'Code envoye au courriel actuel'
+                        : (app_lang == 'es'
+                            ? 'Codigo enviado al correo actual'
+                            : 'Code sent to current email') }}
+                </label>
+                <input id="current_code" type="text" name="current_code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+
+                <label for="new_code">
+                    {{ app_lang == 'fr'
+                        ? 'Code envoye au nouveau courriel'
+                        : (app_lang == 'es'
+                            ? 'Codigo enviado al nuevo correo'
+                            : 'Code sent to new email') }}
+                </label>
+                <input id="new_code" type="text" name="new_code" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="one-time-code" required>
+
+                <button type="submit" class="contact-btn">
+                    {{ app_lang == 'fr'
+                        ? 'Verifier et enregistrer'
+                        : (app_lang == 'es'
+                            ? 'Verificar y guardar'
+                            : 'Verify and save') }}
+                </button>
+            </form>
+        {% else %}
+            <form method="POST" action="{{ base_path }}/admin/change-email/start" class="admin-auth-form">
+                <label for="email">
+                    {{ app_lang == 'fr'
+                        ? 'Nouveau courriel admin'
+                        : (app_lang == 'es'
+                            ? 'Nuevo correo admin'
+                            : 'New admin email') }}
+                </label>
+                <input id="email" type="email" name="email" value="{{ current_email }}" autocomplete="email" required>
+
+                <button type="submit" class="contact-btn">
+                    {{ app_lang == 'fr'
+                        ? 'Envoyer les codes'
+                        : (app_lang == 'es'
+                            ? 'Enviar codigos'
+                            : 'Send codes') }}
+                </button>
+            </form>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

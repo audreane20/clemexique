@@ -58,6 +58,44 @@ function normalizeBasePath(?string $basePath): string
     return '/' . trim($basePath, '/');
 }
 
+function buildAbsoluteUrl(\Psr\Http\Message\ServerRequestInterface $request, string $basePath, string $path = '/', array $query = []): string
+{
+    $uri = $request->getUri();
+    $scheme = $uri->getScheme() !== '' ? $uri->getScheme() : 'https';
+    $host = $uri->getHost();
+    $port = $uri->getPort();
+    $normalizedPath = $path === '/' ? '/' : '/' . ltrim($path, '/');
+    $url = $scheme . '://' . $host;
+
+    if ($port !== null) {
+        $isDefaultPort = ($scheme === 'http' && $port === 80) || ($scheme === 'https' && $port === 443);
+
+        if (!$isDefaultPort) {
+            $url .= ':' . $port;
+        }
+    }
+
+    $url .= $basePath . $normalizedPath;
+
+    if ($query !== []) {
+        $queryString = http_build_query(array_filter(
+            $query,
+            static fn ($value): bool => $value !== null && $value !== ''
+        ));
+
+        if ($queryString !== '') {
+            $url .= '?' . $queryString;
+        }
+    }
+
+    return $url;
+}
+
+function escapeXml(string $value): string
+{
+    return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
+}
+
 session_start();
 
 $lang = Locale::normalize($_GET['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
@@ -362,6 +400,81 @@ $configureMailer = function () {
 $formatPreferredLanguageForMail = function (string $language): string {
     return Locale::preferredLanguageLabel($language);
 };
+
+$app->get('/sitemap.xml', function ($request, $response) use ($basePath, $propertyModel) {
+    $languages = ['en', 'es'];
+    $staticPages = [
+        ['path' => '/', 'changefreq' => 'weekly', 'priority' => '1.0', 'localized' => true],
+        ['path' => '/about', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/contact', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/residence-immigration', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/location-automobiles', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/location-automobiles/formulaire', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
+        ['path' => '/demande-information', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/demande-information/formulaire', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
+        ['path' => '/gestion-immobiliere', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/gestion-immobiliere/formulaire', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
+        ['path' => '/excursions', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/quoi-faire-a-playa', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/restaurants-a-essayer', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
+    ];
+
+    $entries = [];
+
+    foreach ($staticPages as $page) {
+        $entries[] = [
+            'loc' => buildAbsoluteUrl($request, $basePath, $page['path']),
+            'changefreq' => $page['changefreq'],
+            'priority' => $page['priority'],
+        ];
+
+        if (!empty($page['localized'])) {
+            foreach ($languages as $language) {
+                $entries[] = [
+                    'loc' => buildAbsoluteUrl($request, $basePath, $page['path'], ['lang' => $language]),
+                    'changefreq' => $page['changefreq'],
+                    'priority' => $page['priority'],
+                ];
+            }
+        }
+    }
+
+    foreach ($propertyModel->findAll() as $property) {
+        $propertyPath = '/properties/' . (int) ($property['id'] ?? 0);
+
+        $entries[] = [
+            'loc' => buildAbsoluteUrl($request, $basePath, $propertyPath),
+            'changefreq' => 'weekly',
+            'priority' => '0.7',
+        ];
+
+        foreach ($languages as $language) {
+            $entries[] = [
+                'loc' => buildAbsoluteUrl($request, $basePath, $propertyPath, ['lang' => $language]),
+                'changefreq' => 'weekly',
+                'priority' => '0.7',
+            ];
+        }
+    }
+
+    $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
+
+    foreach ($entries as $entry) {
+        $xml .= "  <url>\n";
+        $xml .= '    <loc>' . escapeXml($entry['loc']) . "</loc>\n";
+        $xml .= '    <changefreq>' . escapeXml($entry['changefreq']) . "</changefreq>\n";
+        $xml .= '    <priority>' . escapeXml($entry['priority']) . "</priority>\n";
+        $xml .= "  </url>\n";
+    }
+
+    $xml .= "</urlset>\n";
+    $response->getBody()->write($xml);
+
+    return $response
+        ->withHeader('Content-Type', 'application/xml; charset=UTF-8')
+        ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+});
 
 $app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
     $queryParams = $request->getQueryParams();

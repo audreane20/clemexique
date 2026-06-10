@@ -2378,6 +2378,34 @@ body.mobile-menu-open {
     line-height: 1.7;
 }
 
+.page-intro-card {
+    max-width: 980px;
+    margin: 0 0 28px;
+    padding: 32px 34px;
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.52);
+    border-radius: 30px;
+    box-shadow: 0 22px 56px rgba(11, 53, 88, 0.14);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.page-intro-card h1 {
+    margin-top: 0;
+}
+
+.page-intro-card p {
+    max-width: none;
+    margin: 0 0 32px;
+    color: #52606d;
+    font-size: 18px;
+    line-height: 1.7;
+}
+
+.page-intro-card p:last-child {
+    margin-bottom: 0;
+}
+
 .residency-steps {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));

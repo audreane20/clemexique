@@ -2357,15 +2357,6 @@ body.mobile-menu-open {
     line-height: 1.45;
 }
 
-.residency-hero-transparent {
-    background: transparent;
-    color: transparent;
-    padding: 0 20px;
-}
-
-.residency-hero-transparent p {
-    display: none;
-}
 
 .residency-container {
     max-width: 1100px;

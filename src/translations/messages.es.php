@@ -534,4 +534,12 @@ return array(
     'restaurants.toc_copy' => 'Usa estos accesos directos para ir a la categoria que quieres ver.',
     'restaurants.toc_eyebrow' => 'Guia rapida',
     'restaurants.toc_title' => 'Explorar por categoria',
+    'auto_rental.page_title' => 'Renta de vehículos',
+    'auto_rental.title' => 'Renta de vehículos',
+    'home.toc_excursions_title' => 'Mejores excursiones en México',
+    'home.toc_playa_guide_title' => 'Lugares para ver',
+    'excursions.page_title' => 'Mejores excursiones en México',
+    'excursions.title' => 'Mejores excursiones en México',
+    'playa_guide.page_title' => 'Lugares para ver',
+    'playa_guide.title' => 'Lugares para ver',
 );

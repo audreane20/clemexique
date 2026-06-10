@@ -549,4 +549,12 @@ return [
     'properties.error_delete_photos_last' => 'A property must keep at least one photo. Upload a replacement before removing the last one.',
     'properties.error_primary_image_required' => 'Choose an image to make primary.',
     'properties.error_primary_image_invalid' => 'Only an existing image can be used as the primary property image.',
+    'auto_rental.page_title' => 'Vehicle rental',
+    'auto_rental.title' => 'Vehicle rental',
+    'home.toc_excursions_title' => 'Best excursions in Mexico',
+    'home.toc_playa_guide_title' => 'Places to see',
+    'excursions.page_title' => 'Best excursions in Mexico',
+    'excursions.title' => 'Best excursions in Mexico',
+    'playa_guide.page_title' => 'Places to see',
+    'playa_guide.title' => 'Places to see',
 ];

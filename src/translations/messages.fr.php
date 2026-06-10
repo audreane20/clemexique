@@ -551,4 +551,12 @@ return [
     'playa_guide.map_caption' => 'Touchez ou cliquez sur la carte pour l’ouvrir en grand format.',
     'playa_guide.contact_cta' => 'Demander quoi réserver en premier',
     'playa_guide.home_cta' => 'Ouvrir le guide Playa',
+    'auto_rental.page_title' => 'Location de véhicule',
+    'auto_rental.title' => 'Location de véhicule',
+    'home.toc_excursions_title' => 'Meilleures excursions au Mexique',
+    'home.toc_playa_guide_title' => 'Endroits à voir',
+    'excursions.page_title' => 'Meilleures excursions au Mexique',
+    'excursions.title' => 'Meilleures excursions au Mexique',
+    'playa_guide.page_title' => 'Endroits à voir',
+    'playa_guide.title' => 'Endroits à voir',
   ];

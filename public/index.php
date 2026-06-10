@@ -502,15 +502,15 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath, $proper
 
 $app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
     $queryParams = $request->getQueryParams();
-    $mode = strtolower((string) ($queryParams['mode'] ?? 'all'));
+    $mode = strtolower((string) ($queryParams['mode'] ?? 'future_projet'));
 
-    if (!in_array($mode, ['all', 'revente', 'future_projet'], true)) {
-        $mode = 'all';
+    if (!in_array($mode, ['revente', 'future_projet'], true)) {
+        $mode = 'future_projet';
     }
 
     return $twig->render($response, 'home.html.twig', [
         'page_title' => $translator->trans('nav.home'),
-        'properties' => $propertyModel->findAllByMode($mode === 'all' ? 'sale_all' : $mode),
+        'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,
     ]);
 });

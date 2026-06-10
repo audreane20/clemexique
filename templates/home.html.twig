@@ -1,59 +1,6 @@
 {% extends "layout.html.twig" %}
 
 {% block content %}
-<section class="home-toc-shell">
-    <div class="home-toc-card">
-        <div class="home-toc-copy">
-            <p class="home-toc-eyebrow">{{ trans('home.toc_eyebrow') }}</p>
-            <h2>{{ trans('home.toc_title') }}</h2>
-            <p>{{ trans('home.toc_copy') }}</p>
-        </div>
-
-        <div class="home-toc-grid">
-            <a href="#home-properties" class="home-toc-link" data-home-toc-target="home-properties">
-                <span class="home-toc-link-title">{{ trans('home.toc_properties_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_properties_copy') }}</span>
-            </a>
-            <a href="#home-info-request" class="home-toc-link" data-home-toc-target="home-info-request">
-                <span class="home-toc-link-title">{{ trans('home.toc_buy_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_buy_copy') }}</span>
-            </a>
-            <a href="#home-info-request-rent" class="home-toc-link" data-home-toc-target="home-info-request-rent">
-                <span class="home-toc-link-title">{{ trans('home.toc_info_rent_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_info_rent_copy') }}</span>
-            </a>
-            <a href="#home-residency" class="home-toc-link" data-home-toc-target="home-residency">
-                <span class="home-toc-link-title">{{ trans('home.toc_residency_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_residency_copy') }}</span>
-            </a>
-            <a href="#home-rental" class="home-toc-link" data-home-toc-target="home-rental">
-                <span class="home-toc-link-title">{{ trans('home.toc_rental_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_rental_copy') }}</span>
-            </a>
-            <a href="#home-management" class="home-toc-link" data-home-toc-target="home-management">
-                <span class="home-toc-link-title">{{ trans('home.toc_management_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_management_copy') }}</span>
-            </a>
-            <a href="#home-restaurants" class="home-toc-link" data-home-toc-target="home-restaurants">
-                <span class="home-toc-link-title">{{ trans('home.toc_restaurants_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_restaurants_copy') }}</span>
-            </a>
-            <a href="#home-excursions" class="home-toc-link" data-home-toc-target="home-excursions">
-                <span class="home-toc-link-title">{{ trans('home.toc_excursions_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_excursions_copy') }}</span>
-            </a>
-            <a href="#home-playa-guide" class="home-toc-link" data-home-toc-target="home-playa-guide">
-                <span class="home-toc-link-title">{{ trans('home.toc_playa_guide_title') }}</span>
-                <span class="home-toc-link-copy">{{ trans('home.toc_playa_guide_copy') }}</span>
-            </a>
-            <a href="#home-map-guide" class="home-toc-link" data-home-toc-target="home-map-guide">
-                <span class="home-toc-link-title">{{ trans('playa_guide.map_title') }}</span>
-                <span class="home-toc-link-copy">{{ app_lang == 'fr' ? 'Cliquez ici pour voir la carte repère rapide.' : (app_lang == 'es' ? 'Haz clic aqui para ver el mapa guia rapida.' : 'Click here to view the quick guide map.') }}</span>
-            </a>
-        </div>
-    </div>
-</section>
-
 <section class="property-public-shell" id="home-properties">
     <div class="property-public-header">
         <h1>{{ trans('properties.title') }}</h1>
@@ -228,13 +175,9 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-    const tocLinks = document.querySelectorAll('[data-home-toc-target]');
     const lightbox = document.querySelector('[data-property-lightbox]');
     const lightboxImage = document.querySelector('[data-property-lightbox-image]');
     const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
-    let highlightTimer = null;
-    let highlightedElement = null;
-    let scrollStopTimer = null;
 
     if (lightbox && lightboxImage && mapTrigger) {
         const openLightbox = function () {
@@ -267,95 +210,6 @@ document.addEventListener('DOMContentLoaded', function () {
             }
         });
     }
-
-    const resolveHighlightElement = function (target) {
-        if (!target) {
-            return null;
-        }
-
-        return target.querySelector('.info-request-card, .property-empty-state, .property-public-grid, .property-public-header, .property-filter-bar') || target;
-    };
-
-    const highlightTarget = function (target) {
-        const element = resolveHighlightElement(target);
-
-        if (!element) {
-            return;
-        }
-
-        if (highlightedElement && highlightedElement !== element) {
-            highlightedElement.classList.remove('quick-scroll-highlight');
-        }
-
-        element.classList.remove('quick-scroll-highlight');
-        void element.offsetWidth;
-        element.classList.add('quick-scroll-highlight');
-        highlightedElement = element;
-
-        if (highlightTimer) {
-            window.clearTimeout(highlightTimer);
-        }
-
-        highlightTimer = window.setTimeout(function () {
-            element.classList.remove('quick-scroll-highlight');
-            if (highlightedElement === element) {
-                highlightedElement = null;
-            }
-        }, 1100);
-    };
-
-    const highlightAfterArrival = function (target) {
-        const finish = function () {
-            window.removeEventListener('scrollend', finish);
-            window.removeEventListener('scroll', onScroll);
-            if (scrollStopTimer) {
-                window.clearTimeout(scrollStopTimer);
-                scrollStopTimer = null;
-            }
-            highlightTarget(target);
-        };
-
-        const onScroll = function () {
-            if (scrollStopTimer) {
-                window.clearTimeout(scrollStopTimer);
-            }
-
-            scrollStopTimer = window.setTimeout(finish, 120);
-        };
-
-        window.addEventListener('scrollend', finish, { once: true });
-        window.addEventListener('scroll', onScroll);
-        onScroll();
-    };
-
-    tocLinks.forEach(function (link) {
-        link.addEventListener('click', function (event) {
-            const targetId = link.getAttribute('data-home-toc-target');
-            const target = targetId ? document.getElementById(targetId) : null;
-
-            if (!target) {
-                return;
-            }
-
-            event.preventDefault();
-
-            const header = document.querySelector('.site-header');
-            const headerHeight = header ? header.offsetHeight : 0;
-            const rect = target.getBoundingClientRect();
-            const targetTop = window.scrollY + rect.top;
-            const centeredOffset = Math.max(80, (window.innerHeight - rect.height) / 2);
-            const defaultScrollTop = Math.max(0, targetTop - centeredOffset - (headerHeight / 2));
-            const topAlignedScrollTop = Math.max(0, targetTop - headerHeight + 24);
-            const scrollTop = targetId === 'home-map-guide' ? topAlignedScrollTop : defaultScrollTop;
-
-            window.history.replaceState(null, '', '#' + targetId);
-            window.scrollTo({
-                top: scrollTop,
-                behavior: 'smooth'
-            });
-            highlightAfterArrival(target);
-        });
-    });
 });
 </script>
 {% endblock %}

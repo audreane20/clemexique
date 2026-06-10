@@ -1646,6 +1646,11 @@ body.mobile-menu-open {
     box-shadow: 0 10px 24px rgba(11, 53, 88, 0.14);
 }
 
+.property-filter-link-cta {
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(31, 163, 179, 0.35);
+}
+
 .property-public-grid {
     display: flex;
     flex-direction: column;

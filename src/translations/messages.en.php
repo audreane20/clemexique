@@ -259,6 +259,7 @@ return [
     'purchase_guide.fee_internet' => 'Internet',
     'purchase_guide.fee_banking' => 'Bank fees',
     'purchase_guide.fee_taxes' => 'Property taxes',
+    'purchase_guide.fee_home_insurance' => 'Home insurance',
     'purchase_guide.total_label' => 'Total annual cost',
     'purchase_guide.condo_note' => 'Condo fee estimate based on 3.50 per square metre for a 90 square metre unit.',
     'auto_rental.page_title' => 'Car rental',

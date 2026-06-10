@@ -263,6 +263,7 @@ return array(
     'purchase_guide.fee_internet' => 'Internet',
     'purchase_guide.fee_banking' => 'Gastos bancarios',
     'purchase_guide.fee_taxes' => 'Impuestos',
+    'purchase_guide.fee_home_insurance' => 'Seguro de vivienda',
     'purchase_guide.total_label' => 'Costo anual total',
     'purchase_guide.condo_note' => 'Estimacion de cuotas de condo basada en 3.50 por metro cuadrado para una unidad de 90 metros cuadrados.',
     'info_request.studio' => 'Estudio',

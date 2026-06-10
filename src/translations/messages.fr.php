@@ -249,6 +249,7 @@ return [
     'purchase_guide.fee_internet' => 'Internet',
     'purchase_guide.fee_banking' => 'Frais bancaires',
     'purchase_guide.fee_taxes' => 'Taxes',
+    'purchase_guide.fee_home_insurance' => 'Assurance habitation',
     'purchase_guide.total_label' => 'Total des frais annuels',
     'purchase_guide.condo_note' => 'Estimation des frais de condo basee sur 3,50 par metre carre pour une superficie de 90 metres carres.',
     'auto_rental.page_title' => 'Location d\'automobiles',

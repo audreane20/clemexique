@@ -3,10 +3,13 @@
 {% block content %}
 {% set price_options = ['$', '$$', '$$$', '$$$$', '$$$$$'] %}
 {% set is_restaurants = active_section == 'restaurants' %}
+{% set is_video_capsules = active_section == 'video_capsules' %}
 {% set item_label = active_section == 'restaurants'
     ? {'en': 'restaurant', 'fr': 'restaurant', 'es': 'restaurante'}
     : active_section == 'excursions'
         ? {'en': 'excursion', 'fr': 'excursion', 'es': 'excursion'}
+        : active_section == 'video_capsules'
+            ? {'en': 'video capsule', 'fr': 'capsule video', 'es': 'capsula de video'}
         : {'en': 'activity', 'fr': 'activite', 'es': 'actividad'} %}
 {% set ui = {
     'en': {
@@ -14,6 +17,7 @@
         'edit': 'Edit',
         'add_restaurant': 'Add a restaurant',
         'add_excursion': 'Add an excursion',
+        'add_video': 'Add a video capsule',
         'add_activity': 'Add an activity',
         'editing_copy': 'The selected %s is loaded here for editing.',
         'create_copy': 'Choose an existing category or create a new one directly from this form.',
@@ -51,6 +55,7 @@
         'edit': 'Modifier',
         'add_restaurant': 'Ajouter un restaurant',
         'add_excursion': 'Ajouter une excursion',
+        'add_video': 'Ajouter une capsule video',
         'add_activity': 'Ajouter une activite',
         'editing_copy': 'L element selectionne est charge ici pour modification.',
         'create_copy': 'Choisissez une categorie existante ou creez-en une nouvelle directement depuis ce formulaire.',
@@ -88,6 +93,7 @@
         'edit': 'Editar',
         'add_restaurant': 'Agregar un restaurante',
         'add_excursion': 'Agregar una excursion',
+        'add_video': 'Agregar una capsula de video',
         'add_activity': 'Agregar una actividad',
         'editing_copy': 'El elemento seleccionado esta cargado aqui para editarlo.',
         'create_copy': 'Elige una categoria existente o crea una nueva directamente desde este formulario.',
@@ -124,9 +130,11 @@
 {% set current_item_label = item_label[app_lang] %}
 {% set add_title = is_restaurants
     ? ui[app_lang].add_restaurant
-    : (active_section == 'excursions'
+    : (is_video_capsules
+        ? ui[app_lang].add_video
+        : (active_section == 'excursions'
         ? ui[app_lang].add_excursion
-        : ui[app_lang].add_activity) %}
+        : ui[app_lang].add_activity)) %}
 {% set submit_add_label = app_lang == 'es'
     ? (active_section == 'playa_guide' ? 'Agregar actividad' : add_title)
     : (app_lang == 'fr'
@@ -137,8 +145,12 @@
     : (app_lang == 'fr'
         ? (active_section == 'playa_guide' ? 'Enregistrer activite' : ui[app_lang].save|format(current_item_label))
         : ui[app_lang].save|format(current_item_label)) %}
-{% set required_item_fields = is_restaurants ? ['name', 'area', 'price', 'url'] : ['name', 'area', 'url'] %}
-{% set optional_item_fields = is_restaurants ? ['reference'] : ['note', 'video_url'] %}
+{% set required_item_fields = section_config.required_item_fields is defined
+    ? section_config.required_item_fields
+    : (is_restaurants ? ['name', 'area', 'price', 'url'] : ['name', 'area', 'url']) %}
+{% set optional_item_fields = section_config.optional_item_fields is defined
+    ? section_config.optional_item_fields
+    : (is_restaurants ? ['reference'] : ['note', 'video_url']) %}
 {% set is_editing_item = editing_item is not null %}
 {% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
 {% set selected_category_choice = is_editing_item ? editing_item_category_index : '' %}

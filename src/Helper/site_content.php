@@ -11,7 +11,7 @@ function siteContentEmptyState(): array
 {
     $empty = [];
 
-    foreach (['restaurants', 'excursions', 'playa_guide'] as $section) {
+    foreach (['restaurants', 'excursions', 'playa_guide', 'video_capsules'] as $section) {
         $empty[$section] = [];
 
         foreach (Locale::all() as $language) {
@@ -64,6 +64,17 @@ function siteContentTableMap(): array
                 'note' => 'note',
                 'url' => 'website_url',
                 'url_label' => 'website_label',
+                'video_url' => 'video_url',
+            ],
+        ],
+        'video_capsules' => [
+            'categories_table' => 'video_capsule_categories',
+            'items_table' => 'video_capsules',
+            'category_title_column' => 'title',
+            'category_icon_column' => 'icon_code',
+            'item_column_map' => [
+                'name' => 'name',
+                'note' => 'note',
                 'video_url' => 'video_url',
             ],
         ],
@@ -180,6 +191,36 @@ function ensureSiteContentTables(PDO $pdo): void
             INDEX idx_todo_items_category_sort (category_id, sort_order),
             CONSTRAINT fk_todo_items_category
                 FOREIGN KEY (category_id) REFERENCES todo_categories(id)
+                ON DELETE CASCADE
+        )
+    ");
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS video_capsule_categories (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            language_code CHAR(2) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            icon_code VARCHAR(50) NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_video_capsule_categories_language_sort (language_code, sort_order)
+        )
+    ");
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS video_capsules (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            category_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            note TEXT NULL,
+            video_url TEXT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_video_capsules_category_sort (category_id, sort_order),
+            CONSTRAINT fk_video_capsules_category
+                FOREIGN KEY (category_id) REFERENCES video_capsule_categories(id)
                 ON DELETE CASCADE
         )
     ");

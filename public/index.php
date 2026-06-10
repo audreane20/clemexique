@@ -4,6 +4,7 @@ use App\Controller\ExcursionController;
 use App\Controller\PropertyController;
 use App\Controller\RestaurantController;
 use App\Controller\TodoController;
+use App\Controller\VideoCapsuleController;
 use App\Helper\Locale;
 use App\Helper\Translator;
 use App\Model\ExcursionModel;
@@ -11,6 +12,7 @@ use App\Model\PropertyModel;
 use App\Model\RestaurantModel;
 use App\Model\TodoModel;
 use App\Model\UserModel;
+use App\Model\VideoCapsuleModel;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Slim\Factory\AppFactory;
@@ -296,11 +298,13 @@ $propertyModel = new PropertyModel($pdo);
 $restaurantModel = new RestaurantModel($pdo);
 $excursionModel = new ExcursionModel($pdo);
 $todoModel = new TodoModel($pdo);
+$videoCapsuleModel = new VideoCapsuleModel($pdo);
 $userModel = new UserModel($pdo);
 $propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator);
 $restaurantController = new RestaurantController($restaurantModel, $twig, $basePath, $translator);
 $excursionController = new ExcursionController($excursionModel, $twig, $basePath, $translator);
 $todoController = new TodoController($todoModel, $twig, $basePath, $translator);
+$videoCapsuleController = new VideoCapsuleController($videoCapsuleModel, $twig, $basePath, $translator);
 $adminAuthMiddleware = requireAdminAuth($basePath);
 $userAuthMiddleware = requireUserAuth($basePath);
 
@@ -569,10 +573,8 @@ $app->get('/activites-sportives', function ($request, $response) use ($twig, $tr
     ]);
 });
 
-$app->get('/capsules-video-mexique', function ($request, $response) use ($twig, $translator) {
-    return $twig->render($response, 'video-capsules.html.twig', [
-        'page_title' => $translator->trans('video_capsules.page_title'),
-    ]);
+$app->get('/capsules-video-mexique', function ($request, $response) use ($videoCapsuleController) {
+    return $videoCapsuleController->publicIndex($request, $response);
 });
 
 $app->get('/excursions', [$excursionController, 'publicIndex']);
@@ -1454,7 +1456,7 @@ $app->group('/admin', function ($group) use ($propertyController) {
     $group->post('/properties/{id}/delete', [$propertyController, 'delete']);
 })->add($adminAuthMiddleware);
 
-$app->group('/admin/content', function ($group) use ($restaurantController, $excursionController, $todoController) {
+$app->group('/admin/content', function ($group) use ($restaurantController, $excursionController, $todoController, $videoCapsuleController) {
     $group->get('/restaurants', [$restaurantController, 'adminIndex']);
     $group->post('/restaurants/items/create', [$restaurantController, 'create']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/update', [$restaurantController, 'update']);
@@ -1472,6 +1474,12 @@ $app->group('/admin/content', function ($group) use ($restaurantController, $exc
     $group->post('/playa_guide/items/{categoryIndex}/{itemIndex}/update', [$todoController, 'update']);
     $group->post('/playa_guide/items/{categoryIndex}/{itemIndex}/delete', [$todoController, 'deleteItem']);
     $group->post('/playa_guide/categories/{categoryIndex}/delete', [$todoController, 'deleteCategory']);
+
+    $group->get('/video_capsules', [$videoCapsuleController, 'adminIndex']);
+    $group->post('/video_capsules/items/create', [$videoCapsuleController, 'create']);
+    $group->post('/video_capsules/items/{categoryIndex}/{itemIndex}/update', [$videoCapsuleController, 'update']);
+    $group->post('/video_capsules/items/{categoryIndex}/{itemIndex}/delete', [$videoCapsuleController, 'deleteItem']);
+    $group->post('/video_capsules/categories/{categoryIndex}/delete', [$videoCapsuleController, 'deleteCategory']);
 })->add($adminAuthMiddleware);
 
 $app->run();

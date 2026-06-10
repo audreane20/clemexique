@@ -9,10 +9,51 @@
     <h1>{{ trans('video_capsules.title') }}</h1>
     <p>{{ trans('video_capsules.intro') }}</p>
 
-    <div class="residency-note">
-        <h2>{{ trans('video_capsules.coming_title') }}</h2>
-        <p>{{ trans('video_capsules.coming_copy') }}</p>
-    </div>
+    {% if categories is empty %}
+        <div class="residency-note">
+            <h2>{{ trans('video_capsules.coming_title') }}</h2>
+            <p>{{ trans('video_capsules.coming_copy') }}</p>
+        </div>
+    {% else %}
+        <div class="guide-category-list">
+            {% for category in categories %}
+                <section class="guide-category">
+                    <div class="guide-category-header">
+                        <h2>{{ category.title }}</h2>
+                        <span>{{ category.items|length }}</span>
+                    </div>
+
+                    <div class="guide-grid">
+                        {% for item in category.items %}
+                            <article class="guide-card">
+                                <div class="guide-card-top">
+                                    <h3>{{ item.name }}</h3>
+                                    {% if item.video_url %}
+                                        <a
+                                            href="{{ item.video_url }}"
+                                            class="guide-video-link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            aria-label="{{ app_lang == 'fr' ? 'Voir la video' : (app_lang == 'es' ? 'Ver video' : 'Watch video') }}"
+                                            title="{{ app_lang == 'fr' ? 'Voir la video' : (app_lang == 'es' ? 'Ver video' : 'Watch video') }}"
+                                        >
+                                            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                                                <path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.4 3.5 12 3.5 12 3.5s-7.4 0-9.4.6A3 3 0 0 0 .5 6.2 31.4 31.4 0 0 0 0 12a31.4 31.4 0 0 0 .5 5.8 3 3 0 0 0 2.1 2.1c2 .6 9.4.6 9.4.6s7.4 0 9.4-.6a3 3 0 0 0 2.1-2.1A31.4 31.4 0 0 0 24 12a31.4 31.4 0 0 0-.5-5.8ZM9.6 15.6V8.4L15.8 12l-6.2 3.6Z"/>
+                                            </svg>
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                                {% if item.note %}
+                                    <p class="guide-note">{{ item.note }}</p>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="page-home-actions">
         <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>

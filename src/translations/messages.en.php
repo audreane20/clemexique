@@ -23,6 +23,8 @@ return [
     'home.hero_action_buy' => 'Buy',
     'home.hero_action_rent' => 'Rent',
     'home.hero_action_settle' => 'Settle here',
+    'home.properties_title' => 'Properties for sale',
+    'home.properties_subtitle' => 'Explore the best real estate opportunities for purchase.',
     'home.toc_eyebrow' => 'Quick guide',
     'home.toc_title' => 'What you can find on this page',
     'home.toc_copy' => 'Use these shortcuts to jump directly to the section you want to explore.',

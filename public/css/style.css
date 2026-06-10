@@ -1101,6 +1101,14 @@ body.mobile-menu-open {
     line-height: 1.6;
 }
 
+.property-public-header p {
+    max-width: 760px;
+    margin: 14px 0 0;
+    color: #244967;
+    font-size: 18px;
+    line-height: 1.6;
+}
+
 .admin-properties-layout {
     display: grid;
     grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);

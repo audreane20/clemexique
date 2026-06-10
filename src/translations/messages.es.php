@@ -134,6 +134,8 @@ return array(
     'home.hero_action_buy' => 'Comprar',
     'home.hero_action_rent' => 'Alquilar',
     'home.hero_action_settle' => 'Instalarse aquí',
+    'home.properties_title' => 'Propiedades en venta',
+    'home.properties_subtitle' => 'Explora las mejores oportunidades inmobiliarias para comprar.',
     'home.toc_copy' => 'Usa estos accesos directos para ir a la seccion que quieres explorar.',
     'home.toc_excursions_copy' => 'Consulta una lista breve de excursiones y enlaces utiles.',
     'home.toc_excursions_title' => 'Excursiones',

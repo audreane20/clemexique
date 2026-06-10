@@ -23,6 +23,8 @@ return [
     'home.hero_action_buy' => 'Acheter',
     'home.hero_action_rent' => 'Louer',
     'home.hero_action_settle' => 'S’y installer',
+    'home.properties_title' => 'Propriétés à vendre',
+    'home.properties_subtitle' => 'Explorez les meilleures opportunités immobilières à l’achat.',
     'home.toc_eyebrow' => 'Guide rapide',
     'home.toc_title' => 'Ce que vous trouverez sur cette page',
     'home.toc_copy' => 'Utilisez ces raccourcis pour aller directement à la section qui vous intéresse.',

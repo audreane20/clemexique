@@ -222,7 +222,7 @@ return [
     'info_request.copy' => 'Voici un aperçu des frais fixes annuels relatifs à l\'achat d\'une propriété.',
     'info_request.cta' => 'Cliquez ici pour plus d\'information',
     'info_request.form_cta' => 'Ouvrir le formulaire',
-    'info_request_rent.title' => 'Formulaire de demande d\'information pour louer une propriété',
+    'info_request_rent.title' => 'Location de propriété',
     'info_request_rent.copy' => 'Vous serez transféré vers un collaborateur de confiance qui s’occupe des locations de propriétés.',
     'info_request_rent.note_prefix' => 'Si vous mentionnez ',
     'info_request_rent.note_emphasis' => 'CLeMexique',

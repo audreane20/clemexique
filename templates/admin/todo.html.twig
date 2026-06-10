@@ -195,7 +195,7 @@
                 {% endif %}
             </div>
 
-            <form method="POST" action="{{ item_form_action }}" class="admin-content-form" data-admin-content-form enctype="multipart/form-data">
+            <form method="POST" action="{{ item_form_action }}" class="admin-content-form" data-admin-content-form {% if section_config.show_video_upload is defined and section_config.show_video_upload %}data-admin-content-native-submit="true"{% endif %} enctype="multipart/form-data">
                 <input type="hidden" name="editor_language" value="{{ editor_language }}">
 
                 <label>
@@ -805,6 +805,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (form && !form.dataset.ajaxBound) {
             form.dataset.ajaxBound = 'true';
+            if (form.dataset.adminContentNativeSubmit === 'true') {
+                return;
+            }
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
                 submitAdminContentAction(form, '{{ ui[app_lang].saving }}');

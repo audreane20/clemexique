@@ -3542,6 +3542,15 @@ body.mobile-menu-open {
     font-size: 14px;
 }
 
+.admin-content-video-meta {
+    display: grid;
+    gap: 10px;
+}
+
+.admin-content-video-preview {
+    max-width: 420px;
+}
+
 .admin-content-card-actions {
     display: flex;
     justify-content: flex-start;

@@ -447,7 +447,25 @@
                                                 </div>
                                             </div>
 
-                                            {% if item.url %}
+                                            {% if is_video_capsules and item.video_url %}
+                                                <div class="admin-content-item-meta admin-content-video-meta">
+                                                    {% if item.video_url starts with '/uploads/video-capsules/' %}
+                                                        <video controls preload="metadata" class="guide-video-player admin-content-video-preview">
+                                                            <source src="{{ base_path ~ item.video_url }}">
+                                                        </video>
+                                                        <a href="{{ base_path ~ item.video_url }}" target="_blank" rel="noopener noreferrer" class="guide-link">
+                                                            {{ app_lang == 'fr' ? 'Ouvrir la video' : (app_lang == 'es' ? 'Abrir video' : 'Open video') }}
+                                                        </a>
+                                                    {% else %}
+                                                        <a href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer" class="guide-link">
+                                                            {{ app_lang == 'fr' ? 'Ouvrir le lien video' : (app_lang == 'es' ? 'Abrir enlace del video' : 'Open video link') }}
+                                                        </a>
+                                                    {% endif %}
+                                                    {% if item.note %}
+                                                        <p class="guide-area">{{ item.note }}</p>
+                                                    {% endif %}
+                                                </div>
+                                            {% elseif item.url %}
                                                 <div class="admin-content-item-meta">
                                                     <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="guide-link">{{ item.url_label ? item.url_label : item.url }}</a>
                                                 </div>

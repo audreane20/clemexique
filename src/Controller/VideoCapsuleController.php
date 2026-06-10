@@ -65,6 +65,7 @@ class VideoCapsuleController
         $language = $this->postedLanguage($data);
 
         try {
+            $this->guardUploadSize($request, $language);
             $data = $this->prepareVideoCapsuleData($request, $data, $language, null);
             $this->videoCapsuleModel->createItem($language, $data);
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
@@ -84,6 +85,7 @@ class VideoCapsuleController
         $existingItem = $this->videoCapsuleModel->findItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
 
         try {
+            $this->guardUploadSize($request, $language);
             $data = $this->prepareVideoCapsuleData($request, $data, $language, $existingItem);
             $this->videoCapsuleModel->updateItem($language, (int) $args['categoryIndex'], (int) $args['itemIndex'], $data);
             if ($existingItem !== null && ($data['video_url'] ?? '') !== ($existingItem['video_url'] ?? '')) {
@@ -376,5 +378,41 @@ class VideoCapsuleController
         $language = Locale::normalize($language);
 
         return $messages[$errorCode][$language] ?? $this->missingVideoMessage($language);
+    }
+
+    private function guardUploadSize(Request $request, string $language): void
+    {
+        $contentLength = (int) ($request->getServerParams()['CONTENT_LENGTH'] ?? 0);
+        $maxPostSize = $this->toBytes((string) ini_get('post_max_size'));
+
+        if ($contentLength > 0 && $maxPostSize > 0 && $contentLength > $maxPostSize) {
+            $messages = [
+                'en' => 'The uploaded video is too large for the current server limit. Please upload a smaller file or increase the PHP upload limits.',
+                'fr' => 'La video televersee depasse la limite actuelle du serveur. Veuillez televerser un fichier plus petit ou augmenter les limites PHP.',
+                'es' => 'El video subido supera el limite actual del servidor. Sube un archivo mas pequeno o aumenta los limites de PHP.',
+            ];
+
+            $language = Locale::normalize($language);
+            throw new \InvalidArgumentException($messages[$language] ?? $messages['en']);
+        }
+    }
+
+    private function toBytes(string $value): int
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return 0;
+        }
+
+        $unit = strtolower(substr($value, -1));
+        $number = (float) $value;
+
+        return match ($unit) {
+            'g' => (int) round($number * 1024 * 1024 * 1024),
+            'm' => (int) round($number * 1024 * 1024),
+            'k' => (int) round($number * 1024),
+            default => (int) round($number),
+        };
     }
 }

@@ -7,11 +7,14 @@ use App\Helper\Translator;
 use App\Model\VideoCapsuleModel;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
+use Psr\Http\Message\UploadedFileInterface;
 use Slim\Views\Twig;
 
 class VideoCapsuleController
 {
     private const FLASH_KEY = 'admin_content_flash';
+    private const UPLOAD_DIRECTORY = '/public/uploads/video-capsules';
+    private const ALLOWED_VIDEO_EXTENSIONS = ['mp4', 'mov', 'm4v', 'webm'];
 
     public function __construct(
         private VideoCapsuleModel $videoCapsuleModel,
@@ -62,8 +65,11 @@ class VideoCapsuleController
         $language = $this->postedLanguage($data);
 
         try {
+            $data = $this->prepareVideoCapsuleData($request, $data, $language, null);
             $this->videoCapsuleModel->createItem($language, $data);
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
+        } catch (\RuntimeException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -75,10 +81,17 @@ class VideoCapsuleController
     {
         $data = (array) $request->getParsedBody();
         $language = $this->postedLanguage($data);
+        $existingItem = $this->videoCapsuleModel->findItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
 
         try {
+            $data = $this->prepareVideoCapsuleData($request, $data, $language, $existingItem);
             $this->videoCapsuleModel->updateItem($language, (int) $args['categoryIndex'], (int) $args['itemIndex'], $data);
+            if ($existingItem !== null && ($data['video_url'] ?? '') !== ($existingItem['video_url'] ?? '')) {
+                $this->deleteManagedVideoFile((string) ($existingItem['video_url'] ?? ''));
+            }
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
+        } catch (\RuntimeException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -90,9 +103,13 @@ class VideoCapsuleController
     {
         $data = (array) $request->getParsedBody();
         $language = $this->postedLanguage($data);
+        $existingItem = $this->videoCapsuleModel->findItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
 
         try {
             $this->videoCapsuleModel->deleteItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
+            if ($existingItem !== null) {
+                $this->deleteManagedVideoFile((string) ($existingItem['video_url'] ?? ''));
+            }
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_deleted', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
@@ -105,9 +122,16 @@ class VideoCapsuleController
     {
         $data = (array) $request->getParsedBody();
         $language = $this->postedLanguage($data);
+        $categories = $this->videoCapsuleModel->findAllByLanguage($language);
+        $category = $categories[(int) $args['categoryIndex']] ?? null;
 
         try {
             $this->videoCapsuleModel->deleteCategoryByIndex($language, (int) $args['categoryIndex']);
+            if (is_array($category)) {
+                foreach (($category['items'] ?? []) as $item) {
+                    $this->deleteManagedVideoFile((string) ($item['video_url'] ?? ''));
+                }
+            }
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_deleted', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
@@ -162,8 +186,9 @@ class VideoCapsuleController
                 ['name' => 'video_url', 'labels' => ['en' => 'Video link', 'fr' => 'Lien vidéo', 'es' => 'Enlace del video'], 'placeholders' => ['en' => 'https://youtube.com/...', 'fr' => 'https://youtube.com/...', 'es' => 'https://youtube.com/...']],
                 ['name' => 'note', 'labels' => ['en' => 'Description', 'fr' => 'Description', 'es' => 'Descripción'], 'placeholders' => ['en' => 'Short description', 'fr' => 'Description courte', 'es' => 'Descripción breve']],
             ],
-            'required_item_fields' => ['name', 'video_url'],
-            'optional_item_fields' => ['note'],
+            'required_item_fields' => ['name'],
+            'optional_item_fields' => ['video_url', 'note'],
+            'show_video_upload' => true,
         ];
     }
 
@@ -237,5 +262,73 @@ class VideoCapsuleController
         $language = Locale::normalize($language);
 
         return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+    }
+
+    private function prepareVideoCapsuleData(Request $request, array $data, string $language, ?array $existingItem): array
+    {
+        $uploadedFiles = $request->getUploadedFiles();
+        $videoFile = $uploadedFiles['video_file'] ?? null;
+        $videoUrl = trim((string) ($data['video_url'] ?? ''));
+
+        if ($videoFile instanceof UploadedFileInterface && $videoFile->getError() === UPLOAD_ERR_OK) {
+            $data['video_url'] = $this->storeUploadedVideo($videoFile);
+        } elseif ($videoUrl !== '') {
+            $data['video_url'] = $videoUrl;
+        } elseif ($existingItem !== null && trim((string) ($existingItem['video_url'] ?? '')) !== '') {
+            $data['video_url'] = trim((string) $existingItem['video_url']);
+        } else {
+            throw new \InvalidArgumentException($this->missingVideoMessage($language));
+        }
+
+        return $data;
+    }
+
+    private function storeUploadedVideo(UploadedFileInterface $uploadedFile): string
+    {
+        $clientFilename = (string) $uploadedFile->getClientFilename();
+        $extension = strtolower(pathinfo($clientFilename, PATHINFO_EXTENSION));
+
+        if ($extension === '' || !in_array($extension, self::ALLOWED_VIDEO_EXTENSIONS, true)) {
+            throw new \InvalidArgumentException('Unsupported video format. Use MP4, MOV, M4V, or WEBM.');
+        }
+
+        $uploadDirectory = dirname(__DIR__, 2) . self::UPLOAD_DIRECTORY;
+
+        if (!is_dir($uploadDirectory) && !mkdir($uploadDirectory, 0775, true) && !is_dir($uploadDirectory)) {
+            throw new \InvalidArgumentException('Unable to create the video upload folder.');
+        }
+
+        $filename = 'capsule-' . bin2hex(random_bytes(8)) . '.' . $extension;
+        $uploadedFile->moveTo($uploadDirectory . DIRECTORY_SEPARATOR . $filename);
+
+        return '/uploads/video-capsules/' . $filename;
+    }
+
+    private function deleteManagedVideoFile(string $videoUrl): void
+    {
+        $videoUrl = trim($videoUrl);
+
+        if (!str_starts_with($videoUrl, '/uploads/video-capsules/')) {
+            return;
+        }
+
+        $path = dirname(__DIR__, 2) . '/public' . $videoUrl;
+
+        if (is_file($path)) {
+            @unlink($path);
+        }
+    }
+
+    private function missingVideoMessage(string $language): string
+    {
+        $messages = [
+            'en' => 'Please provide a video link or upload a video file.',
+            'fr' => 'Veuillez fournir un lien vidéo ou téléverser un fichier vidéo.',
+            'es' => 'Proporciona un enlace de video o sube un archivo de video.',
+        ];
+
+        $language = Locale::normalize($language);
+
+        return $messages[$language] ?? $messages['en'];
     }
 }

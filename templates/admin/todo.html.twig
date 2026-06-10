@@ -195,7 +195,7 @@
                 {% endif %}
             </div>
 
-            <form method="POST" action="{{ item_form_action }}" class="admin-content-form" data-admin-content-form>
+            <form method="POST" action="{{ item_form_action }}" class="admin-content-form" data-admin-content-form enctype="multipart/form-data">
                 <input type="hidden" name="editor_language" value="{{ editor_language }}">
 
                 <label>
@@ -334,6 +334,31 @@
                     </label>
                     {% endif %}
                 {% endfor %}
+
+                {% if section_config.show_video_upload is defined and section_config.show_video_upload %}
+                    <label>
+                        <span class="admin-content-label-copy">
+                            {{ app_lang == 'fr' ? 'Fichier vidéo' : (app_lang == 'es' ? 'Archivo de video' : 'Video file') }}
+                            <span class="admin-content-optional-marker">({{ ui[app_lang].optional }})</span>
+                        </span>
+                        <input type="file" name="video_file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm">
+                        <span class="admin-content-field-help">
+                            {{ app_lang == 'fr'
+                                ? 'Vous pouvez téléverser une vidéo depuis le téléphone, la caméra ou le dossier Downloads.'
+                                : (app_lang == 'es'
+                                    ? 'Puedes subir un video desde el teléfono, la cámara o la carpeta Downloads.'
+                                    : 'You can upload a video from a phone, camera roll, or the Downloads folder.') }}
+                        </span>
+                        {% if is_editing_item and editing_item.video_url %}
+                            <span class="admin-content-field-help">
+                                {{ app_lang == 'fr'
+                                    ? 'Vidéo actuelle :'
+                                    : (app_lang == 'es' ? 'Video actual:' : 'Current video:') }}
+                                {{ editing_item.video_url }}
+                            </span>
+                        {% endif %}
+                    </label>
+                {% endif %}
 
                 <button type="submit" class="contact-btn">
                     {% if is_editing_item %}

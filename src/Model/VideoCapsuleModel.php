@@ -136,7 +136,7 @@ class VideoCapsuleModel
         $payload = [
             'name' => trim((string) ($data['name'] ?? '')),
             'note' => trim((string) ($data['note'] ?? '')),
-            'video_url' => $this->normalizeExternalUrl((string) ($data['video_url'] ?? '')),
+            'video_url' => $this->normalizeVideoSource((string) ($data['video_url'] ?? '')),
         ];
 
         foreach (['name', 'video_url'] as $requiredField) {
@@ -306,7 +306,7 @@ class VideoCapsuleModel
         return [
             'name' => $itemRow['name'] ?? null,
             'note' => $itemRow['note'] ?? null,
-            'video_url' => $itemRow['video_url'] ?? null,
+            'video_url' => $this->normalizeVideoSource((string) ($itemRow['video_url'] ?? '')),
         ];
     }
 
@@ -332,6 +332,21 @@ class VideoCapsuleModel
         }
 
         return 'https://' . ltrim($url, '/');
+    }
+
+    private function normalizeVideoSource(string $value): string
+    {
+        $value = trim($value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        if (str_starts_with($value, '/')) {
+            return $value;
+        }
+
+        return $this->normalizeExternalUrl($value);
     }
 
     private function localizedMessage(string $key, string $language): string

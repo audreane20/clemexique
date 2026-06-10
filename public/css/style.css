@@ -1647,6 +1647,7 @@ body.mobile-menu-open {
 }
 
 .property-filter-link-cta {
+    margin-left: 28px;
     background: rgba(255, 255, 255, 0.96);
     border-color: rgba(31, 163, 179, 0.35);
 }

@@ -228,7 +228,7 @@ body.mobile-menu-open {
 
 /* ABOUT HERO */
 .about-hero {
-    background: linear-gradient(rgba(11, 53, 88, 0.75), rgba(31, 163, 179, 0.6)), url("../images/beach.jpg");
+    background: linear-gradient(rgba(11, 53, 88, 0.75), rgba(31, 163, 179, 0.6)), url("../Images/beach.jpg");
     background-size: cover;
     background-position: center;
     color: white;
@@ -311,7 +311,7 @@ body.mobile-menu-open {
 
 
 .contact-hero {
-    background: linear-gradient(rgba(11, 53, 88, 0.75), rgba(31, 163, 179, 0.6)), url("../images/beach.jpg");
+    background: linear-gradient(rgba(11, 53, 88, 0.75), rgba(31, 163, 179, 0.6)), url("../Images/beach.jpg");
     background-size: cover;
     background-position: center;
     color: white;
@@ -2171,7 +2171,7 @@ body.mobile-menu-open {
 }
 
 .residency-hero {
-    background: linear-gradient(rgba(11, 53, 88, 0.76), rgba(31, 163, 179, 0.56)), url("../images/beach.png");
+    background: linear-gradient(rgba(11, 53, 88, 0.76), rgba(31, 163, 179, 0.56)), url("../Images/beach.png");
     background-size: cover;
     background-position: center;
     color: #ffffff;
@@ -3565,7 +3565,7 @@ body.admin-confirm-open {
     align-items: stretch;
     background:
         linear-gradient(90deg, rgba(255, 255, 255, 1) 0%, rgba(255, 255, 255, 0.985) 41%, rgba(255, 255, 255, 0.06) 70%, rgba(255, 255, 255, 0.02) 100%),
-        url("../images/beach.png");
+        url("../Images/beach.png");
     background-size: cover;
     background-position: center right;
 }
@@ -3895,28 +3895,28 @@ body.admin-confirm-open {
 }
 
 .inquiry-location-thumb-cancun {
-    background-image: url("../images/cancun.jpg");
+    background-image: url("../Images/cancun.jpg");
 }
 
 .inquiry-location-thumb-morelos {
-    background-image: url("../images/PuertoMorelos.png");
+    background-image: url("../Images/PuertoMorelos.png");
 }
 
 .inquiry-location-thumb-playa {
-    background-image: url("../images/playaDelCarmen.jpg");
+    background-image: url("../Images/playaDelCarmen.jpg");
 }
 
 .inquiry-location-thumb-aventuras {
-    background-image: url("../images/Puerto Aventuras.png");
+    background-image: url("../Images/Puerto Aventuras.png");
 }
 
 .inquiry-location-thumb-tulum {
-    background-image: url("../images/Tulum.jpg");
+    background-image: url("../Images/Tulum.jpg");
 }
 
 .inquiry-location-thumb-other {
     min-height: 82px;
-    background-image: url("../images/Icon_Location.png");
+    background-image: url("../Images/Icon_Location.png");
     background-size: 58px auto;
     background-repeat: no-repeat;
     background-position: center;

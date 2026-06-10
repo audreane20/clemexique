@@ -1602,7 +1602,7 @@ body.mobile-menu-open {
 
 .property-filter-bar-home {
     justify-content: flex-start;
-    align-self: flex-start;
+    align-self: stretch;
     margin-top: 18px;
     margin-bottom: 0;
 }
@@ -1644,6 +1644,12 @@ body.mobile-menu-open {
     border-color: transparent;
     color: #ffffff;
     box-shadow: 0 10px 24px rgba(11, 53, 88, 0.14);
+}
+
+.property-filter-link-cta {
+    margin-left: auto;
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(31, 163, 179, 0.35);
 }
 
 .property-public-grid {

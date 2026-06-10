@@ -254,11 +254,13 @@ class VideoCapsuleController
     private function prepareVideoCapsuleData(Request $request, array $data, string $language, ?array $existingItem): array
     {
         $uploadedFiles = $request->getUploadedFiles();
-        $videoFile = $uploadedFiles['video_file'] ?? null;
+        $videoFile = $this->resolveUploadedVideoFile($uploadedFiles['video_file'] ?? null);
         $videoUrl = trim((string) ($data['video_url'] ?? ''));
 
         if ($videoFile instanceof UploadedFileInterface && $videoFile->getError() === UPLOAD_ERR_OK) {
             $data['video_url'] = $this->storeUploadedVideo($videoFile);
+        } elseif ($videoFile instanceof UploadedFileInterface && $videoFile->getError() !== UPLOAD_ERR_NO_FILE) {
+            throw new \InvalidArgumentException($this->uploadErrorMessage($videoFile->getError(), $language));
         } elseif ($videoUrl !== '') {
             $data['video_url'] = $videoUrl;
         } elseif ($existingItem !== null && trim((string) ($existingItem['video_url'] ?? '')) !== '') {
@@ -317,5 +319,62 @@ class VideoCapsuleController
         $language = Locale::normalize($language);
 
         return $messages[$language] ?? $messages['en'];
+    }
+
+    private function resolveUploadedVideoFile(mixed $uploaded): ?UploadedFileInterface
+    {
+        if ($uploaded instanceof UploadedFileInterface) {
+            return $uploaded;
+        }
+
+        if (is_array($uploaded)) {
+            foreach ($uploaded as $item) {
+                if ($item instanceof UploadedFileInterface) {
+                    return $item;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private function uploadErrorMessage(int $errorCode, string $language): string
+    {
+        $messages = [
+            UPLOAD_ERR_INI_SIZE => [
+                'en' => 'The uploaded video is too large for the server limit.',
+                'fr' => 'La vidéo téléversée dépasse la limite autorisée par le serveur.',
+                'es' => 'El video subido supera el límite permitido del servidor.',
+            ],
+            UPLOAD_ERR_FORM_SIZE => [
+                'en' => 'The uploaded video is too large.',
+                'fr' => 'La vidéo téléversée est trop volumineuse.',
+                'es' => 'El video subido es demasiado grande.',
+            ],
+            UPLOAD_ERR_PARTIAL => [
+                'en' => 'The video upload was only partially completed. Please try again.',
+                'fr' => 'Le téléversement de la vidéo est incomplet. Veuillez réessayer.',
+                'es' => 'La carga del video quedó incompleta. Inténtalo de nuevo.',
+            ],
+            UPLOAD_ERR_NO_TMP_DIR => [
+                'en' => 'The server is missing a temporary upload folder.',
+                'fr' => 'Le serveur n’a pas de dossier temporaire pour les téléversements.',
+                'es' => 'Al servidor le falta una carpeta temporal para las cargas.',
+            ],
+            UPLOAD_ERR_CANT_WRITE => [
+                'en' => 'The server could not save the uploaded video.',
+                'fr' => 'Le serveur n’a pas pu enregistrer la vidéo téléversée.',
+                'es' => 'El servidor no pudo guardar el video subido.',
+            ],
+            UPLOAD_ERR_EXTENSION => [
+                'en' => 'A server extension blocked the video upload.',
+                'fr' => 'Une extension du serveur a bloqué le téléversement de la vidéo.',
+                'es' => 'Una extensión del servidor bloqueó la carga del video.',
+            ],
+        ];
+
+        $language = Locale::normalize($language);
+
+        return $messages[$errorCode][$language] ?? $this->missingVideoMessage($language);
     }
 }

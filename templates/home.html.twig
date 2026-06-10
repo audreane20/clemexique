@@ -21,6 +21,7 @@
         <div class="property-filter-bar property-filter-bar-home">
             <a href="{{ base_path }}/?mode=future_projet&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
             <a href="{{ base_path }}/?mode=revente&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
+            <a href="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}" class="property-filter-link">{{ trans('info_request.form_cta') }}</a>
         </div>
     </div>
 

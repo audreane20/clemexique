@@ -167,19 +167,6 @@ class VideoCapsuleController
                         'es' => 'Ej. Playas y estilo de vida',
                     ],
                 ],
-                [
-                    'name' => 'flag',
-                    'labels' => [
-                        'en' => 'Flag / icon code',
-                        'fr' => 'Code du drapeau / icône',
-                        'es' => 'Código de bandera / icono',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Optional',
-                        'fr' => 'Optionnel',
-                        'es' => 'Opcional',
-                    ],
-                ],
             ],
             'item_fields' => [
                 ['name' => 'name', 'labels' => ['en' => 'Video title', 'fr' => 'Titre de la vidéo', 'es' => 'Título del video'], 'placeholders' => ['en' => 'Video title', 'fr' => 'Titre de la vidéo', 'es' => 'Título del video']],

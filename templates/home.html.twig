@@ -1,8 +1,8 @@
 {% extends "layout.html.twig" %}
 
 {% block content %}
-<section class="home-hero-shell" aria-labelledby="home-hero-title">
-    <div class="home-hero-card">
+<section class="home-hero-shell" aria-labelledby="home-hero-title" data-home-hero-shell>
+    <div class="home-hero-card" data-home-hero-card>
         <div class="home-hero-orb home-hero-orb-sun" aria-hidden="true"></div>
         <div class="home-hero-orb home-hero-orb-coral" aria-hidden="true"></div>
         <div class="home-hero-orb home-hero-orb-agave" aria-hidden="true"></div>
@@ -188,9 +188,32 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const heroShell = document.querySelector('[data-home-hero-shell]');
+    const heroCard = document.querySelector('[data-home-hero-card]');
     const lightbox = document.querySelector('[data-property-lightbox]');
     const lightboxImage = document.querySelector('[data-property-lightbox-image]');
     const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
+
+    if (heroShell && heroCard) {
+        const updateHeroScrollState = function () {
+            const rect = heroShell.getBoundingClientRect();
+            const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 1;
+            const rawProgress = (viewportHeight - rect.top) / (viewportHeight + rect.height);
+            const progress = Math.max(0, Math.min(rawProgress, 1));
+            const centeredProgress = progress - 0.5;
+
+            heroCard.style.setProperty('--hero-scroll-progress', progress.toFixed(3));
+            heroCard.style.setProperty('--hero-copy-shift', (centeredProgress * -34).toFixed(1) + 'px');
+            heroCard.style.setProperty('--hero-sun-shift', (centeredProgress * -22).toFixed(1) + 'px');
+            heroCard.style.setProperty('--hero-coral-shift', (centeredProgress * 28).toFixed(1) + 'px');
+            heroCard.style.setProperty('--hero-agave-shift', (centeredProgress * 18).toFixed(1) + 'px');
+            heroCard.style.setProperty('--hero-card-tilt', (centeredProgress * -2.4).toFixed(2) + 'deg');
+        };
+
+        updateHeroScrollState();
+        window.addEventListener('scroll', updateHeroScrollState, { passive: true });
+        window.addEventListener('resize', updateHeroScrollState);
+    }
 
     if (lightbox && lightboxImage && mapTrigger) {
         const openLightbox = function () {

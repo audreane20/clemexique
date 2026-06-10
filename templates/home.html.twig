@@ -1,9 +1,25 @@
 {% extends "layout.html.twig" %}
 
 {% block content %}
+<section class="home-hero-shell" aria-labelledby="home-hero-title">
+    <div class="home-hero-card">
+        <div class="home-hero-copy">
+            <p class="home-hero-kicker">{{ trans('home.hero_kicker') }}</p>
+            <h1 id="home-hero-title">{{ trans('home.hero_title') }}</h1>
+            <p class="home-hero-text">{{ trans('home.hero_copy') }}</p>
+        </div>
+
+        <div class="home-hero-actions" aria-label="{{ trans('home.hero_actions_label') }}">
+            <a href="#home-info-request" class="home-hero-chip">{{ trans('home.hero_action_buy') }}</a>
+            <a href="#home-info-request-rent" class="home-hero-chip">{{ trans('home.hero_action_rent') }}</a>
+            <a href="#home-residency" class="home-hero-chip">{{ trans('home.hero_action_settle') }}</a>
+        </div>
+    </div>
+</section>
+
 <section class="property-public-shell" id="home-properties">
     <div class="property-public-header">
-        <h1>{{ trans('properties.title') }}</h1>
+        <h2>{{ trans('properties.title') }}</h2>
     </div>
 
     {% if properties is empty %}

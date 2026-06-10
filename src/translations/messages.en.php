@@ -16,6 +16,13 @@ return [
     'nav.language' => 'Language',
 
     'home.title' => 'Welcome',
+    'home.hero_kicker' => 'Riviera Maya',
+    'home.hero_title' => 'Riviera Maya',
+    'home.hero_copy' => 'Everything you need to know about buying, renting, or settling here is gathered on one platform.',
+    'home.hero_actions_label' => 'Home page quick access',
+    'home.hero_action_buy' => 'Buy',
+    'home.hero_action_rent' => 'Rent',
+    'home.hero_action_settle' => 'Settle here',
     'home.toc_eyebrow' => 'Quick guide',
     'home.toc_title' => 'What you can find on this page',
     'home.toc_copy' => 'Use these shortcuts to jump directly to the section you want to explore.',

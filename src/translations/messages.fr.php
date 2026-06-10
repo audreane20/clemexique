@@ -16,6 +16,13 @@ return [
     'nav.language' => 'Langue',
 
     'home.title' => 'Bienvenue',
+    'home.hero_kicker' => 'Riviera Maya',
+    'home.hero_title' => 'Riviera Maya',
+    'home.hero_copy' => 'Tout ce qu il faut savoir pour acheter, louer ou s y installer est reuni ici sur une seule plateforme.',
+    'home.hero_actions_label' => 'Acces rapides de la page d accueil',
+    'home.hero_action_buy' => 'Acheter',
+    'home.hero_action_rent' => 'Louer',
+    'home.hero_action_settle' => 'S y installer',
     'home.toc_eyebrow' => 'Guide rapide',
     'home.toc_title' => 'Ce que vous trouverez sur cette page',
     'home.toc_copy' => 'Utilisez ces raccourcis pour aller directement à la section qui vous intéresse.',

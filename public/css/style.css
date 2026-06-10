@@ -234,7 +234,6 @@ body.mobile-menu-open {
         linear-gradient(135deg, rgba(6, 64, 93, 0.94) 0%, rgba(10, 112, 130, 0.9) 42%, rgba(28, 146, 116, 0.88) 72%, rgba(224, 89, 54, 0.82) 100%);
     box-shadow: 0 26px 70px rgba(8, 47, 73, 0.24);
     isolation: isolate;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .home-hero-card::before,
@@ -262,11 +261,6 @@ body.mobile-menu-open {
     transform: translateX(-50%);
     background: radial-gradient(circle, rgba(255, 220, 135, 0.24) 0%, rgba(255, 220, 135, 0.1) 30%, rgba(255, 220, 135, 0.02) 52%, transparent 70%);
     filter: blur(2px);
-}
-
-.home-hero-card:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 30px 80px rgba(8, 47, 73, 0.28);
 }
 
 .home-hero-orb {

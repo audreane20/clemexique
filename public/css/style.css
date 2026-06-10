@@ -252,9 +252,7 @@ body.mobile-menu-open {
     inset: auto 0 0 0;
     height: 160px;
     border-radius: 0;
-    background:
-        linear-gradient(0deg, rgba(7, 54, 78, 0.54), rgba(7, 54, 78, 0)),
-        repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.08) 0 18px, transparent 18px 36px);
+    background: linear-gradient(0deg, rgba(7, 54, 78, 0.44), rgba(7, 54, 78, 0));
 }
 
 .home-hero-card::after {

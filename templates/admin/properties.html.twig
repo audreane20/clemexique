@@ -95,6 +95,16 @@
                     <textarea name="description" rows="8" placeholder="{{ trans('properties.description_placeholder') }}" required>{{ form_data.description ?? editing_property.description ?? '' }}</textarea>
                 </label>
 
+                <label>
+                    {{ trans('properties.type') }}
+                    {% set listing_mode_value = form_data.listing_mode ?? editing_property.listing_mode ?? 'revente' %}
+                    {% set listing_mode_value = listing_mode_value == 'achat' ? 'revente' : listing_mode_value %}
+                    <select name="listing_mode" required>
+                        <option value="revente" {{ listing_mode_value == 'revente' ? 'selected' : '' }}>{{ trans('properties.mode_resale') }}</option>
+                        <option value="future_projet" {{ listing_mode_value == 'future_projet' ? 'selected' : '' }}>{{ trans('properties.mode_future_project') }}</option>
+                    </select>
+                </label>
+
                 <div class="property-form-row">
                     <label>
                         {{ trans('properties.price') }}

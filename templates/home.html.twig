@@ -20,6 +20,15 @@
         <p>{{ trans('home.properties_subtitle') }}</p>
     </div>
 
+    <div class="property-filter-bar">
+        <span class="property-filter-label">{{ trans('properties.filter_label') }}</span>
+        <div class="property-filter-actions">
+            <a href="{{ base_path }}/?mode=all&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'all' ? 'active' : '' }}">{{ trans('properties.filter_all_sale') }}</a>
+            <a href="{{ base_path }}/?mode=revente&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
+            <a href="{{ base_path }}/?mode=future_projet&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
+        </div>
+    </div>
+
     {% if properties is empty %}
         <div class="property-empty-state property-empty-state-public">
             <p>{{ trans('properties.empty') }}</p>

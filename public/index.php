@@ -96,6 +96,25 @@ function escapeXml(string $value): string
     return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
 }
 
+function columnExists(PDO $pdo, string $databaseName, string $tableName, string $columnName): bool
+{
+    $statement = $pdo->prepare("
+        SELECT COUNT(*)
+        FROM information_schema.COLUMNS
+        WHERE TABLE_SCHEMA = :database_name
+            AND TABLE_NAME = :table_name
+            AND COLUMN_NAME = :column_name
+    ");
+
+    $statement->execute([
+        'database_name' => $databaseName,
+        'table_name' => $tableName,
+        'column_name' => $columnName,
+    ]);
+
+    return (int) $statement->fetchColumn() > 0;
+}
+
 session_start();
 
 $lang = Locale::normalize($_GET['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
@@ -255,16 +274,21 @@ $pdo->exec("
             ON DELETE CASCADE
     )
 ");
-$pdo->exec("
-    ALTER TABLE property_cards
-    ADD COLUMN IF NOT EXISTS listing_mode VARCHAR(20) NOT NULL DEFAULT 'achat'
-    AFTER city
-");
-$pdo->exec("
-    ALTER TABLE property_cards
-    ADD COLUMN IF NOT EXISTS description TEXT NULL
-    AFTER city
-");
+if (!columnExists($pdo, $databaseName, 'property_cards', 'listing_mode')) {
+    $pdo->exec("
+        ALTER TABLE property_cards
+        ADD COLUMN listing_mode VARCHAR(20) NOT NULL DEFAULT 'achat'
+        AFTER city
+    ");
+}
+
+if (!columnExists($pdo, $databaseName, 'property_cards', 'description')) {
+    $pdo->exec("
+        ALTER TABLE property_cards
+        ADD COLUMN description TEXT NULL
+        AFTER city
+    ");
+}
 
 setSiteContentPdo($pdo);
 
@@ -480,13 +504,13 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
     $queryParams = $request->getQueryParams();
     $mode = strtolower((string) ($queryParams['mode'] ?? 'all'));
 
-    if (!in_array($mode, ['all', 'achat', 'location'], true)) {
+    if (!in_array($mode, ['all', 'revente', 'future_projet'], true)) {
         $mode = 'all';
     }
 
     return $twig->render($response, 'home.html.twig', [
         'page_title' => $translator->trans('nav.home'),
-        'properties' => $propertyModel->findAllByMode($mode),
+        'properties' => $propertyModel->findAllByMode($mode === 'all' ? 'sale_all' : $mode),
         'selected_mode' => $mode,
     ]);
 });

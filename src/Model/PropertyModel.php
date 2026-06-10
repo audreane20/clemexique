@@ -231,7 +231,7 @@ class PropertyModel
     {
         $mode = strtolower($mode);
 
-        if (!in_array($mode, ['all', 'achat', 'location'], true)) {
+        if (!in_array($mode, ['all', 'sale_all', 'achat', 'location', 'revente', 'future_projet'], true)) {
             $mode = 'all';
         }
 
@@ -242,7 +242,11 @@ class PropertyModel
 
         $params = [];
 
-        if ($mode !== 'all') {
+        if ($mode === 'sale_all') {
+            $sql .= " WHERE listing_mode IN ('achat', 'revente', 'future_projet')";
+        } elseif ($mode === 'revente') {
+            $sql .= " WHERE listing_mode IN ('achat', 'revente')";
+        } elseif ($mode !== 'all') {
             $sql .= " WHERE listing_mode = :listing_mode";
             $params['listing_mode'] = $mode;
         }
@@ -287,7 +291,7 @@ class PropertyModel
         $name = $this->capitalizeFirstCharacter(trim((string) ($data['name'] ?? '')));
         $city = $this->capitalizeFirstCharacter(trim((string) ($data['city'] ?? '')));
         $description = trim((string) ($data['description'] ?? ''));
-        $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'achat')));
+        $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'revente')));
         $priceAmount = trim((string) ($data['price_amount'] ?? ''));
         $priceCurrency = strtoupper(trim((string) ($data['price_currency'] ?? 'USD')));
 
@@ -303,7 +307,11 @@ class PropertyModel
             throw new InvalidArgumentException('Invalid property currency.');
         }
 
-        if (!in_array($listingMode, ['achat', 'location'], true)) {
+        if ($listingMode === 'achat') {
+            $listingMode = 'revente';
+        }
+
+        if (!in_array($listingMode, ['revente', 'future_projet', 'location'], true)) {
             throw new InvalidArgumentException('Invalid listing mode.');
         }
 
@@ -500,7 +508,12 @@ class PropertyModel
         $property['primary_price_display'] = $this->formatPrice($primaryAmount, $primaryCurrency);
         $property['secondary_price_display'] = $this->formatPrice($secondaryAmount, $secondaryCurrency);
         $property['exchange_rate_date'] = self::USD_TO_CAD_RATE_DATE;
-        $property['listing_mode_label'] = $property['listing_mode'] === 'location' ? 'Location' : 'Achat';
+        $property['listing_mode_label'] = match ($property['listing_mode']) {
+            'location' => 'Location',
+            'future_projet' => 'Projet futur',
+            'revente', 'achat' => 'Revente',
+            default => 'Revente',
+        };
 
         return $property;
     }

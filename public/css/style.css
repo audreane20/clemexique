@@ -2857,7 +2857,8 @@ body.mobile-menu-open {
 }
 
 .guide-video-player {
-    width: 100%;
+    width: min(100%, 280px);
+    justify-self: start;
     border-radius: 16px;
     background: #0b3558;
 }

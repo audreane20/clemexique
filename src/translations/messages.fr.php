@@ -559,4 +559,7 @@ return [
     'excursions.title' => 'Meilleures excursions au Mexique',
     'playa_guide.page_title' => 'Endroits à voir',
     'playa_guide.title' => 'Endroits à voir',
+    'home.toc_restaurants_title' => 'Recommandation de restaurant',
+    'restaurants.page_title' => 'Recommandation de restaurant',
+    'restaurants.title' => 'Recommandation de restaurant',
   ];

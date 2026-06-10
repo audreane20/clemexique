@@ -542,4 +542,7 @@ return array(
     'excursions.title' => 'Mejores excursiones en México',
     'playa_guide.page_title' => 'Lugares para ver',
     'playa_guide.title' => 'Lugares para ver',
+    'home.toc_restaurants_title' => 'Recomendaciones de restaurantes',
+    'restaurants.page_title' => 'Recomendaciones de restaurantes',
+    'restaurants.title' => 'Recomendaciones de restaurantes',
 );

@@ -557,4 +557,7 @@ return [
     'excursions.title' => 'Best excursions in Mexico',
     'playa_guide.page_title' => 'Places to see',
     'playa_guide.title' => 'Places to see',
+    'home.toc_restaurants_title' => 'Restaurant recommendations',
+    'restaurants.page_title' => 'Restaurant recommendations',
+    'restaurants.title' => 'Restaurant recommendations',
 ];

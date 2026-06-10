@@ -553,4 +553,12 @@ return array(
     'sports_activities.intro' => 'Estamos preparando una página para reunir ideas de actividades deportivas e información útil.',
     'sports_activities.coming_title' => 'Página próximamente',
     'sports_activities.coming_copy' => 'Esta página pronto incluirá nuestras recomendaciones, enlaces útiles y sugerencias de actividades deportivas en México.',
+    'video_capsules.page_title' => 'Cápsulas de video de México',
+    'video_capsules.title' => 'Cápsulas de video de México',
+    'video_capsules.copy' => 'Abre esta página para descubrir pronto nuestras cápsulas de video de México.',
+    'video_capsules.home_cta' => 'Ver página próximamente',
+    'video_capsules.hero' => 'Una nueva sección de cápsulas de video de México estará disponible pronto.',
+    'video_capsules.intro' => 'Estamos preparando una página para reunir videos cortos y vistas útiles de México.',
+    'video_capsules.coming_title' => 'Página próximamente',
+    'video_capsules.coming_copy' => 'Esta página pronto incluirá nuestras cápsulas de video, enlaces útiles y contenido para descubrir sobre México.',
 );

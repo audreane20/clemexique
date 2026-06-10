@@ -570,4 +570,12 @@ return [
     'sports_activities.intro' => 'Nous préparons une page pour regrouper des idées d’activités sportives et des informations utiles.',
     'sports_activities.coming_title' => 'Page à venir',
     'sports_activities.coming_copy' => 'Cette page sera bientôt complétée avec nos recommandations, liens utiles et suggestions d’activités sportives au Mexique.',
+    'video_capsules.page_title' => 'Capsules vidéo du Mexique',
+    'video_capsules.title' => 'Capsules vidéo du Mexique',
+    'video_capsules.copy' => 'Ouvrez cette page pour découvrir bientôt nos capsules vidéo du Mexique.',
+    'video_capsules.home_cta' => 'Voir la page à venir',
+    'video_capsules.hero' => 'Une nouvelle section de capsules vidéo du Mexique sera bientôt disponible.',
+    'video_capsules.intro' => 'Nous préparons une page pour regrouper de courtes vidéos et des aperçus utiles du Mexique.',
+    'video_capsules.coming_title' => 'Page à venir',
+    'video_capsules.coming_copy' => 'Cette page sera bientôt complétée avec nos capsules vidéo, liens utiles et contenus à découvrir sur le Mexique.',
   ];

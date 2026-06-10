@@ -568,4 +568,12 @@ return [
     'sports_activities.intro' => 'We are preparing a page to gather sports activity ideas and useful information.',
     'sports_activities.coming_title' => 'Coming soon',
     'sports_activities.coming_copy' => 'This page will soon include our recommendations, useful links, and sports activity ideas in Mexico.',
+    'video_capsules.page_title' => 'Mexico video capsules',
+    'video_capsules.title' => 'Mexico video capsules',
+    'video_capsules.copy' => 'Open this page to discover our Mexico video capsules soon.',
+    'video_capsules.home_cta' => 'View coming soon page',
+    'video_capsules.hero' => 'A new section of Mexico video capsules will be available soon.',
+    'video_capsules.intro' => 'We are preparing a page to gather short videos and helpful snapshots of Mexico.',
+    'video_capsules.coming_title' => 'Coming soon',
+    'video_capsules.coming_copy' => 'This page will soon include our video capsules, useful links, and content to discover about Mexico.',
 ];

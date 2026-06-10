@@ -442,6 +442,7 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath, $proper
         ['path' => '/quoi-faire-a-playa', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
         ['path' => '/restaurants-a-essayer', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
         ['path' => '/activites-sportives', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
+        ['path' => '/capsules-video-mexique', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
     ];
 
     $entries = [];
@@ -565,6 +566,12 @@ $app->get('/gestion-immobiliere', function ($request, $response) use ($twig, $tr
 $app->get('/activites-sportives', function ($request, $response) use ($twig, $translator) {
     return $twig->render($response, 'sports-activities.html.twig', [
         'page_title' => $translator->trans('sports_activities.page_title'),
+    ]);
+});
+
+$app->get('/capsules-video-mexique', function ($request, $response) use ($twig, $translator) {
+    return $twig->render($response, 'video-capsules.html.twig', [
+        'page_title' => $translator->trans('video_capsules.page_title'),
     ]);
 });
 

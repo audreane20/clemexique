@@ -1,0 +1,21 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ trans('video_capsules.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('video_capsules.title') }}</h1>
+    <p>{{ trans('video_capsules.intro') }}</p>
+
+    <div class="residency-note">
+        <h2>{{ trans('video_capsules.coming_title') }}</h2>
+        <p>{{ trans('video_capsules.coming_copy') }}</p>
+    </div>
+
+    <div class="page-home-actions">
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+    </div>
+</section>
+{% endblock %}

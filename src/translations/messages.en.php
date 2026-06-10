@@ -232,7 +232,7 @@ return [
     'info_request.copy' => 'Here is an overview of the annual fixed costs related to buying a property.',
     'info_request.cta' => 'Click here for more information',
     'info_request.form_cta' => 'Open the form',
-    'info_request_rent.title' => 'Information request form to rent a property',
+    'info_request_rent.title' => 'Property rental',
     'info_request_rent.copy' => 'You will be transferred to a trusted collaborator who takes care of rental properties.',
     'info_request_rent.note_prefix' => 'If you mention ',
     'info_request_rent.note_emphasis' => 'CLeMexique',

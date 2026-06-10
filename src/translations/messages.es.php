@@ -187,7 +187,7 @@ return array(
     'info_request.country_united_states' => 'Estados Unidos',
     'info_request.cta' => 'Haz clic aqui para mas informacion',
     'info_request.form_cta' => 'Abrir formulario',
-    'info_request_rent.title' => 'Formulario para rentar una propiedad',
+    'info_request_rent.title' => 'Renta de propiedad',
     'info_request_rent.copy' => 'Serás transferido a un colaborador de confianza que se encarga de las propiedades en renta.',
     'info_request_rent.note_prefix' => 'Si mencionas ',
     'info_request_rent.note_emphasis' => 'CLeMexique',

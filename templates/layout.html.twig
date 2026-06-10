@@ -121,6 +121,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.querySelector('[data-header-menu-toggle]');
     const panel = document.querySelector('[data-header-menu-panel]');
     const backdrop = document.querySelector('[data-header-menu-close]');
+    const headerMenus = Array.from(document.querySelectorAll('.site-header details.account-menu'));
     const adminShortcutSequence = ['1', '6', '9', '0'];
     const adminShortcutPin = adminShortcutSequence.join('');
     let adminShortcutBuffer = [];
@@ -171,6 +172,32 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
+    const closeHeaderMenus = function (exceptMenu) {
+        headerMenus.forEach(function (menu) {
+            if (menu !== exceptMenu) {
+                menu.removeAttribute('open');
+            }
+        });
+    };
+
+    headerMenus.forEach(function (menu) {
+        menu.addEventListener('toggle', function () {
+            if (menu.open) {
+                closeHeaderMenus(menu);
+            }
+        });
+    });
+
+    document.addEventListener('click', function (event) {
+        const clickedInsideMenu = headerMenus.some(function (menu) {
+            return menu.contains(event.target);
+        });
+
+        if (!clickedInsideMenu) {
+            closeHeaderMenus(null);
+        }
+    });
+
     const submitAdminShortcut = function () {
         const form = document.createElement('form');
         const pinField = document.createElement('input');
@@ -206,6 +233,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const key = (event.key || '').toLowerCase();
+
+        if (key === 'escape') {
+            closeHeaderMenus(null);
+            adminShortcutBuffer = [];
+            return;
+        }
 
         if (!/^[0-9]$/.test(key)) {
             adminShortcutBuffer = [];

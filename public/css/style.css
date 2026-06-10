@@ -1600,6 +1600,12 @@ body.mobile-menu-open {
     margin-bottom: 32px;
 }
 
+.property-filter-bar-home {
+    justify-content: flex-start;
+    margin-top: 18px;
+    margin-bottom: 0;
+}
+
 .property-filter-label {
     color: #52606d;
     font-size: 15px;

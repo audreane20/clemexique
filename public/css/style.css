@@ -1601,7 +1601,8 @@ body.mobile-menu-open {
 }
 
 .property-filter-bar-home {
-    justify-content: flex-end;
+    justify-content: flex-start;
+    align-self: flex-start;
     margin-top: 18px;
     margin-bottom: 0;
 }

@@ -560,4 +560,12 @@ return [
     'home.toc_restaurants_title' => 'Restaurant recommendations',
     'restaurants.page_title' => 'Restaurant recommendations',
     'restaurants.title' => 'Restaurant recommendations',
+    'sports_activities.page_title' => 'Sports activities',
+    'sports_activities.title' => 'Sports activities',
+    'sports_activities.copy' => 'Open this page to discover our sports activity suggestions soon.',
+    'sports_activities.home_cta' => 'View coming soon page',
+    'sports_activities.hero' => 'A new section dedicated to sports activities will be available soon.',
+    'sports_activities.intro' => 'We are preparing a page to gather sports activity ideas and useful information.',
+    'sports_activities.coming_title' => 'Coming soon',
+    'sports_activities.coming_copy' => 'This page will soon include our recommendations, useful links, and sports activity ideas in Mexico.',
 ];

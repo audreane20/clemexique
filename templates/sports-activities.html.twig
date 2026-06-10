@@ -1,0 +1,21 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="residency-hero">
+    <p>{{ trans('sports_activities.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('sports_activities.title') }}</h1>
+    <p>{{ trans('sports_activities.intro') }}</p>
+
+    <div class="residency-note">
+        <h2>{{ trans('sports_activities.coming_title') }}</h2>
+        <p>{{ trans('sports_activities.coming_copy') }}</p>
+    </div>
+
+    <div class="page-home-actions">
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+    </div>
+</section>
+{% endblock %}

@@ -545,4 +545,12 @@ return array(
     'home.toc_restaurants_title' => 'Recomendaciones de restaurantes',
     'restaurants.page_title' => 'Recomendaciones de restaurantes',
     'restaurants.title' => 'Recomendaciones de restaurantes',
+    'sports_activities.page_title' => 'Actividades deportivas',
+    'sports_activities.title' => 'Actividades deportivas',
+    'sports_activities.copy' => 'Abre esta página para descubrir pronto nuestras sugerencias de actividades deportivas.',
+    'sports_activities.home_cta' => 'Ver página próximamente',
+    'sports_activities.hero' => 'Una nueva sección dedicada a las actividades deportivas estará disponible pronto.',
+    'sports_activities.intro' => 'Estamos preparando una página para reunir ideas de actividades deportivas e información útil.',
+    'sports_activities.coming_title' => 'Página próximamente',
+    'sports_activities.coming_copy' => 'Esta página pronto incluirá nuestras recomendaciones, enlaces útiles y sugerencias de actividades deportivas en México.',
 );

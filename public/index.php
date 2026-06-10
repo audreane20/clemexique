@@ -441,6 +441,7 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath, $proper
         ['path' => '/excursions', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
         ['path' => '/quoi-faire-a-playa', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
         ['path' => '/restaurants-a-essayer', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
+        ['path' => '/activites-sportives', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
     ];
 
     $entries = [];
@@ -558,6 +559,12 @@ $app->get('/demande-information', function ($request, $response) use ($twig, $tr
 $app->get('/gestion-immobiliere', function ($request, $response) use ($twig, $translator) {
     return $twig->render($response, 'property-management.html.twig', [
         'page_title' => $translator->trans('property_management.page_title'),
+    ]);
+});
+
+$app->get('/activites-sportives', function ($request, $response) use ($twig, $translator) {
+    return $twig->render($response, 'sports-activities.html.twig', [
+        'page_title' => $translator->trans('sports_activities.page_title'),
     ]);
 });
 

@@ -562,4 +562,12 @@ return [
     'home.toc_restaurants_title' => 'Recommandation de restaurant',
     'restaurants.page_title' => 'Recommandation de restaurant',
     'restaurants.title' => 'Recommandation de restaurant',
+    'sports_activities.page_title' => 'Activités sportives',
+    'sports_activities.title' => 'Activités sportives',
+    'sports_activities.copy' => 'Ouvrez cette page pour découvrir bientôt nos suggestions d’activités sportives.',
+    'sports_activities.home_cta' => 'Voir la page à venir',
+    'sports_activities.hero' => 'Une nouvelle section dédiée aux activités sportives sera bientôt disponible.',
+    'sports_activities.intro' => 'Nous préparons une page pour regrouper des idées d’activités sportives et des informations utiles.',
+    'sports_activities.coming_title' => 'Page à venir',
+    'sports_activities.coming_copy' => 'Cette page sera bientôt complétée avec nos recommandations, liens utiles et suggestions d’activités sportives au Mexique.',
   ];

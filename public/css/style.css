@@ -1094,7 +1094,8 @@ body.mobile-menu-open {
 }
 
 .admin-properties-header h1,
-.property-public-header h1 {
+.property-public-header h1,
+.property-public-header h2 {
     margin: 0;
     color: #000000;
     font-size: clamp(36px, 4vw, 52px);

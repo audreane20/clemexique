@@ -153,7 +153,7 @@
     : (is_restaurants ? ['reference'] : ['note', 'video_url']) %}
 {% set is_editing_item = editing_item is not null %}
 {% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
-{% set selected_category_choice = is_editing_item ? editing_item_category_index : '' %}
+{% set selected_category_choice = is_editing_item ? editing_item_category_index : (categories is empty ? '__new__' : '') %}
 <section class="admin-content-shell">
     <div class="admin-properties-header">
         <div>
@@ -201,13 +201,15 @@
                 <label>
                     <span class="admin-content-label-copy">{{ ui[app_lang].category }}<span class="admin-content-required-marker">*</span></span>
                     <select name="category_choice" data-category-choice>
-                        <option value="">{{ ui[app_lang].select_category }}</option>
-                        {% for category in categories %}
-                            <option value="{{ loop.index0 }}" {{ selected_category_choice == loop.index0 ? 'selected' : '' }}>
-                                {{ category.title }}
-                            </option>
-                        {% endfor %}
-                        <option value="__new__">{{ ui[app_lang].new_category }}</option>
+                        {% if categories is not empty %}
+                            <option value="">{{ ui[app_lang].select_category }}</option>
+                            {% for category in categories %}
+                                <option value="{{ loop.index0 }}" {{ selected_category_choice == loop.index0 ? 'selected' : '' }}>
+                                    {{ category.title }}
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                        <option value="__new__" {{ selected_category_choice == '__new__' ? 'selected' : '' }}>{{ ui[app_lang].new_category }}</option>
                     </select>
                 </label>
 

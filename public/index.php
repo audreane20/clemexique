@@ -551,7 +551,7 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
     }
 
     return $twig->render($response, 'home.html.twig', [
-        'page_title' => $translator->trans('nav.home'),
+        'page_title' => 'CLeMexique - Home',
         'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,
     ]);
@@ -1369,8 +1369,11 @@ $app->get('/admin/login', function ($request, $response) use ($twig, $basePath, 
     $error = getAuthError();
     clearAuthFlash();
 
+    $response = $response->withHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+
     return $twig->render($response, 'admin/login.html.twig', [
         'page_title' => $translator->trans('admin.login_title'),
+        'page_robots' => 'noindex, nofollow, noarchive',
         'error' => $error,
     ]);
 });
@@ -1400,8 +1403,11 @@ $app->get('/admin/verify', function ($request, $response) use ($twig, $basePath,
     $success = getAuthSuccess();
     clearAuthFlash();
 
+    $response = $response->withHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+
     return $twig->render($response, 'admin/verify.html.twig', [
         'page_title' => $translator->trans('admin.verify_title'),
+        'page_robots' => 'noindex, nofollow, noarchive',
         'error' => $error,
         'success' => $success,
         'admin_email' => getMaskedPrimaryAdminTwoFactorEmail(),

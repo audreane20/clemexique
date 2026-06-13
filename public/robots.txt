@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin/
+Disallow: /rmadmin
+Disallow: /login
+Disallow: /register
+Disallow: /profile
+
+Sitemap: https://clemexique.ca/sitemap.xml

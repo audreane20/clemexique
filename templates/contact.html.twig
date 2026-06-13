@@ -21,7 +21,7 @@
         </div>
     {% endif %}
 
-    <form class="contact-form" method="POST" action="{{ base_path }}/contact">
+    <form id="contact-form" class="contact-form" method="POST" action="{{ base_path }}/contact">
         <input type="hidden" name="preferred_language" value="{{ app_lang }}">
 
         <div class="form-group">
@@ -56,13 +56,13 @@
 
         <div class="form-group">
             {% if recaptcha_site_key %}
-                <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+                <div id="contact-recaptcha"></div>
             {% else %}
                 <p class="form-error-inline">{{ trans('contact.error_captcha_unavailable') }}</p>
             {% endif %}
         </div>
 
-        <button type="submit" class="contact-btn">
+        <button type="submit" class="contact-btn" data-contact-submit>
             {{ trans('contact.submit') }}
         </button>
     </form>
@@ -77,6 +77,66 @@
 
 {% block scripts %}
     {% if recaptcha_site_key %}
-        <script src="https://www.google.com/recaptcha/api.js?hl={{ app_lang }}" async defer></script>
+        <script>
+        window.contactRecaptchaWidgetId = null;
+        window.contactRecaptchaSubmitting = false;
+
+        window.onContactRecaptchaSubmit = function () {
+            const form = document.getElementById('contact-form');
+
+            if (!form) {
+                return;
+            }
+
+            window.contactRecaptchaSubmitting = true;
+            form.submit();
+        };
+
+        window.onContactRecaptchaExpired = function () {
+            window.contactRecaptchaSubmitting = false;
+        };
+
+        window.onContactRecaptchaLoad = function () {
+            const container = document.getElementById('contact-recaptcha');
+
+            if (!container || typeof grecaptcha === 'undefined') {
+                return;
+            }
+
+            window.contactRecaptchaWidgetId = grecaptcha.render(container, {
+                sitekey: '{{ recaptcha_site_key }}',
+                size: 'invisible',
+                callback: window.onContactRecaptchaSubmit,
+                'expired-callback': window.onContactRecaptchaExpired
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.getElementById('contact-form');
+
+            if (!form) {
+                return;
+            }
+
+            form.addEventListener('submit', function (event) {
+                if (window.contactRecaptchaSubmitting) {
+                    return;
+                }
+
+                if (!form.reportValidity()) {
+                    event.preventDefault();
+                    return;
+                }
+
+                if (window.contactRecaptchaWidgetId === null || typeof grecaptcha === 'undefined') {
+                    return;
+                }
+
+                event.preventDefault();
+                grecaptcha.execute(window.contactRecaptchaWidgetId);
+            });
+        });
+        </script>
+        <script src="https://www.google.com/recaptcha/api.js?onload=onContactRecaptchaLoad&render=explicit&hl={{ app_lang }}" async defer></script>
     {% endif %}
 {% endblock %}

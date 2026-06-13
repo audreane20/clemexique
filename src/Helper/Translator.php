@@ -20,8 +20,14 @@ class Translator
         }
     }
 
-    public function trans(string $key): string
+    public function trans(string $key, array $replacements = []): string
     {
-        return $this->messages[$key] ?? $key;
+        $message = $this->messages[$key] ?? $key;
+
+        if ($replacements === []) {
+            return $message;
+        }
+
+        return strtr($message, $replacements);
     }
 }

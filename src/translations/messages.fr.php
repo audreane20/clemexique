@@ -72,9 +72,9 @@ return [
     'contact.success' => 'Votre message a été envoyé avec succès.',
     'contact.error_required' => 'Veuillez remplir tous les champs obligatoires.',
     'contact.error_invalid_email' => 'Veuillez entrer une adresse courriel valide.',
-    'contact.error_captcha' => 'Veuillez repondre correctement a la verification anti-spam.',
+    'contact.error_captcha' => 'Veuillez cocher la case reCAPTCHA avant d envoyer votre message.',
+    'contact.error_captcha_unavailable' => 'La verification reCAPTCHA n est pas encore configuree. Veuillez reessayer dans un instant.',
     'contact.error_send' => 'Erreur lors de l’envoi du message. Veuillez réessayer.',
-    'contact.captcha_label' => 'Anti-spam : combien font %left% + %right% ?',
     'contact.mail_subject' => 'Nouveau message de contact - CLeMexique',
     'contact.mail_language' => 'Langue préférée',
 

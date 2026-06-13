@@ -98,62 +98,40 @@ function escapeXml(string $value): string
     return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
 }
 
-function generateContactCaptcha(): array
+function verifyRecaptchaResponse(string $secretKey, string $responseToken, ?string $remoteIp = null): bool
 {
-    $left = random_int(1, 9);
-    $right = random_int(1, 9);
-
-    $_SESSION['contact_captcha_answer'] = (string) ($left + $right);
-    $_SESSION['contact_captcha_generated_at'] = time();
-
-    return [
-        'left' => $left,
-        'right' => $right,
-    ];
-}
-
-function getContactCaptchaChallenge(): array
-{
-    $left = isset($_SESSION['contact_captcha_left']) ? (int) $_SESSION['contact_captcha_left'] : null;
-    $right = isset($_SESSION['contact_captcha_right']) ? (int) $_SESSION['contact_captcha_right'] : null;
-
-    if ($left === null || $right === null) {
-        $challenge = generateContactCaptcha();
-        $_SESSION['contact_captcha_left'] = $challenge['left'];
-        $_SESSION['contact_captcha_right'] = $challenge['right'];
-
-        return $challenge;
-    }
-
-    return [
-        'left' => $left,
-        'right' => $right,
-    ];
-}
-
-function refreshContactCaptcha(): array
-{
-    $challenge = generateContactCaptcha();
-    $_SESSION['contact_captcha_left'] = $challenge['left'];
-    $_SESSION['contact_captcha_right'] = $challenge['right'];
-
-    return $challenge;
-}
-
-function isValidContactCaptcha(string $answer): bool
-{
-    $expected = (string) ($_SESSION['contact_captcha_answer'] ?? '');
-    $generatedAt = (int) ($_SESSION['contact_captcha_generated_at'] ?? 0);
-
-    if ($expected === '' || $generatedAt <= 0) {
+    if ($secretKey === '' || $responseToken === '') {
         return false;
     }
 
-    if ((time() - $generatedAt) > 3600) {
+    $payload = http_build_query(array_filter([
+        'secret' => $secretKey,
+        'response' => $responseToken,
+        'remoteip' => $remoteIp,
+    ], static fn ($value): bool => $value !== null && $value !== ''));
+
+    $options = [
+        'http' => [
+            'method' => 'POST',
+            'header' => "Content-type: application/x-www-form-urlencoded\r\n",
+            'content' => $payload,
+            'timeout' => 10,
+        ],
+    ];
+
+    $result = @file_get_contents(
+        'https://www.google.com/recaptcha/api/siteverify',
+        false,
+        stream_context_create($options)
+    );
+
+    if ($result === false) {
         return false;
     }
 
-    return hash_equals($expected, trim($answer));
+    $decoded = json_decode($result, true);
+
+    return is_array($decoded) && ($decoded['success'] ?? false) === true;
 }
 
 function columnExists(PDO $pdo, string $databaseName, string $tableName, string $columnName): bool
@@ -587,7 +565,6 @@ $app->get('/about', function ($request, $response) use ($twig, $translator) {
 
 $app->get('/contact', function ($request, $response) use ($twig, $translator) {
     $queryParams = $request->getQueryParams();
-    $captcha = refreshContactCaptcha();
 
     return $twig->render($response, 'contact.html.twig', [
         'page_title' => $translator->trans('nav.contact'),
@@ -599,8 +576,7 @@ $app->get('/contact', function ($request, $response) use ($twig, $translator) {
         'subject' => trim((string) ($queryParams['subject'] ?? '')),
         'project' => trim((string) ($queryParams['project'] ?? '')),
         'message' => '',
-        'captcha_left' => $captcha['left'],
-        'captcha_right' => $captcha['right'],
+        'recaptcha_site_key' => trim((string) ($_ENV['RECAPTCHA_SITE_KEY'] ?? '')),
     ]);
 });
 
@@ -688,6 +664,7 @@ $app->get('/properties/{id}', [$propertyController, 'show']);
 
 $app->post('/contact', function ($request, $response) use ($twig, $translator, $mailTranslator, $configureMailer, $formatPreferredLanguageForMail) {
     $data = $request->getParsedBody();
+    $serverParams = $request->getServerParams();
 
     $name = trim($data['name'] ?? '');
     $email = trim($data['email'] ?? '');
@@ -696,11 +673,12 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
     $project = trim($data['project'] ?? '');
     $message = trim($data['message'] ?? '');
     $preferredLanguage = trim((string) ($data['preferred_language'] ?? 'fr'));
-    $captchaAnswer = trim((string) ($data['captcha_answer'] ?? ''));
-    $website = trim((string) ($data['website'] ?? ''));
-    $captcha = getContactCaptchaChallenge();
+    $recaptchaResponse = trim((string) ($data['g-recaptcha-response'] ?? ''));
+    $recaptchaSiteKey = trim((string) ($_ENV['RECAPTCHA_SITE_KEY'] ?? ''));
+    $recaptchaSecretKey = trim((string) ($_ENV['RECAPTCHA_SECRET_KEY'] ?? ''));
+    $remoteIp = isset($serverParams['REMOTE_ADDR']) ? trim((string) $serverParams['REMOTE_ADDR']) : null;
 
-    $renderContactForm = static function (string $errorMessage) use ($twig, $response, $translator, $name, $email, $phone, $subject, $project, $message, $captcha) {
+    $renderContactForm = static function (string $errorMessage) use ($twig, $response, $translator, $name, $email, $phone, $subject, $project, $message, $recaptchaSiteKey) {
         return $twig->render($response, 'contact.html.twig', [
             'page_title' => $translator->trans('nav.contact'),
             'success' => false,
@@ -711,8 +689,7 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
             'subject' => $subject,
             'project' => $project,
             'message' => $message,
-            'captcha_left' => $captcha['left'],
-            'captcha_right' => $captcha['right'],
+            'recaptcha_site_key' => $recaptchaSiteKey,
         ]);
     };
 
@@ -724,26 +701,12 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
         return $renderContactForm($translator->trans('contact.error_invalid_email'));
     }
 
-    if ($website !== '') {
-        return $renderContactForm($translator->trans('contact.error_captcha'));
+    if ($recaptchaSiteKey === '' || $recaptchaSecretKey === '') {
+        return $renderContactForm($translator->trans('contact.error_captcha_unavailable'));
     }
 
-    if (!isValidContactCaptcha($captchaAnswer)) {
-        $captcha = refreshContactCaptcha();
-
-        return $twig->render($response, 'contact.html.twig', [
-            'page_title' => $translator->trans('nav.contact'),
-            'success' => false,
-            'error' => $translator->trans('contact.error_captcha'),
-            'name' => $name,
-            'email' => $email,
-            'phone' => $phone,
-            'subject' => $subject,
-            'project' => $project,
-            'message' => $message,
-            'captcha_left' => $captcha['left'],
-            'captcha_right' => $captcha['right'],
-        ]);
+    if (!verifyRecaptchaResponse($recaptchaSecretKey, $recaptchaResponse, $remoteIp)) {
+        return $renderContactForm($translator->trans('contact.error_captcha'));
     }
 
     try {
@@ -769,8 +732,6 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
 
         $mail->send();
 
-        $captcha = refreshContactCaptcha();
-
         return $twig->render($response, 'contact.html.twig', [
             'page_title' => $translator->trans('nav.contact'),
             'success' => true,
@@ -781,12 +742,9 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
             'subject' => '',
             'project' => '',
             'message' => '',
-            'captcha_left' => $captcha['left'],
-            'captcha_right' => $captcha['right'],
+            'recaptcha_site_key' => $recaptchaSiteKey,
         ]);
     } catch (Exception $e) {
-        $captcha = refreshContactCaptcha();
-
         return $twig->render($response, 'contact.html.twig', [
             'page_title' => $translator->trans('nav.contact'),
             'success' => false,
@@ -797,8 +755,7 @@ $app->post('/contact', function ($request, $response) use ($twig, $translator, $
             'subject' => $subject,
             'project' => $project,
             'message' => $message,
-            'captcha_left' => $captcha['left'],
-            'captcha_right' => $captcha['right'],
+            'recaptcha_site_key' => $recaptchaSiteKey,
         ]);
     }
 });

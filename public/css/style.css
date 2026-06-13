@@ -495,17 +495,14 @@ body.mobile-menu-open {
     box-shadow: 0 15px 35px rgba(11, 53, 88, 0.12);
 }
 
-.contact-honeypot {
-    position: absolute;
-    left: -9999px;
-    width: 1px;
-    height: 1px;
-    opacity: 0;
-    pointer-events: none;
-}
-
 .form-group {
     margin-bottom: 22px;
+}
+
+.form-error-inline {
+    margin: 0;
+    color: #b64848;
+    font-weight: 600;
 }
 
     .form-group label {

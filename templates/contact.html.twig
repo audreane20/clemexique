@@ -23,7 +23,6 @@
 
     <form class="contact-form" method="POST" action="{{ base_path }}/contact">
         <input type="hidden" name="preferred_language" value="{{ app_lang }}">
-        <input type="text" name="website" value="" tabindex="-1" autocomplete="off" class="contact-honeypot" aria-hidden="true">
 
         <div class="form-group">
             <label>{{ trans('contact.name') }}</label>
@@ -56,8 +55,11 @@
         </div>
 
         <div class="form-group">
-            <label>{{ trans('contact.captcha_label', {'%left%': captcha_left, '%right%': captcha_right}) }}</label>
-            <input type="text" name="captcha_answer" inputmode="numeric" autocomplete="off" required>
+            {% if recaptcha_site_key %}
+                <div class="g-recaptcha" data-sitekey="{{ recaptcha_site_key }}"></div>
+            {% else %}
+                <p class="form-error-inline">{{ trans('contact.error_captcha_unavailable') }}</p>
+            {% endif %}
         </div>
 
         <button type="submit" class="contact-btn">
@@ -71,4 +73,10 @@
 
 </section>
 
+{% endblock %}
+
+{% block scripts %}
+    {% if recaptcha_site_key %}
+        <script src="https://www.google.com/recaptcha/api.js?hl={{ app_lang }}" async defer></script>
+    {% endif %}
 {% endblock %}

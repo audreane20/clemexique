@@ -44,6 +44,40 @@
             {% endif %}
         </div>
 
+        <nav class="main-nav header-nav-desktop">
+            <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
+            <a href="{{ base_path }}/about">{{ trans('nav.about') }}</a>
+            <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
+        </nav>
+
+        <div class="header-right header-right-desktop">
+            <div class="header-auth-actions">
+                {% if is_admin_authenticated %}
+                    <details class="account-menu">
+                        <summary class="user-chip">
+                            <span class="user-chip-label">
+                                {{ trans('auth.hello') }}
+                                {{ admin_username }}
+                            </span>
+                            <span class="user-chip-toggle" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" focusable="false">
+                                    <path d="M4 6.5 8 10.5 12 6.5" />
+                                </svg>
+                            </span>
+                        </summary>
+
+                        <div class="account-menu-panel">
+                            <a href="{{ base_path ~ '/admin/profile' }}" class="account-menu-link">{{ trans('nav.edit_profile') }}</a>
+
+                            <form method="POST" action="{{ base_path }}/account/logout" class="account-menu-form">
+                                <button type="submit" class="account-menu-button">{{ trans('nav.logout') }}</button>
+                            </form>
+                        </div>
+                    </details>
+                {% endif %}
+            </div>
+        </div>
+
         <button
             type="button"
             class="header-menu-toggle"
@@ -60,13 +94,13 @@
         <button type="button" class="header-menu-backdrop" data-header-menu-close hidden aria-label="{{ app_lang == 'fr' ? 'Fermer le menu' : (app_lang == 'es' ? 'Cerrar menu' : 'Close menu') }}"></button>
 
         <div class="header-menu-panel" id="site-header-menu" data-header-menu-panel hidden>
-            <nav class="main-nav">
+            <nav class="main-nav header-nav-drawer">
                 <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
                 <a href="{{ base_path }}/about">{{ trans('nav.about') }}</a>
                 <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
             </nav>
 
-            <div class="header-right">
+            <div class="header-right header-right-drawer">
                 <div class="header-auth-actions">
                     {% if is_admin_authenticated %}
                         <details class="account-menu">
@@ -147,24 +181,16 @@ document.addEventListener('DOMContentLoaded', function () {
         document.body.classList.toggle('mobile-menu-open', isOpen && window.innerWidth <= 768);
     };
 
-    const syncDesktopState = function () {
-        if (window.innerWidth > 768) {
-            panel.hidden = false;
-            if (backdrop) {
-                backdrop.hidden = true;
-            }
-            toggle.setAttribute('aria-expanded', 'false');
-            toggle.classList.remove('is-open');
-            document.body.classList.remove('mobile-menu-open');
-            return;
+    const syncMenuState = function () {
+        const isOpen = toggle.classList.contains('is-open');
+
+        panel.hidden = !isOpen;
+
+        if (backdrop) {
+            backdrop.hidden = !isOpen;
         }
 
-        if (!toggle.classList.contains('is-open')) {
-            panel.hidden = true;
-            if (backdrop) {
-                backdrop.hidden = true;
-            }
-        }
+        document.body.classList.toggle('mobile-menu-open', isOpen && window.innerWidth <= 768);
     };
 
     toggle.addEventListener('click', function () {
@@ -220,8 +246,8 @@ document.addEventListener('DOMContentLoaded', function () {
         form.submit();
     };
 
-    window.addEventListener('resize', syncDesktopState);
-    syncDesktopState();
+    window.addEventListener('resize', syncMenuState);
+    syncMenuState();
 
     document.addEventListener('keydown', function (event) {
         const target = event.target;

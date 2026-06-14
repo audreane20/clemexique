@@ -313,6 +313,12 @@ body.mobile-menu-open {
     gap: 10px;
 }
 
+.header-menu-panel > .header-quick-links {
+    margin-top: auto;
+    padding-top: 22px;
+    border-top: 1px solid rgba(11, 53, 88, 0.08);
+}
+
 .header-nav-drawer a {
     width: 100%;
     min-width: 0;

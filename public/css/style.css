@@ -2493,6 +2493,10 @@ body.mobile-menu-open {
     padding: 56px 20px 72px;
 }
 
+.restaurant-page-shell {
+    max-width: 1180px;
+}
+
 .residency-container h1 {
     margin: 0 0 18px;
     color: var(--navy);

@@ -296,7 +296,7 @@ body.mobile-menu-open {
     flex-direction: column;
     justify-content: flex-end;
     gap: 12px;
-    margin-top: auto;
+    margin-top: 18px;
 }
 
 .header-right-drawer .header-auth-actions,
@@ -315,7 +315,7 @@ body.mobile-menu-open {
 
 .header-menu-panel > .header-quick-links {
     margin-top: auto;
-    padding-top: 22px;
+    padding-top: 28px;
     border-top: 1px solid rgba(11, 53, 88, 0.08);
 }
 

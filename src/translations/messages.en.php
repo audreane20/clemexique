@@ -42,6 +42,7 @@ return [
     'home.toc_rental_copy' => 'Jump to the transportation and rental section.',
     'home.toc_management_title' => 'Property management',
     'home.toc_management_copy' => 'Discover support for managing your property in Mexico.',
+    'home.menu_map_title' => 'Map of Playa del Carmen',
 
     'about.hero' => 'Discover the Riviera Maya differently — with human guidance, real experience, and strong local knowledge.',
 

@@ -149,6 +149,7 @@ return array(
     'home.toc_info_rent_copy' => 'Consulta la próxima sección de solicitud de renta.',
     'home.toc_info_rent_title' => 'Solicitud de renta inmobiliaria',
     'home.toc_management_copy' => 'Descubre nuestro acompañamiento para tu propiedad en México.',
+    'home.menu_map_title' => 'Mapa de Playa del Carmen',
     'home.toc_management_title' => 'Gestión de propiedades',
     'home.toc_playa_guide_copy' => 'Explora salidas, espectáculos, rooftops y lugares para visitar.',
     'home.toc_playa_guide_title' => 'Qué hacer en Playa',

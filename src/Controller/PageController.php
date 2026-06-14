@@ -20,12 +20,6 @@ class PageController
             'page_title' => $this->translator->trans('nav.home'),
             'header_menu_links' => [
                 [
-                    'path' => '/',
-                    'label' => $this->translator->trans('home.properties_title'),
-                    'query' => 'mode=future_projet',
-                    'fragment' => 'home-properties',
-                ],
-                [
                     'path' => '/demande-information',
                     'label' => $this->translator->trans('info_request.title'),
                 ],
@@ -76,7 +70,7 @@ class PageController
                 ],
                 [
                     'path' => '/',
-                    'label' => $this->translator->trans('playa_guide.map_title'),
+                    'label' => $this->translator->trans('home.menu_map_title'),
                     'fragment' => 'home-map-guide',
                 ],
             ],

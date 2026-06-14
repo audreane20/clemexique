@@ -541,7 +541,7 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath) {
         ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 });
 
-$app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
+$app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel, $lang) {
     $queryParams = $request->getQueryParams();
     $mode = strtolower((string) ($queryParams['mode'] ?? 'future_projet'));
 
@@ -554,12 +554,6 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
         'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,
         'header_menu_links' => [
-            [
-                'path' => '/',
-                'label' => $translator->trans('home.properties_title'),
-                'query' => 'mode=future_projet',
-                'fragment' => 'home-properties',
-            ],
             [
                 'path' => '/demande-information',
                 'label' => $translator->trans('info_request.title'),
@@ -611,7 +605,7 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
             ],
             [
                 'path' => '/',
-                'label' => $translator->trans('playa_guide.map_title'),
+                'label' => $translator->trans('home.menu_map_title'),
                 'fragment' => 'home-map-guide',
             ],
         ],

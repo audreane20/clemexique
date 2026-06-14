@@ -42,6 +42,7 @@ return [
     'home.toc_rental_copy' => 'Accédez rapidement à la section transport et location.',
     'home.toc_management_title' => 'Gestion immobilière',
     'home.toc_management_copy' => 'Découvrez notre accompagnement pour votre propriété au Mexique.',
+    'home.menu_map_title' => 'Carte de Playa del Carmen',
 
     'about.hero' => 'Découvrez la Riviera Maya autrement avec un accompagnement humain, une expérience vécue et une connaissance du terrain.',
     'about.title' => 'À propos',

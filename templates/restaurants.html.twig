@@ -17,11 +17,6 @@
     <div class="restaurant-layout">
     <section class="home-toc-shell restaurant-toc-shell">
         <div class="home-toc-card">
-            <div class="home-toc-copy">
-                <p class="home-toc-eyebrow">{{ trans('restaurants.toc_eyebrow') }}</p>
-                <h2>{{ trans('restaurants.toc_title') }}</h2>
-                <p>{{ trans('restaurants.toc_copy') }}</p>
-            </div>
             <div class="home-toc-grid">
                 {% for category in restaurant_categories %}
                     <a href="#restaurant-category-{{ loop.index }}" class="home-toc-link" data-restaurant-toc-target="restaurant-category-{{ loop.index }}">

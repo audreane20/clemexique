@@ -93,6 +93,36 @@ function buildAbsoluteUrl(\Psr\Http\Message\ServerRequestInterface $request, str
     return $url;
 }
 
+function normalizeAppRequestPath(string $uriPath, string $basePath): string
+{
+    $path = '/' . ltrim($uriPath, '/');
+
+    if ($basePath !== '' && str_starts_with($path, $basePath)) {
+        $path = substr($path, strlen($basePath)) ?: '/';
+    }
+
+    return $path === '' ? '/' : $path;
+}
+
+function shouldIndexRequest(string $path, array $queryParams): bool
+{
+    if ($path !== '/') {
+        return false;
+    }
+
+    $meaningfulQueryParams = array_filter(
+        $queryParams,
+        static fn ($value): bool => $value !== null && $value !== ''
+    );
+
+    return $meaningfulQueryParams === [];
+}
+
+function defaultRobotsDirective(string $path, array $queryParams): ?string
+{
+    return shouldIndexRequest($path, $queryParams) ? null : 'noindex, follow, noarchive';
+}
+
 function escapeXml(string $value): string
 {
     return htmlspecialchars($value, ENT_XML1 | ENT_QUOTES, 'UTF-8');
@@ -162,6 +192,8 @@ $app = AppFactory::create();
 
 $basePath = normalizeBasePath($_ENV['APP_BASE_PATH'] ?? '');
 $app->setBasePath($basePath);
+$currentRequestPath = normalizeAppRequestPath(parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/', $basePath);
+$defaultPageRobots = defaultRobotsDirective($currentRequestPath, $_GET);
 
 $twig = Twig::create(__DIR__ . '/../templates', [
     'cache' => false,
@@ -172,6 +204,7 @@ $mailTranslator = new Translator('fr');
 
 $twig->getEnvironment()->addGlobal('app_lang', $lang);
 $twig->getEnvironment()->addGlobal('base_path', $basePath);
+$twig->getEnvironment()->addGlobal('default_page_robots', $defaultPageRobots);
 $twig->getEnvironment()->addGlobal('is_admin_authenticated', isAdminAuthenticated());
 $twig->getEnvironment()->addGlobal('admin_username', getAdminDisplayName());
 $twig->getEnvironment()->addGlobal('is_user_authenticated', isUserAuthenticated());
@@ -239,6 +272,23 @@ $twig->getEnvironment()->addFunction(
 );
 
 $app->add(TwigMiddleware::create($app, $twig));
+$app->add(function ($request, $handler) use ($basePath) {
+    $response = $handler->handle($request);
+    $method = strtoupper($request->getMethod());
+
+    if (!in_array($method, ['GET', 'HEAD'], true)) {
+        return $response;
+    }
+
+    $path = normalizeAppRequestPath($request->getUri()->getPath(), $basePath);
+    $robotsDirective = defaultRobotsDirective($path, $request->getQueryParams());
+
+    if ($robotsDirective === null) {
+        return $response;
+    }
+
+    return $response->withHeader('X-Robots-Tag', $robotsDirective);
+});
 
 $databaseHost = trim((string) ($_ENV['DB_HOST'] ?? '127.0.0.1'));
 $databasePort = (int) ($_ENV['DB_PORT'] ?? 3306);
@@ -465,63 +515,12 @@ $formatPreferredLanguageForMail = function (string $language): string {
     return Locale::preferredLanguageLabel($language);
 };
 
-$app->get('/sitemap.xml', function ($request, $response) use ($basePath, $propertyModel) {
-    $languages = ['en', 'es'];
-    $staticPages = [
-        ['path' => '/', 'changefreq' => 'weekly', 'priority' => '1.0', 'localized' => true],
-        ['path' => '/about', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/contact', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/residence-immigration', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/location-automobiles', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/location-automobiles/formulaire', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
-        ['path' => '/demande-information', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/demande-information/formulaire', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
-        ['path' => '/gestion-immobiliere', 'changefreq' => 'monthly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/gestion-immobiliere/formulaire', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
-        ['path' => '/excursions', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/quoi-faire-a-playa', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/restaurants-a-essayer', 'changefreq' => 'weekly', 'priority' => '0.8', 'localized' => true],
-        ['path' => '/activites-sportives', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
-        ['path' => '/capsules-video-mexique', 'changefreq' => 'monthly', 'priority' => '0.6', 'localized' => true],
-    ];
-
-    $entries = [];
-
-    foreach ($staticPages as $page) {
-        $entries[] = [
-            'loc' => buildAbsoluteUrl($request, $basePath, $page['path']),
-            'changefreq' => $page['changefreq'],
-            'priority' => $page['priority'],
-        ];
-
-        if (!empty($page['localized'])) {
-            foreach ($languages as $language) {
-                $entries[] = [
-                    'loc' => buildAbsoluteUrl($request, $basePath, $page['path'], ['lang' => $language]),
-                    'changefreq' => $page['changefreq'],
-                    'priority' => $page['priority'],
-                ];
-            }
-        }
-    }
-
-    foreach ($propertyModel->findAll() as $property) {
-        $propertyPath = '/properties/' . (int) ($property['id'] ?? 0);
-
-        $entries[] = [
-            'loc' => buildAbsoluteUrl($request, $basePath, $propertyPath),
-            'changefreq' => 'weekly',
-            'priority' => '0.7',
-        ];
-
-        foreach ($languages as $language) {
-            $entries[] = [
-                'loc' => buildAbsoluteUrl($request, $basePath, $propertyPath, ['lang' => $language]),
-                'changefreq' => 'weekly',
-                'priority' => '0.7',
-            ];
-        }
-    }
+$app->get('/sitemap.xml', function ($request, $response) use ($basePath) {
+    $entries = [[
+        'loc' => buildAbsoluteUrl($request, $basePath, '/'),
+        'changefreq' => 'weekly',
+        'priority' => '1.0',
+    ]];
 
     $xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
     $xml .= "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";

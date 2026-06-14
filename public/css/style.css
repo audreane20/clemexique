@@ -4559,6 +4559,7 @@ body.admin-confirm-open {
 
     .main-nav {
         width: 100%;
+        order: 2;
     }
 
     .header-nav-desktop,
@@ -4579,6 +4580,14 @@ body.admin-confirm-open {
         justify-content: flex-end;
         gap: 10px;
         margin-top: auto;
+    }
+
+    .header-menu-panel > .header-quick-links {
+        order: 1;
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+        margin-bottom: 18px;
     }
 
     .header-lang-group,

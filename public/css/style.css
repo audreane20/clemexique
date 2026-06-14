@@ -4536,6 +4536,8 @@ body.admin-confirm-open {
         border-radius: 24px 0 0 24px;
         background: #ffffff;
         box-shadow: -18px 0 40px rgba(11, 53, 88, 0.16);
+        overflow-y: auto;
+        overscroll-behavior: contain;
     }
 
     .header-menu-panel[hidden] {
@@ -4560,6 +4562,9 @@ body.admin-confirm-open {
     .main-nav {
         width: 100%;
         order: 2;
+        margin-top: 18px;
+        padding-top: 22px;
+        border-top: 1px solid rgba(11, 53, 88, 0.08);
     }
 
     .header-nav-desktop,

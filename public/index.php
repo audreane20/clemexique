@@ -201,6 +201,62 @@ $twig = Twig::create(__DIR__ . '/../templates', [
 
 $translator = new Translator($lang);
 $mailTranslator = new Translator('fr');
+$headerMenuLinks = [
+    [
+        'path' => '/demande-information',
+        'label' => $translator->trans('info_request.title'),
+    ],
+    [
+        'href' => 'https://saleah.stays.net/',
+        'label' => $translator->trans('info_request_rent.title'),
+        'external' => true,
+    ],
+    [
+        'path' => '/residence-immigration',
+        'label' => $translator->trans('info_request.secondary_title'),
+        'fragment' => 'home-residency',
+    ],
+    [
+        'path' => '/location-automobiles',
+        'label' => $translator->trans('auto_rental.title'),
+        'fragment' => 'home-rental',
+    ],
+    [
+        'path' => '/gestion-immobiliere',
+        'label' => $translator->trans('property_management.title'),
+        'fragment' => 'home-management',
+    ],
+    [
+        'path' => '/restaurants-a-essayer',
+        'label' => $translator->trans('restaurants.title'),
+        'fragment' => 'home-restaurants',
+    ],
+    [
+        'path' => '/excursions',
+        'label' => $translator->trans('excursions.title'),
+        'fragment' => 'home-excursions',
+    ],
+    [
+        'path' => '/quoi-faire-a-playa',
+        'label' => $translator->trans('playa_guide.title'),
+        'fragment' => 'home-playa-guide',
+    ],
+    [
+        'path' => '/activites-sportives',
+        'label' => $translator->trans('sports_activities.title'),
+        'fragment' => 'home-sports-activities',
+    ],
+    [
+        'path' => '/capsules-video-mexique',
+        'label' => $translator->trans('video_capsules.title'),
+        'fragment' => 'home-video-capsules',
+    ],
+    [
+        'path' => '/',
+        'label' => $translator->trans('home.menu_map_title'),
+        'fragment' => 'home-map-guide',
+    ],
+];
 
 $twig->getEnvironment()->addGlobal('app_lang', $lang);
 $twig->getEnvironment()->addGlobal('base_path', $basePath);
@@ -209,6 +265,7 @@ $twig->getEnvironment()->addGlobal('is_admin_authenticated', isAdminAuthenticate
 $twig->getEnvironment()->addGlobal('admin_username', getAdminDisplayName());
 $twig->getEnvironment()->addGlobal('is_user_authenticated', isUserAuthenticated());
 $twig->getEnvironment()->addGlobal('user_name', getUserName());
+$twig->getEnvironment()->addGlobal('header_menu_links', $headerMenuLinks);
 $twig->getEnvironment()->addFunction(
     new \Twig\TwigFunction('trans', function (string $key, array $replacements = []) use ($translator) {
         return $translator->trans($key, $replacements);
@@ -541,7 +598,7 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath) {
         ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
 });
 
-$app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel, $lang) {
+$app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
     $queryParams = $request->getQueryParams();
     $mode = strtolower((string) ($queryParams['mode'] ?? 'future_projet'));
 
@@ -553,62 +610,6 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
         'page_title' => 'CLeMexique - Home',
         'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,
-        'header_menu_links' => [
-            [
-                'path' => '/demande-information',
-                'label' => $translator->trans('info_request.title'),
-            ],
-            [
-                'href' => 'https://saleah.stays.net/',
-                'label' => $translator->trans('info_request_rent.title'),
-                'external' => true,
-            ],
-            [
-                'path' => '/residence-immigration',
-                'label' => $translator->trans('info_request.secondary_title'),
-                'fragment' => 'home-residency',
-            ],
-            [
-                'path' => '/location-automobiles',
-                'label' => $translator->trans('auto_rental.title'),
-                'fragment' => 'home-rental',
-            ],
-            [
-                'path' => '/gestion-immobiliere',
-                'label' => $translator->trans('property_management.title'),
-                'fragment' => 'home-management',
-            ],
-            [
-                'path' => '/restaurants-a-essayer',
-                'label' => $translator->trans('restaurants.title'),
-                'fragment' => 'home-restaurants',
-            ],
-            [
-                'path' => '/excursions',
-                'label' => $translator->trans('excursions.title'),
-                'fragment' => 'home-excursions',
-            ],
-            [
-                'path' => '/quoi-faire-a-playa',
-                'label' => $translator->trans('playa_guide.title'),
-                'fragment' => 'home-playa-guide',
-            ],
-            [
-                'path' => '/activites-sportives',
-                'label' => $translator->trans('sports_activities.title'),
-                'fragment' => 'home-sports-activities',
-            ],
-            [
-                'path' => '/capsules-video-mexique',
-                'label' => $translator->trans('video_capsules.title'),
-                'fragment' => 'home-video-capsules',
-            ],
-            [
-                'path' => '/',
-                'label' => $translator->trans('home.menu_map_title'),
-                'fragment' => 'home-map-guide',
-            ],
-        ],
     ]);
 });
 

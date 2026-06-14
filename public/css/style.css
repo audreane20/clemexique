@@ -123,6 +123,30 @@ body.mobile-menu-open {
     }
 }
 
+.header-quick-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100%;
+    padding-top: 4px;
+}
+
+.header-quick-link {
+    display: block;
+    width: 100%;
+    text-decoration: none;
+    color: var(--navy);
+    font-weight: 600;
+    padding: 10px 14px;
+    border-radius: 14px;
+    transition: 0.25s ease;
+}
+
+.header-quick-link:hover {
+    background: var(--turquoise-light);
+    color: var(--turquoise);
+}
+
     .main-nav a {
         text-decoration: none;
         color: var(--navy);

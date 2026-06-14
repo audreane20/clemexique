@@ -100,6 +100,22 @@
                 <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
             </nav>
 
+            {% if header_menu_links is defined and header_menu_links %}
+                <nav class="header-quick-links" aria-label="{{ trans('home.hero_actions_label') }}">
+                    {% for link in header_menu_links %}
+                        <a
+                            href="{{ (link.external ?? false)
+                                ? link.href
+                                : base_path ~ (link.path ?? '') ~ '?lang=' ~ app_lang ~ ((link.query ?? '') ? '&' ~ link.query : '') ~ ((link.fragment ?? '') ? '#' ~ link.fragment : '') }}"
+                            class="header-quick-link"
+                            {% if link.external ?? false %}target="_blank" rel="noopener noreferrer"{% endif %}
+                        >
+                            {{ link.label }}
+                        </a>
+                    {% endfor %}
+                </nav>
+            {% endif %}
+
             <div class="header-right header-right-drawer">
                 <div class="header-auth-actions">
                     {% if is_admin_authenticated %}

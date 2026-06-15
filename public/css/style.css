@@ -4495,7 +4495,7 @@ body.admin-confirm-open {
         align-items: center;
         column-gap: 12px;
         row-gap: 10px;
-        padding: 8px 16px 10px;
+        padding: 10px 16px 10px;
     }
 
     .header-left {
@@ -4507,7 +4507,7 @@ body.admin-confirm-open {
     }
 
     .logo img {
-        height: 46px;
+        height: 60px;
     }
 
     .header-menu-toggle {
@@ -4515,8 +4515,8 @@ body.admin-confirm-open {
         display: inline-flex;
         justify-self: end;
         align-self: center;
-        width: 46px;
-        height: 46px;
+        width: 52px;
+        height: 52px;
         position: relative;
         z-index: 301;
     }

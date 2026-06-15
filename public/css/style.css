@@ -4521,8 +4521,9 @@ body.admin-confirm-open {
     }
 
     .logo {
-        height: 100%;
-        align-self: stretch;
+        width: 64px;
+        height: 64px;
+        align-self: center;
     }
 
     .logo-image-desktop {
@@ -4531,10 +4532,11 @@ body.admin-confirm-open {
 
     .logo-image-mobile {
         display: block;
+        width: 100%;
         height: 100%;
-        width: auto;
         max-height: none;
-        object-fit: contain;
+        object-fit: cover;
+        object-position: center;
     }
 
     .header-menu-toggle {

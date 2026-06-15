@@ -4503,19 +4503,26 @@ body.admin-confirm-open {
         align-items: center;
         column-gap: 12px;
         row-gap: 10px;
-        padding: 10px 16px 10px;
+        padding: 6px 16px 8px;
     }
 
     .header-left {
         width: auto;
         min-width: 0;
+        align-self: stretch;
+        align-items: center;
         justify-content: flex-start;
         flex-wrap: nowrap;
         gap: 0;
     }
 
     .header-container {
-        min-height: 86px;
+        min-height: 76px;
+    }
+
+    .logo {
+        height: 100%;
+        align-self: stretch;
     }
 
     .logo-image-desktop {
@@ -4524,7 +4531,10 @@ body.admin-confirm-open {
 
     .logo-image-mobile {
         display: block;
-        height: 68px;
+        height: 100%;
+        width: auto;
+        max-height: none;
+        object-fit: contain;
     }
 
     .header-menu-toggle {
@@ -4536,7 +4546,7 @@ body.admin-confirm-open {
         height: 52px;
         position: relative;
         z-index: 301;
-        margin-right: 2px;
+        margin-right: 0;
     }
 
     .header-menu-panel {

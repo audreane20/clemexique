@@ -4503,7 +4503,7 @@ body.admin-confirm-open {
         align-items: center;
         column-gap: 12px;
         row-gap: 10px;
-        padding: 6px 16px 8px;
+        padding: 8px 16px 8px;
     }
 
     .header-left {
@@ -4517,12 +4517,12 @@ body.admin-confirm-open {
     }
 
     .header-container {
-        min-height: 76px;
+        min-height: 72px;
     }
 
     .logo {
-        width: 64px;
-        height: 64px;
+        width: 56px;
+        height: 56px;
         align-self: center;
     }
 
@@ -4535,7 +4535,7 @@ body.admin-confirm-open {
         width: 100%;
         height: 100%;
         max-height: none;
-        object-fit: cover;
+        object-fit: contain;
         object-position: center;
     }
 

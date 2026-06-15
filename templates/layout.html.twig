@@ -23,7 +23,8 @@
     <div class="header-container">
         <div class="header-left">
             <a href="{{ base_path }}/" class="logo">
-                <img src="{{ base_path }}/Images/logo_t.png" alt="Riviera Maya Logo">
+                <img src="{{ base_path }}/Images/logo_t.png" alt="Riviera Maya Logo" class="logo-image logo-image-desktop">
+                <img src="{{ base_path }}/Images/Circle_logo-cropped.png" alt="Riviera Maya Logo" class="logo-image logo-image-mobile">
             </a>
             {% if is_admin_authenticated %}
                 <div class="header-auth-actions header-auth-actions-left">

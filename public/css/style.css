@@ -90,16 +90,24 @@ body.mobile-menu-open {
 /* LOGO */
 .logo {
     flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
 }
 
-.logo img {
+.logo-image {
     height: 100px;
+    width: auto;
+    display: block;
     transition: transform 0.25s ease;
 }
 
-    .logo img:hover {
+    .logo-image:hover {
         transform: scale(1.05);
     }
+
+.logo-image-mobile {
+    display: none;
+}
 
 /* NAV */
 .main-nav {
@@ -4506,8 +4514,17 @@ body.admin-confirm-open {
         gap: 0;
     }
 
-    .logo img {
-        height: 60px;
+    .header-container {
+        min-height: 86px;
+    }
+
+    .logo-image-desktop {
+        display: none;
+    }
+
+    .logo-image-mobile {
+        display: block;
+        height: 68px;
     }
 
     .header-menu-toggle {
@@ -4519,6 +4536,7 @@ body.admin-confirm-open {
         height: 52px;
         position: relative;
         z-index: 301;
+        margin-right: 2px;
     }
 
     .header-menu-panel {

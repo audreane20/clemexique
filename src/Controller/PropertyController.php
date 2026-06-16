@@ -1164,7 +1164,18 @@ class PropertyController
             return $resolved;
         }
 
-        $candidates = ['magick', 'convert'];
+        $candidates = [
+            'magick',
+            'convert',
+            '/usr/bin/magick',
+            '/usr/local/bin/magick',
+            '/bin/magick',
+            '/usr/bin/convert',
+            '/usr/local/bin/convert',
+            '/bin/convert',
+            '/usr/bin/convert-im6',
+            '/usr/bin/convert-im6.q16',
+        ];
 
         foreach (['C:\\Program Files\\ImageMagick-*\\magick.exe', 'C:\\Program Files (x86)\\ImageMagick-*\\magick.exe'] as $pattern) {
             $matches = glob($pattern);

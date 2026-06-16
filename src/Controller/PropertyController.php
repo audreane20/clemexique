@@ -1129,10 +1129,12 @@ class PropertyController
         }
 
         $temporaryTarget .= '.jpg';
+        $resizeGeometry = '2400x2400>';
         $command = sprintf(
-            '%s %s -auto-orient -strip -resize 2400x2400^> -sampling-factor 4:2:0 -quality 88 %s 2>&1',
+            '%s %s -auto-orient -strip -resize %s -sampling-factor 4:2:0 -quality 88 %s 2>&1',
             escapeshellarg($magickBinary),
             escapeshellarg($magickInputPath),
+            escapeshellarg($resizeGeometry),
             escapeshellarg($temporaryTarget)
         );
 

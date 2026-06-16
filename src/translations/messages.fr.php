@@ -484,6 +484,7 @@ return [
     'restaurants.toc_copy' => 'Utilisez ces raccourcis pour aller directement au style de restaurant qui vous intéresse.',
     'properties.error_upload_required' => 'Veuillez téléverser au moins une image de propriété.',
     'properties.error_upload_invalid' => 'Veuillez téléverser des images de propriété valides.',
+    'properties.error_upload_storage' => 'Le serveur ne peut pas enregistrer les fichiers téléversés pour le moment. Vérifiez les permissions du dossier public/uploads/properties.',
     'properties.error_upload_too_large' => 'Le téléversement sélectionné dépasse la limite du serveur. Veuillez envoyer moins d’images ou des fichiers plus petits.',
     'properties.error_upload_heic' => 'Ces images sont des fichiers HEIC renommÃ©s dans un autre format. Veuillez les convertir en vrais fichiers JPG ou PNG avant le tÃ©lÃ©versement.',
     'properties.error_delete_photos_required' => 'Selectionnez au moins une photo a supprimer.',

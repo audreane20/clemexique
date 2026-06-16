@@ -842,6 +842,10 @@ class PropertyController
             return 'heic';
         }
 
+        if ($message === $this->translator->trans('properties.error_upload_storage')) {
+            return 'storage';
+        }
+
         return 'unsupported';
     }
 
@@ -850,6 +854,7 @@ class PropertyController
         return match ($reason) {
             'duplicate' => $this->translator->trans('properties.upload_skip_reason_duplicate'),
             'heic' => $this->translator->trans('properties.error_upload_heic'),
+            'storage' => $this->translator->trans('properties.error_upload_storage'),
             'too_large' => $this->translator->trans('properties.upload_skip_reason_too_large'),
             'upload_error' => $this->translator->trans('properties.upload_skip_reason_upload_error'),
             default => $this->translator->trans('properties.upload_skip_reason_unsupported'),
@@ -1019,15 +1024,19 @@ class PropertyController
     {
         $uploadDirectory = dirname(__DIR__, 2) . '/public/uploads/properties';
 
-        if (!is_dir($uploadDirectory)) {
-            mkdir($uploadDirectory, 0775, true);
+        if (!is_dir($uploadDirectory) && !@mkdir($uploadDirectory, 0775, true) && !is_dir($uploadDirectory)) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_storage'));
+        }
+
+        if (!is_writable($uploadDirectory)) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_storage'));
         }
 
         $filename = bin2hex(random_bytes(16)) . '.' . $extension;
         $destinationPath = $uploadDirectory . DIRECTORY_SEPARATOR . $filename;
 
         if (!@copy($sourcePath, $destinationPath)) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_storage'));
         }
 
         return $this->basePath . '/uploads/properties/' . $filename;

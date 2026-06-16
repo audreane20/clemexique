@@ -15,45 +15,47 @@
 </section>
 
 <section class="property-public-shell" id="home-properties">
-    <div class="property-public-header">
-        <h2>{{ trans('home.properties_title') }}</h2>
-        <p>{{ trans('home.properties_subtitle') }}</p>
-        <div class="property-filter-bar property-filter-bar-home">
-            <a href="{{ entered_home_url }}&mode=sale_all#home-properties" class="property-filter-link {{ selected_mode == 'sale_all' ? 'active' : '' }}">{{ trans('properties.filter_all_sale') }}</a>
-            <a href="{{ entered_home_url }}&mode=future_projet#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
-            <a href="{{ entered_home_url }}&mode=revente#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
-            <a href="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}" class="property-filter-link property-filter-link-cta">{{ trans('info_request.form_cta') }}</a>
+    <div class="property-public-frame">
+        <div class="property-public-header">
+            <h2>{{ trans('home.properties_title') }}</h2>
+            <p>{{ trans('home.properties_subtitle') }}</p>
+            <div class="property-filter-bar property-filter-bar-home">
+                <a href="{{ entered_home_url }}&mode=sale_all#home-properties" class="property-filter-link {{ selected_mode == 'sale_all' ? 'active' : '' }}">{{ trans('properties.filter_all_sale') }}</a>
+                <a href="{{ entered_home_url }}&mode=future_projet#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
+                <a href="{{ entered_home_url }}&mode=revente#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
+                <a href="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}" class="property-filter-link property-filter-link-cta">{{ trans('info_request.form_cta') }}</a>
+            </div>
         </div>
+
+        {% if properties is empty %}
+            <div class="property-empty-state property-empty-state-public">
+                <p>{{ trans('properties.empty') }}</p>
+            </div>
+        {% else %}
+            {% set property_rows = properties|batch(3) %}
+
+            <div class="property-public-grid">
+                {% for property_row in property_rows %}
+                    <div class="property-public-row property-public-row-{{ property_row|length }}">
+                        {% for property in property_row %}
+                            <article class="property-public-card">
+                                <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}" class="property-public-image">
+
+                                <h2>{{ property.name }}</h2>
+                                <p class="property-public-city">{{ property.city }}</p>
+                                <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
+                                <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
+
+                                <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
+                                    {{ trans('properties.cta') }}
+                                </a>
+                            </article>
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
     </div>
-
-    {% if properties is empty %}
-        <div class="property-empty-state property-empty-state-public">
-            <p>{{ trans('properties.empty') }}</p>
-        </div>
-    {% else %}
-        {% set property_rows = properties|batch(3) %}
-
-        <div class="property-public-grid">
-            {% for property_row in property_rows %}
-                <div class="property-public-row property-public-row-{{ property_row|length }}">
-                    {% for property in property_row %}
-                        <article class="property-public-card">
-                            <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}" class="property-public-image">
-
-                            <h2>{{ property.name }}</h2>
-                            <p class="property-public-city">{{ property.city }}</p>
-                            <p class="property-public-price property-public-price-primary">{{ trans('properties.starting_from') }} {{ property.primary_price_display }}</p>
-                            <p class="property-public-price property-public-price-secondary">{{ trans('properties.starting_from') }} {{ property.secondary_price_display }}</p>
-
-                            <a href="{{ base_path ~ property.detail_url ~ '?lang=' ~ app_lang }}" class="property-public-link">
-                                {{ trans('properties.cta') }}
-                            </a>
-                        </article>
-                    {% endfor %}
-                </div>
-            {% endfor %}
-        </div>
-    {% endif %}
 </section>
 
 <section class="info-request-shell" id="home-info-request">

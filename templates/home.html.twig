@@ -31,22 +31,7 @@
             <p>{{ trans('properties.empty') }}</p>
         </div>
     {% else %}
-        {% set property_count = properties|length %}
-        {% if property_count <= 5 %}
-            {% set property_rows = [properties] %}
-        {% elseif property_count == 6 %}
-            {% set property_rows = [properties|slice(0, 3), properties|slice(3, 3)] %}
-        {% elseif property_count == 7 %}
-            {% set property_rows = [properties|slice(0, 3), properties|slice(3, 4)] %}
-        {% elseif property_count == 8 %}
-            {% set property_rows = [properties|slice(0, 4), properties|slice(4, 4)] %}
-        {% elseif property_count == 9 %}
-            {% set property_rows = [properties|slice(0, 4), properties|slice(4, 5)] %}
-        {% elseif property_count == 10 %}
-            {% set property_rows = [properties|slice(0, 5), properties|slice(5, 5)] %}
-        {% else %}
-            {% set property_rows = properties|batch(5) %}
-        {% endif %}
+        {% set property_rows = properties|batch(3) %}
 
         <div class="property-public-grid">
             {% for property_row in property_rows %}

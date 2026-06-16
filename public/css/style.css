@@ -2068,18 +2068,16 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .property-public-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 26px;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    gap: 30px;
+    align-items: stretch;
+    width: min(1180px, 100%);
+    margin: 0 auto;
 }
 
 .property-public-row {
-    display: flex;
-    justify-content: center;
-    gap: 28px;
-    width: fit-content;
-    max-width: 100%;
+    display: contents;
 }
 
 .property-public-card {
@@ -2087,30 +2085,15 @@ body.home-transition-sun-active .home-hero-orb-sun {
     flex-direction: column;
     align-items: center;
     text-align: center;
-    flex: 0 1 220px;
-    max-width: 220px;
-    margin: 0 auto;
+    min-width: 0;
     width: 100%;
-    padding: 14px 14px 20px;
+    max-width: none;
+    margin: 0;
+    padding: 18px 18px 24px;
     border: 1.5px solid rgba(11, 53, 88, 0.14);
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.92);
     box-shadow: 0 12px 28px rgba(11, 53, 88, 0.08);
-}
-
-.property-public-row-3 .property-public-card {
-    flex-basis: 260px;
-    max-width: 260px;
-}
-
-.property-public-row-4 .property-public-card {
-    flex-basis: 235px;
-    max-width: 235px;
-}
-
-.property-public-row-5 .property-public-card {
-    flex-basis: 220px;
-    max-width: 220px;
 }
 
 .property-public-image {
@@ -2124,7 +2107,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
 .property-public-card h2 {
     margin: 16px 0 0;
     color: #000000;
-    font-size: 21px;
+    font-size: 24px;
     line-height: 1.12;
     font-weight: 800;
 }
@@ -2135,13 +2118,13 @@ body.home-transition-sun-active .home-hero-orb-sun {
 
 .property-public-price-primary {
     font-weight: 800;
-    font-size: 14px;
+    font-size: 16px;
 }
 
 .property-public-price-secondary {
     margin-top: 4px;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 500;
 }
 
@@ -2149,11 +2132,11 @@ body.home-transition-sun-active .home-hero-orb-sun {
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    min-height: 50px;
+    min-height: 54px;
     width: 100%;
     max-width: 100%;
     margin-top: auto;
-    padding: 12px 14px;
+    padding: 14px 16px;
     margin-bottom: 0;
     border: 1px solid rgba(11, 53, 88, 0.18);
     border-radius: 14px;
@@ -4011,7 +3994,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .admin-content-item-meta {
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .admin-content-video-meta {

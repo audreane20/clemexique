@@ -1,0 +1,20 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="startup-screen" aria-labelledby="startup-title">
+    <div class="startup-screen-backdrop"></div>
+    <div class="startup-screen-panel">
+        <p class="startup-screen-kicker">CLeMexique</p>
+        <h1 id="startup-title">
+            {{ app_lang == 'fr'
+                ? 'Bienvenue'
+                : (app_lang == 'es' ? 'Bienvenido' : 'Welcome') }}
+        </h1>
+        <a href="{{ base_path }}/enter?lang={{ app_lang }}" class="startup-screen-button">
+            {{ app_lang == 'fr'
+                ? 'Cliquez ici pour continuer'
+                : (app_lang == 'es' ? 'Haz clic aquí para continuar' : 'Click here to continue') }}
+        </a>
+    </div>
+</section>
+{% endblock %}

@@ -606,11 +606,29 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
         $mode = 'future_projet';
     }
 
+    if (!($_SESSION['startup_seen'] ?? false)) {
+        return $twig->render($response, 'startup.html.twig', [
+            'page_title' => 'CLeMexique - Welcome',
+            'hide_site_header' => true,
+            'hide_site_footer' => true,
+            'body_class' => 'startup-screen-body',
+        ]);
+    }
+
     return $twig->render($response, 'home.html.twig', [
         'page_title' => 'CLeMexique - Home',
         'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,
     ]);
+});
+
+$app->get('/enter', function ($request, $response) use ($basePath) {
+    $_SESSION['startup_seen'] = true;
+
+    $language = Locale::normalize((string) ($request->getQueryParams()['lang'] ?? ($_SESSION['lang'] ?? Locale::DEFAULT)));
+    $_SESSION['lang'] = $language;
+
+    return redirectTo($response, $basePath . '/?lang=' . $language);
 });
 
 $app->get('/about', function ($request, $response) use ($twig, $translator) {

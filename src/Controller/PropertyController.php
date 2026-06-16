@@ -574,6 +574,88 @@ class PropertyController
         return $this->detectImageExtensionFromBinary($header);
     }
 
+    private function detectMediaExtensionFromPath(string $sourcePath, string $originalName = ''): ?string
+    {
+        $header = @file_get_contents($sourcePath, false, null, 0, 64);
+
+        if (is_string($header) && $header !== '') {
+            $binaryDetected = $this->detectImageExtensionFromBinary($header);
+
+            if ($binaryDetected !== null) {
+                return $binaryDetected;
+            }
+        }
+
+        if (function_exists('exif_imagetype')) {
+            $imageType = @exif_imagetype($sourcePath);
+
+            $mapped = match ($imageType) {
+                IMAGETYPE_JPEG => 'jpg',
+                IMAGETYPE_PNG => 'png',
+                IMAGETYPE_GIF => 'gif',
+                IMAGETYPE_WEBP => defined('IMAGETYPE_WEBP') ? 'webp' : null,
+                IMAGETYPE_AVIF => defined('IMAGETYPE_AVIF') ? 'heic' : null,
+                default => null,
+            };
+
+            if ($mapped !== null) {
+                return $mapped;
+            }
+        }
+
+        if (function_exists('getimagesize')) {
+            $imageInfo = @getimagesize($sourcePath);
+
+            if (is_array($imageInfo)) {
+                $mime = strtolower((string) ($imageInfo['mime'] ?? ''));
+
+                return match ($mime) {
+                    'image/jpeg', 'image/pjpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/gif' => 'gif',
+                    'image/webp' => 'webp',
+                    'image/heic', 'image/heif', 'image/avif' => 'heic',
+                    default => null,
+                };
+            }
+        }
+
+        if (function_exists('finfo_open')) {
+            $finfo = @finfo_open(FILEINFO_MIME_TYPE);
+
+            if ($finfo !== false) {
+                $mime = strtolower((string) @finfo_file($finfo, $sourcePath));
+                @finfo_close($finfo);
+
+                if ($mime !== '') {
+                    $mapped = match ($mime) {
+                        'image/jpeg', 'image/pjpeg' => 'jpg',
+                        'image/png' => 'png',
+                        'image/gif' => 'gif',
+                        'image/webp' => 'webp',
+                        'image/heic', 'image/heif', 'image/avif' => 'heic',
+                        'video/mp4' => 'mp4',
+                        'video/quicktime' => 'mov',
+                        'video/webm' => 'webm',
+                        default => null,
+                    };
+
+                    if ($mapped !== null) {
+                        return $mapped;
+                    }
+                }
+            }
+        }
+
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm'], true) && @filesize($sourcePath) > 0) {
+            return $extension === 'jpeg' ? 'jpg' : $extension;
+        }
+
+        return null;
+    }
+
     private function detectImageExtensionFromBinary(string $binary): ?string
     {
         if ($binary === '') {
@@ -885,8 +967,7 @@ class PropertyController
         ?string $displayName = null
     ): string
     {
-        $header = @file_get_contents($sourcePath, false, null, 0, 64);
-        $extension = is_string($header) ? $this->detectImageExtensionFromBinary($header) : null;
+        $extension = $this->detectMediaExtensionFromPath($sourcePath, $originalName);
         $displayName = $displayName ?? $originalName;
 
         if ($extension !== null) {

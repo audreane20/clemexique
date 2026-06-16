@@ -5,6 +5,9 @@
     --gold: #c8a45d;
     --sand: #fff7ec;
     --text: #1f2933;
+    --home-transition-sun-target-x: 50%;
+    --home-transition-sun-target-y: 138px;
+    --home-transition-sun-target-size: 112px;
 }
 
 *,
@@ -747,10 +750,10 @@ body.home-transition-sun-active .home-hero-orb-sun {
 
     100% {
         opacity: 0;
-        top: 138px;
-        left: 50%;
-        width: 112px;
-        height: 112px;
+        top: var(--home-transition-sun-target-y);
+        left: var(--home-transition-sun-target-x);
+        width: var(--home-transition-sun-target-size);
+        height: var(--home-transition-sun-target-size);
         transform: translate(-50%, -50%) scale(1);
     }
 }

@@ -216,12 +216,23 @@
 document.addEventListener('DOMContentLoaded', function () {
     const heroShell = document.querySelector('[data-home-hero-shell]');
     const heroCard = document.querySelector('[data-home-hero-card]');
+    const heroSun = document.querySelector('.home-hero-orb-sun');
     const params = new URLSearchParams(window.location.search);
     const lightbox = document.querySelector('[data-property-lightbox]');
     const lightboxImage = document.querySelector('[data-property-lightbox-image]');
     const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
 
     if (params.get('transition') === 'sun') {
+        if (heroSun) {
+            const sunRect = heroSun.getBoundingClientRect();
+            const targetX = sunRect.left + (sunRect.width / 2);
+            const targetY = sunRect.top + (sunRect.height / 2);
+
+            document.documentElement.style.setProperty('--home-transition-sun-target-x', targetX.toFixed(1) + 'px');
+            document.documentElement.style.setProperty('--home-transition-sun-target-y', targetY.toFixed(1) + 'px');
+            document.documentElement.style.setProperty('--home-transition-sun-target-size', sunRect.width.toFixed(1) + 'px');
+        }
+
         document.body.classList.add('home-transition-sun-active');
 
         window.setTimeout(function () {

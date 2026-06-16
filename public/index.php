@@ -601,11 +601,11 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath) {
 
 $app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
     $queryParams = $request->getQueryParams();
-    $mode = strtolower((string) ($queryParams['mode'] ?? 'future_projet'));
+    $mode = strtolower((string) ($queryParams['mode'] ?? 'sale_all'));
     $isEnteredView = ($queryParams['enter'] ?? '') === '1';
 
-    if (!in_array($mode, ['revente', 'future_projet'], true)) {
-        $mode = 'future_projet';
+    if (!in_array($mode, ['sale_all', 'revente', 'future_projet'], true)) {
+        $mode = 'sale_all';
     }
 
     if (!$isEnteredView) {

@@ -120,7 +120,7 @@ function shouldIndexRequest(string $path, array $queryParams): bool
 
 function defaultRobotsDirective(string $path, array $queryParams): ?string
 {
-    return shouldIndexRequest($path, $queryParams) ? null : 'noindex, follow, noarchive';
+    return shouldIndexRequest($path, $queryParams) ? null : 'noindex, nofollow, noarchive';
 }
 
 function escapeXml(string $value): string

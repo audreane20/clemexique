@@ -601,12 +601,13 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath) {
 $app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
     $queryParams = $request->getQueryParams();
     $mode = strtolower((string) ($queryParams['mode'] ?? 'future_projet'));
+    $isEnteredView = ($queryParams['enter'] ?? '') === '1';
 
     if (!in_array($mode, ['revente', 'future_projet'], true)) {
         $mode = 'future_projet';
     }
 
-    if (!($_SESSION['startup_seen'] ?? false)) {
+    if (!$isEnteredView) {
         return $twig->render($response, 'startup.html.twig', [
             'page_title' => 'CLeMexique - Welcome',
             'hide_site_header' => true,
@@ -617,6 +618,7 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
 
     return $twig->render($response, 'home.html.twig', [
         'page_title' => 'CLeMexique - Home',
+        'page_robots' => 'noindex, nofollow, noarchive',
         'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,
     ]);
@@ -628,7 +630,7 @@ $app->get('/enter', function ($request, $response) use ($basePath) {
     $language = Locale::normalize((string) ($request->getQueryParams()['lang'] ?? ($_SESSION['lang'] ?? Locale::DEFAULT)));
     $_SESSION['lang'] = $language;
 
-    return redirectTo($response, $basePath . '/?lang=' . $language);
+    return redirectTo($response, $basePath . '/?enter=1&lang=' . $language);
 });
 
 $app->get('/about', function ($request, $response) use ($twig, $translator) {

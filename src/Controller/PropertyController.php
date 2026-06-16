@@ -977,7 +977,20 @@ class PropertyController
 
         if ($extension !== null) {
             if ($extension === 'heic') {
-                throw new \RuntimeException($this->translator->trans('properties.error_upload_heic'));
+                if (!$this->canAttemptImageMagickConversion($sourcePath, $originalName)) {
+                    throw new \RuntimeException($this->translator->trans('properties.error_upload_heic'));
+                }
+
+                $this->updateUploadProgress(
+                    $progressToken,
+                    'processing',
+                    $this->translator->trans('properties.upload_progress_converting_phase'),
+                    $this->translator->trans('properties.upload_progress_converting_message') . ' ' . $displayName,
+                    $currentUnit,
+                    $totalUnits
+                );
+
+                return $this->convertMediaWithImageMagick($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName);
             }
 
             if ($this->shouldOptimizeOversizedImage($sourcePath, $extension)) {

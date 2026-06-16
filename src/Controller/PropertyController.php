@@ -597,7 +597,11 @@ class PropertyController
         }
 
         if (strlen($binary) >= 12 && substr($binary, 4, 4) === 'ftyp') {
-            $brand = substr($binary, 8, 4);
+            $brand = strtolower(substr($binary, 8, 4));
+
+            if (in_array($brand, ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1', 'avif'], true)) {
+                return 'heic';
+            }
 
             if ($brand === 'qt  ') {
                 return 'mov';
@@ -605,7 +609,7 @@ class PropertyController
 
             $videoBrands = ['isom', 'iso2', 'avc1', 'mp41', 'mp42', 'm4v ', '3gp4', '3gp5', '3gp6', 'msnv'];
 
-            if (in_array(strtolower($brand), array_map('strtolower', $videoBrands), true)) {
+            if (in_array($brand, array_map('strtolower', $videoBrands), true)) {
                 return 'mp4';
             }
         }
@@ -750,6 +754,12 @@ class PropertyController
 
     private function mapUploadExceptionToReason(\RuntimeException $exception): string
     {
+        $message = trim($exception->getMessage());
+
+        if ($message === $this->translator->trans('properties.error_upload_heic')) {
+            return 'heic';
+        }
+
         return 'unsupported';
     }
 
@@ -757,6 +767,7 @@ class PropertyController
     {
         return match ($reason) {
             'duplicate' => $this->translator->trans('properties.upload_skip_reason_duplicate'),
+            'heic' => $this->translator->trans('properties.error_upload_heic'),
             'too_large' => $this->translator->trans('properties.upload_skip_reason_too_large'),
             'upload_error' => $this->translator->trans('properties.upload_skip_reason_upload_error'),
             default => $this->translator->trans('properties.upload_skip_reason_unsupported'),
@@ -879,6 +890,10 @@ class PropertyController
         $displayName = $displayName ?? $originalName;
 
         if ($extension !== null) {
+            if ($extension === 'heic') {
+                throw new \RuntimeException($this->translator->trans('properties.error_upload_heic'));
+            }
+
             if ($this->shouldOptimizeOversizedImage($sourcePath, $extension)) {
                 $this->updateUploadProgress(
                     $progressToken,
@@ -1046,7 +1061,7 @@ class PropertyController
             return $resolved;
         }
 
-        $candidates = ['magick'];
+        $candidates = ['magick', 'convert'];
 
         foreach (['C:\\Program Files\\ImageMagick-*\\magick.exe', 'C:\\Program Files (x86)\\ImageMagick-*\\magick.exe'] as $pattern) {
             $matches = glob($pattern);

@@ -3,6 +3,7 @@
 {% block content %}
 <section class="home-hero-shell" aria-labelledby="home-hero-title" data-home-hero-shell>
     <div class="home-hero-card" data-home-hero-card>
+        <div class="home-hero-transition-sun" data-home-transition-sun aria-hidden="true"></div>
         <div class="home-hero-orb home-hero-orb-sun" aria-hidden="true"></div>
         <div class="home-hero-orb home-hero-orb-coral" aria-hidden="true"></div>
         <div class="home-hero-orb home-hero-orb-agave" aria-hidden="true"></div>
@@ -18,8 +19,8 @@
         <h2>{{ trans('home.properties_title') }}</h2>
         <p>{{ trans('home.properties_subtitle') }}</p>
         <div class="property-filter-bar property-filter-bar-home">
-            <a href="{{ base_path }}/?mode=future_projet&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
-            <a href="{{ base_path }}/?mode=revente&lang={{ app_lang }}#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
+            <a href="{{ entered_home_url }}&mode=future_projet#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
+            <a href="{{ entered_home_url }}&mode=revente#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
             <a href="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}" class="property-filter-link property-filter-link-cta">{{ trans('info_request.form_cta') }}</a>
         </div>
     </div>
@@ -215,9 +216,23 @@
 document.addEventListener('DOMContentLoaded', function () {
     const heroShell = document.querySelector('[data-home-hero-shell]');
     const heroCard = document.querySelector('[data-home-hero-card]');
+    const params = new URLSearchParams(window.location.search);
     const lightbox = document.querySelector('[data-property-lightbox]');
     const lightboxImage = document.querySelector('[data-property-lightbox-image]');
     const mapTrigger = document.querySelector('[data-map-lightbox-trigger]');
+
+    if (params.get('transition') === 'sun') {
+        document.body.classList.add('home-transition-sun-active');
+
+        window.setTimeout(function () {
+            document.body.classList.remove('home-transition-sun-active');
+        }, 1700);
+
+        params.delete('transition');
+        const nextQuery = params.toString();
+        const nextUrl = window.location.pathname + (nextQuery ? '?' + nextQuery : '') + window.location.hash;
+        window.history.replaceState({}, document.title, nextUrl);
+    }
 
     if (heroShell && heroCard) {
         const updateHeroScrollState = function () {

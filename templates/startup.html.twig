@@ -3,6 +3,7 @@
 {% block content %}
 <section class="startup-screen" aria-labelledby="startup-title">
     <div class="startup-screen-backdrop"></div>
+    <div class="startup-screen-sunburst" aria-hidden="true"></div>
     <div class="startup-screen-panel">
         <p class="startup-screen-kicker">CLeMexique</p>
         <h1 id="startup-title">
@@ -10,11 +11,35 @@
                 ? 'Bienvenue'
                 : (app_lang == 'es' ? 'Bienvenido' : 'Welcome') }}
         </h1>
-        <a href="{{ base_path }}/enter?lang={{ app_lang }}" class="startup-screen-button">
+        <a href="{{ base_path }}/enter?lang={{ app_lang }}" class="startup-screen-button" data-startup-enter>
             {{ app_lang == 'fr'
                 ? 'Cliquez ici pour continuer'
                 : (app_lang == 'es' ? 'Haz clic aquí para continuar' : 'Click here to continue') }}
         </a>
     </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const enterLink = document.querySelector('[data-startup-enter]');
+
+    if (!enterLink) {
+        return;
+    }
+
+    enterLink.addEventListener('click', function (event) {
+        event.preventDefault();
+
+        if (document.body.classList.contains('startup-transition-active')) {
+            return;
+        }
+
+        document.body.classList.add('startup-transition-active');
+
+        window.setTimeout(function () {
+            window.location.href = enterLink.href;
+        }, 850);
+    });
+});
+</script>
 {% endblock %}

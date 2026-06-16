@@ -22,7 +22,7 @@
 <header class="site-header">
     <div class="header-container">
         <div class="header-left">
-            <a href="{{ base_path }}/" class="logo">
+            <a href="{{ entered_home_url }}" class="logo">
                 <img src="{{ base_path }}/Images/logo_t.png" alt="Riviera Maya Logo" class="logo-image logo-image-desktop">
                 <img src="{{ base_path }}/Images/Circle_logo-cropped.png" alt="Riviera Maya Logo" class="logo-image logo-image-mobile">
             </a>
@@ -46,7 +46,7 @@
         </div>
 
         <nav class="main-nav header-nav-desktop">
-            <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
+            <a href="{{ entered_home_url }}">{{ trans('nav.home') }}</a>
             <a href="{{ base_path }}/about">{{ trans('nav.about') }}</a>
             <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
         </nav>
@@ -96,7 +96,7 @@
 
         <div class="header-menu-panel" id="site-header-menu" data-header-menu-panel hidden>
             <nav class="main-nav header-nav-drawer">
-                <a href="{{ base_path }}/">{{ trans('nav.home') }}</a>
+                <a href="{{ entered_home_url }}">{{ trans('nav.home') }}</a>
                 <a href="{{ base_path }}/about">{{ trans('nav.about') }}</a>
                 <a href="{{ base_path }}/contact">{{ trans('nav.contact') }}</a>
             </nav>

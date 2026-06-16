@@ -260,6 +260,7 @@ $headerMenuLinks = [
 
 $twig->getEnvironment()->addGlobal('app_lang', $lang);
 $twig->getEnvironment()->addGlobal('base_path', $basePath);
+$twig->getEnvironment()->addGlobal('entered_home_url', $basePath . '/?enter=1&lang=' . $lang);
 $twig->getEnvironment()->addGlobal('default_page_robots', $defaultPageRobots);
 $twig->getEnvironment()->addGlobal('is_admin_authenticated', isAdminAuthenticated());
 $twig->getEnvironment()->addGlobal('admin_username', getAdminDisplayName());
@@ -630,7 +631,7 @@ $app->get('/enter', function ($request, $response) use ($basePath) {
     $language = Locale::normalize((string) ($request->getQueryParams()['lang'] ?? ($_SESSION['lang'] ?? Locale::DEFAULT)));
     $_SESSION['lang'] = $language;
 
-    return redirectTo($response, $basePath . '/?enter=1&lang=' . $language);
+    return redirectTo($response, $basePath . '/?enter=1&lang=' . $language . '&transition=sun');
 });
 
 $app->get('/about', function ($request, $response) use ($twig, $translator) {

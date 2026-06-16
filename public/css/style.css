@@ -80,9 +80,24 @@ body.startup-screen-body .page-content {
         linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, rgba(255, 255, 255, 0.04) 100%);
 }
 
+.startup-screen-sunburst {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 5;
+    width: 26vmin;
+    height: 26vmin;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.18);
+    background: radial-gradient(circle, rgba(255, 246, 201, 0.98) 0%, rgba(255, 212, 102, 0.94) 28%, rgba(246, 181, 76, 0.72) 46%, rgba(246, 181, 76, 0.22) 64%, rgba(246, 181, 76, 0) 74%);
+    box-shadow: 0 0 48px rgba(255, 204, 89, 0.44);
+}
+
 .startup-screen-panel {
     position: relative;
-    z-index: 1;
+    z-index: 6;
     width: min(100%, 560px);
     padding: 28px 24px;
     border: 2px solid rgba(255, 255, 255, 0.78);
@@ -138,6 +153,22 @@ body.startup-screen-body .page-content {
 .startup-screen-button:focus-visible {
     outline: 3px solid rgba(255, 255, 255, 0.55);
     outline-offset: 4px;
+}
+
+body.startup-transition-active {
+    overflow: hidden;
+}
+
+body.startup-transition-active .startup-screen-panel {
+    animation: startupPanelFadeOut 0.5s ease forwards;
+}
+
+body.startup-transition-active .startup-screen-backdrop {
+    animation: startupBackdropBrighten 0.78s ease forwards;
+}
+
+body.startup-transition-active .startup-screen-sunburst {
+    animation: startupSunTakeover 0.82s cubic-bezier(0.19, 1, 0.22, 1) forwards;
 }
 
 /* HEADER */
@@ -507,6 +538,21 @@ body.startup-screen-body .page-content {
     box-shadow: 0 0 40px rgba(245, 186, 74, 0.32);
 }
 
+.home-hero-transition-sun {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    z-index: 40;
+    width: 140vmax;
+    height: 140vmax;
+    border-radius: 999px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1);
+    background: radial-gradient(circle, rgba(255, 248, 220, 0.98) 0%, rgba(255, 220, 135, 0.96) 22%, rgba(246, 181, 76, 0.76) 36%, rgba(246, 181, 76, 0.22) 54%, rgba(246, 181, 76, 0) 68%);
+    box-shadow: 0 0 80px rgba(255, 214, 110, 0.4);
+}
+
 .home-hero-orb-coral {
     right: 8%;
     bottom: 72px;
@@ -534,6 +580,29 @@ body.startup-screen-body .page-content {
     padding: 56px 0 40px;
     animation: homeHeroSlideIn 1.8s ease forwards;
     transform: translateY(24px);
+}
+
+body.home-transition-sun-active {
+    overflow-x: hidden;
+}
+
+body.home-transition-sun-active .home-hero-card {
+    animation: homeHeroTransitionCardIn 1.2s ease both;
+}
+
+body.home-transition-sun-active .home-hero-copy {
+    animation: homeHeroTransitionCopyIn 1.4s ease forwards;
+}
+
+body.home-transition-sun-active .home-hero-transition-sun {
+    opacity: 1;
+    animation: homeHeroSunSettle 1.55s cubic-bezier(0.2, 0.9, 0.2, 1) forwards;
+}
+
+body.home-transition-sun-active .home-hero-orb-sun {
+    opacity: 0;
+    animation: homeHeroOrbReveal 0.42s ease forwards;
+    animation-delay: 1.12s;
 }
 
 .home-hero-kicker {
@@ -582,6 +651,119 @@ body.startup-screen-body .page-content {
 
     50% {
         transform: translate3d(0, -12px, 0);
+    }
+}
+
+@keyframes startupPanelFadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+
+    to {
+        opacity: 0;
+        transform: translateY(20px) scale(0.96);
+        filter: blur(10px);
+    }
+}
+
+@keyframes startupBackdropBrighten {
+    from {
+        opacity: 1;
+    }
+
+    to {
+        opacity: 0.2;
+    }
+}
+
+@keyframes startupSunTakeover {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.18);
+    }
+
+    22% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.42);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(8.5);
+    }
+}
+
+@keyframes homeHeroTransitionCardIn {
+    0% {
+        opacity: 0.12;
+        transform: scale(0.98);
+        filter: saturate(0.7) blur(4px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1);
+        filter: saturate(1) blur(0);
+    }
+}
+
+@keyframes homeHeroTransitionCopyIn {
+    0% {
+        opacity: 0;
+        transform: translateY(38px);
+    }
+
+    45% {
+        opacity: 0;
+        transform: translateY(28px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes homeHeroSunSettle {
+    0% {
+        opacity: 1;
+        top: 50%;
+        left: 50%;
+        width: 140vmax;
+        height: 140vmax;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    62% {
+        opacity: 1;
+        top: 42%;
+        left: 50%;
+        width: 46vmax;
+        height: 46vmax;
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    100% {
+        opacity: 0;
+        top: 138px;
+        left: 50%;
+        width: 112px;
+        height: 112px;
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+@keyframes homeHeroOrbReveal {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.7);
+    }
+
+    to {
+        opacity: 0.9;
+        transform: translateX(-50%) scale(1);
     }
 }
 

@@ -990,7 +990,7 @@ class PropertyController
                     $totalUnits
                 );
 
-                return $this->convertMediaWithImageMagick($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName);
+                return $this->convertMediaWithImageMagick($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName, 'heic');
             }
 
             if ($this->shouldOptimizeOversizedImage($sourcePath, $extension)) {
@@ -1104,7 +1104,8 @@ class PropertyController
         ?string $progressToken = null,
         int $currentUnit = 0,
         int $totalUnits = 1,
-        ?string $displayName = null
+        ?string $displayName = null,
+        ?string $sourceFormatHint = null
     ): string
     {
         $magickBinary = $this->resolveImageMagickBinary();
@@ -1112,6 +1113,8 @@ class PropertyController
         if ($magickBinary === null) {
             throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
         }
+
+        [$magickSourcePath, $cleanupSourcePath] = $this->prepareImageMagickSourcePath($sourcePath, $sourceFormatHint);
 
         $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_converted_');
 
@@ -1123,7 +1126,7 @@ class PropertyController
         $command = sprintf(
             '%s %s -auto-orient -strip -resize 2400x2400^> -sampling-factor 4:2:0 -quality 88 %s 2>&1',
             escapeshellarg($magickBinary),
-            escapeshellarg($sourcePath),
+            escapeshellarg($magickSourcePath),
             escapeshellarg($temporaryTarget)
         );
 
@@ -1132,6 +1135,10 @@ class PropertyController
         @exec($command, $output, $exitCode);
 
         if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) === 0) {
+            if ($cleanupSourcePath !== null && is_file($cleanupSourcePath)) {
+                @unlink($cleanupSourcePath);
+            }
+
             if (is_file($temporaryTarget)) {
                 @unlink($temporaryTarget);
             }
@@ -1150,10 +1157,47 @@ class PropertyController
             );
             return $this->storeManagedMediaFile($temporaryTarget, 'jpg');
         } finally {
+            if ($cleanupSourcePath !== null && is_file($cleanupSourcePath)) {
+                @unlink($cleanupSourcePath);
+            }
+
             if (is_file($temporaryTarget)) {
                 @unlink($temporaryTarget);
             }
         }
+    }
+
+    private function prepareImageMagickSourcePath(string $sourcePath, ?string $sourceFormatHint = null): array
+    {
+        $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
+
+        if ($sourceFormatHint === null || $sourceFormatHint === '') {
+            return [$sourcePath, null];
+        }
+
+        $currentExtension = strtolower(pathinfo($sourcePath, PATHINFO_EXTENSION));
+
+        if ($currentExtension === $sourceFormatHint) {
+            return [$sourcePath, null];
+        }
+
+        $temporarySource = tempnam(sys_get_temp_dir(), 'property_magick_source_');
+
+        if ($temporarySource === false) {
+            return [$sourcePath, null];
+        }
+
+        $extendedTemporarySource = $temporarySource . '.' . preg_replace('/[^a-z0-9]+/i', '', $sourceFormatHint);
+
+        if (!@copy($sourcePath, $extendedTemporarySource)) {
+            @unlink($temporarySource);
+
+            return [$sourcePath, null];
+        }
+
+        @unlink($temporarySource);
+
+        return [$extendedTemporarySource, $extendedTemporarySource];
     }
 
     private function resolveImageMagickBinary(): ?string

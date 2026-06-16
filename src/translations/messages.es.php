@@ -373,6 +373,7 @@ return array(
     'properties.error_upload_cover_required' => 'Incluye al menos una imagen para la portada de la propiedad al subir archivos.',
     'properties.error_upload_heic' => 'Estas imagenes son archivos HEIC renombrados con otro formato. Conviertelas a JPG o PNG reales antes de subirlas.',
     'properties.error_upload_invalid' => 'Sube imagenes validas para la propiedad.',
+    'properties.error_upload_conversion' => 'Omitido porque el servidor no pudo convertir esta imagen HEIC/AVIF.',
     'properties.error_upload_storage' => 'El servidor no puede guardar los archivos subidos en este momento. Revisa los permisos de public/uploads/properties.',
     'properties.error_upload_none_added_prefix' => 'No se pudo agregar ningun archivo nuevo. Omitidos:',
     'properties.error_upload_required' => 'Sube al menos una imagen de la propiedad.',

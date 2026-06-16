@@ -2080,16 +2080,20 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .property-public-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(280px, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: 30px;
-    align-items: stretch;
-    width: min(1180px, 100%);
+    align-items: center;
+    width: min(1240px, 100%);
     margin: 0 auto;
 }
 
 .property-public-row {
-    display: contents;
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    width: 100%;
+    flex-wrap: nowrap;
 }
 
 .property-public-card {
@@ -2097,9 +2101,10 @@ body.home-transition-sun-active .home-hero-orb-sun {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    flex: 0 1 274px;
     min-width: 0;
     width: 100%;
-    max-width: none;
+    max-width: 274px;
     margin: 0;
     padding: 18px 18px 24px;
     border: 1.5px solid rgba(11, 53, 88, 0.14);

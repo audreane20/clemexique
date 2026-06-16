@@ -32,7 +32,7 @@
                 <p>{{ trans('properties.empty') }}</p>
             </div>
         {% else %}
-            {% set property_rows = properties|batch(3) %}
+            {% set property_rows = properties|batch(4) %}
 
             <div class="property-public-grid">
                 {% for property_row in property_rows %}

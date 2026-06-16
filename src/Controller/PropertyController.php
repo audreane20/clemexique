@@ -842,6 +842,10 @@ class PropertyController
             return 'heic';
         }
 
+        if ($message === $this->translator->trans('properties.error_upload_conversion')) {
+            return 'conversion';
+        }
+
         if ($message === $this->translator->trans('properties.error_upload_storage')) {
             return 'storage';
         }
@@ -853,6 +857,7 @@ class PropertyController
     {
         return match ($reason) {
             'duplicate' => $this->translator->trans('properties.upload_skip_reason_duplicate'),
+            'conversion' => $this->translator->trans('properties.error_upload_conversion'),
             'heic' => $this->translator->trans('properties.error_upload_heic'),
             'storage' => $this->translator->trans('properties.error_upload_storage'),
             'too_large' => $this->translator->trans('properties.upload_skip_reason_too_large'),
@@ -1115,6 +1120,7 @@ class PropertyController
         }
 
         [$magickSourcePath, $cleanupSourcePath] = $this->prepareImageMagickSourcePath($sourcePath, $sourceFormatHint);
+        $magickInputPath = $this->buildImageMagickInputPath($magickSourcePath, $sourceFormatHint);
 
         $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_converted_');
 
@@ -1126,7 +1132,7 @@ class PropertyController
         $command = sprintf(
             '%s %s -auto-orient -strip -resize 2400x2400^> -sampling-factor 4:2:0 -quality 88 %s 2>&1',
             escapeshellarg($magickBinary),
-            escapeshellarg($magickSourcePath),
+            escapeshellarg($magickInputPath),
             escapeshellarg($temporaryTarget)
         );
 
@@ -1135,6 +1141,12 @@ class PropertyController
         @exec($command, $output, $exitCode);
 
         if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) === 0) {
+            $debugOutput = trim(implode(PHP_EOL, array_filter($output, static fn ($line) => is_string($line) && trim($line) !== '')));
+
+            if ($debugOutput !== '') {
+                error_log('Property media conversion failed for "' . ($displayName ?? basename($sourcePath)) . '": ' . $debugOutput);
+            }
+
             if ($cleanupSourcePath !== null && is_file($cleanupSourcePath)) {
                 @unlink($cleanupSourcePath);
             }
@@ -1143,7 +1155,7 @@ class PropertyController
                 @unlink($temporaryTarget);
             }
 
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_conversion'));
         }
 
         try {
@@ -1198,6 +1210,17 @@ class PropertyController
         @unlink($temporarySource);
 
         return [$extendedTemporarySource, $extendedTemporarySource];
+    }
+
+    private function buildImageMagickInputPath(string $sourcePath, ?string $sourceFormatHint = null): string
+    {
+        $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
+
+        if ($sourceFormatHint === 'heic' && PHP_OS_FAMILY === 'Linux') {
+            return 'heic:' . $sourcePath;
+        }
+
+        return $sourcePath;
     }
 
     private function resolveImageMagickBinary(): ?string

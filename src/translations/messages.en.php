@@ -518,6 +518,7 @@ return [
     'playa_guide.home_cta' => 'Open the Playa guide',
     'properties.error_upload_required' => 'Please upload at least one property image.',
     'properties.error_upload_invalid' => 'Please upload valid property images.',
+    'properties.error_upload_conversion' => 'Skipped because the server could not convert this HEIC/AVIF image.',
     'properties.error_upload_storage' => 'The server cannot save uploaded files right now. Check the permissions on public/uploads/properties.',
     'properties.error_upload_heic' => 'These images are HEIC files renamed as another format. Please convert them to real JPG or PNG files before uploading.',
     'properties.error_upload_too_large' => 'The selected upload is too large for the server limit. Please upload fewer or smaller images.',

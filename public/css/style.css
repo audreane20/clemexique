@@ -230,6 +230,10 @@ body.startup-transition-active .startup-screen-sunburst {
     display: none;
 }
 
+.header-mobile-title {
+    display: none;
+}
+
 /* NAV */
 .main-nav {
     grid-area: nav;
@@ -4888,9 +4892,9 @@ body.admin-confirm-open {
 
     .header-container {
         display: grid;
-        grid-template-columns: 1fr auto;
+        grid-template-columns: auto minmax(0, 1fr) auto;
         grid-template-areas:
-            "logo toggle"
+            "logo title toggle"
             "panel panel";
         justify-items: stretch;
         align-items: center;
@@ -4911,6 +4915,21 @@ body.admin-confirm-open {
 
     .header-container {
         min-height: 68px;
+    }
+
+    .header-mobile-title {
+        grid-area: title;
+        display: block;
+        min-width: 0;
+        text-align: center;
+        justify-self: center;
+        text-decoration: none;
+        color: var(--navy);
+        font-size: clamp(1rem, 2.8vw, 1.2rem);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: none;
+        white-space: nowrap;
     }
 
     .logo {

@@ -624,7 +624,7 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
 
     if (!$isEnteredView && !$hasSeenStartup) {
         return $twig->render($response, 'startup.html.twig', [
-            'page_title' => 'CLeMexique - Welcome',
+            'page_title' => 'CLeMexique',
             'hide_site_header' => true,
             'hide_site_footer' => true,
             'body_class' => 'startup-screen-body',
@@ -632,7 +632,7 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
     }
 
     return $twig->render($response, 'home.html.twig', [
-        'page_title' => 'CLeMexique - Home',
+        'page_title' => 'CLeMexique',
         'page_robots' => 'noindex, nofollow, noarchive',
         'properties' => $propertyModel->findAllByMode($mode),
         'selected_mode' => $mode,

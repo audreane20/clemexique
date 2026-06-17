@@ -1150,7 +1150,7 @@ class PropertyController
         if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) === 0) {
             $debugOutput = trim(implode(PHP_EOL, array_filter($output, static fn ($line) => is_string($line) && trim($line) !== '')));
 
-            error_log(
+            $this->logPropertyConversionDebug(
                 'Property media conversion failed for "'
                 . ($displayName ?? basename($sourcePath))
                 . '" (exit '
@@ -1248,6 +1248,10 @@ class PropertyController
         $process = @proc_open($command, $descriptors, $pipes);
 
         if (!is_resource($process)) {
+            $this->logPropertyConversionDebug(
+                'Property media conversion process could not start. Command: '
+                . json_encode($command, JSON_UNESCAPED_SLASHES)
+            );
             return 1;
         }
 
@@ -1277,6 +1281,16 @@ class PropertyController
         }
 
         return proc_close($process);
+    }
+
+    private function logPropertyConversionDebug(string $message): void
+    {
+        $line = '[' . date('Y-m-d H:i:s') . '] ' . $message . PHP_EOL;
+
+        error_log($line);
+
+        $debugLogPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'clemexique-property-upload.log';
+        @file_put_contents($debugLogPath, $line, FILE_APPEND);
     }
 
     private function resolveImageMagickBinary(): ?string

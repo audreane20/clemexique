@@ -67,7 +67,7 @@ return [
     'contact.email' => 'Courriel',
     'contact.phone' => 'Téléphone',
     'contact.subject' => 'Sujet (optionnel)',
-    'contact.direct_title' => 'Contact direct',
+    'contact.direct_title' => 'Nous joindre',
     'contact.direct_copy' => 'Vous preferez nous joindre directement? Voici les moyens les plus rapides pour contacter Francois.',
     'contact.phone_label' => 'Telephone',
     'contact.text_label' => 'Texto',

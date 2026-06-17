@@ -43,6 +43,13 @@
                                     <li>{{ name }}</li>
                                 {% endfor %}
                             </ul>
+                            {% if group.details is defined and group.details %}
+                                <div class="property-upload-group-details">
+                                    {% for detail in group.details %}
+                                        <p>{{ detail }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>

@@ -370,7 +370,11 @@ class PropertyController
             try {
                 $storedUrl = $this->storeSingleUploadedImage($uploadedFile, $progressToken, $currentUnit, $totalUnits, $displayName);
             } catch (\RuntimeException $exception) {
-                $skippedFiles[] = ['name' => $displayName, 'reason' => $this->mapUploadExceptionToReason($exception)];
+                $skippedFiles[] = [
+                    'name' => $displayName,
+                    'reason' => $this->mapUploadExceptionToReason($exception),
+                    'detail' => $this->extractUploadExceptionDetail($exception),
+                ];
                 $currentUnit++;
                 continue;
             }
@@ -507,7 +511,11 @@ class PropertyController
                 try {
                     $storedUrl = $this->storeMediaFileFromPath($temporaryEntryPath, $entryName, $progressToken, $currentUnit, $totalUnits, $entryName);
                 } catch (\RuntimeException $exception) {
-                    $skippedFiles[] = ['name' => $entryName, 'reason' => $this->mapUploadExceptionToReason($exception)];
+                    $skippedFiles[] = [
+                        'name' => $entryName,
+                        'reason' => $this->mapUploadExceptionToReason($exception),
+                        'detail' => $this->extractUploadExceptionDetail($exception),
+                    ];
                     $currentUnit++;
                     continue;
                 } finally {
@@ -772,6 +780,9 @@ class PropertyController
             foreach ($group['names'] as $name) {
                 $lines[] = '- ' . $name;
             }
+            foreach ($group['details'] as $detail) {
+                $lines[] = '! ' . preg_replace('/\s+/', ' ', trim($detail));
+            }
         }
 
         return implode("\n", $lines);
@@ -790,15 +801,26 @@ class PropertyController
             }
 
             if (!isset($groups[$reason])) {
-                $groups[$reason] = [];
+                $groups[$reason] = [
+                    'names' => [],
+                    'details' => [],
+                ];
             }
 
-            $groups[$reason][] = $name;
+            $groups[$reason]['names'][] = $name;
+
+            $detail = trim((string) ($item['detail'] ?? ''));
+            if ($detail !== '') {
+                $groups[$reason]['details'][$detail] = true;
+            }
         }
 
         $result = [];
 
-        foreach ($groups as $reason => $names) {
+        foreach ($groups as $reason => $groupData) {
+            $names = $groupData['names'];
+            $details = array_keys($groupData['details']);
+
             if (count($names) > self::MAX_SKIPPED_NAMES_IN_MESSAGE) {
                 $remaining = count($names) - self::MAX_SKIPPED_NAMES_IN_MESSAGE;
                 $names = array_slice($names, 0, self::MAX_SKIPPED_NAMES_IN_MESSAGE);
@@ -809,6 +831,7 @@ class PropertyController
                 'reason' => $reason,
                 'label' => $this->translateSkipReason($reason),
                 'names' => $names,
+                'details' => array_slice($details, 0, 3),
             ];
         }
 
@@ -822,13 +845,14 @@ class PropertyController
         foreach ($skippedFiles as $item) {
             $name = trim((string) ($item['name'] ?? ''));
             $reason = trim((string) ($item['reason'] ?? 'unsupported'));
+            $detail = trim((string) ($item['detail'] ?? ''));
 
             if ($name === '') {
                 continue;
             }
 
             $key = $reason . '|' . $name;
-            $unique[$key] = ['name' => $name, 'reason' => $reason];
+            $unique[$key] = ['name' => $name, 'reason' => $reason, 'detail' => $detail];
         }
 
         return array_values($unique);
@@ -842,7 +866,7 @@ class PropertyController
             return 'heic';
         }
 
-        if ($message === $this->translator->trans('properties.error_upload_conversion')) {
+        if (str_starts_with($message, $this->translator->trans('properties.error_upload_conversion'))) {
             return 'conversion';
         }
 
@@ -851,6 +875,18 @@ class PropertyController
         }
 
         return 'unsupported';
+    }
+
+    private function extractUploadExceptionDetail(\RuntimeException $exception): ?string
+    {
+        $message = trim($exception->getMessage());
+        $conversionPrefix = $this->translator->trans('properties.error_upload_conversion');
+
+        if (str_starts_with($message, $conversionPrefix) && $message !== $conversionPrefix) {
+            return trim(substr($message, strlen($conversionPrefix)));
+        }
+
+        return null;
     }
 
     private function translateSkipReason(string $reason): string
@@ -889,12 +925,17 @@ class PropertyController
 
             if (str_ends_with($line, ':')) {
                 $currentGroup = rtrim($line, ':');
-                $groups[] = ['label' => $currentGroup, 'names' => []];
+                $groups[] = ['label' => $currentGroup, 'names' => [], 'details' => []];
                 continue;
             }
 
             if ($currentGroup !== null && str_starts_with($line, '- ')) {
                 $groups[array_key_last($groups)]['names'][] = substr($line, 2);
+                continue;
+            }
+
+            if ($currentGroup !== null && str_starts_with($line, '! ')) {
+                $groups[array_key_last($groups)]['details'][] = substr($line, 2);
             }
         }
 
@@ -980,9 +1021,36 @@ class PropertyController
         $extension = $this->detectMediaExtensionFromPath($sourcePath, $originalName);
         $displayName = $displayName ?? $originalName;
 
+        $this->logPropertyConversionDebug(
+            'Upload pipeline entered for "'
+            . $displayName
+            . '" (original: '
+            . $originalName
+            . ', detected extension: '
+            . ($extension ?? '[none]')
+            . ', source path: '
+            . $sourcePath
+            . ', exists: '
+            . (is_file($sourcePath) ? 'yes' : 'no')
+            . ', size: '
+            . (is_file($sourcePath) ? (string) filesize($sourcePath) : '[missing]')
+            . ')'
+        );
+
         if ($extension !== null) {
             if ($extension === 'heic') {
-                if (!$this->canAttemptImageMagickConversion($sourcePath, $originalName)) {
+                $canConvertHeic = $this->canAttemptImageMagickConversion($sourcePath, $originalName);
+
+                $this->logPropertyConversionDebug(
+                    'HEIC upload detected for "'
+                    . $displayName
+                    . '". ImageMagick available: '
+                    . ($this->resolveImageMagickBinary() !== null ? 'yes' : 'no')
+                    . '. Conversion allowed: '
+                    . ($canConvertHeic ? 'yes' : 'no')
+                );
+
+                if (!$canConvertHeic) {
                     throw new \RuntimeException($this->translator->trans('properties.error_upload_heic'));
                 }
 
@@ -1022,7 +1090,16 @@ class PropertyController
             return $this->storeManagedMediaFile($sourcePath, $extension);
         }
 
-        if (!$this->canAttemptImageMagickConversion($sourcePath, $originalName)) {
+        $canConvertUnknown = $this->canAttemptImageMagickConversion($sourcePath, $originalName);
+
+        $this->logPropertyConversionDebug(
+            'Unknown image upload for "'
+            . $displayName
+            . '". Conversion fallback allowed: '
+            . ($canConvertUnknown ? 'yes' : 'no')
+        );
+
+        if (!$canConvertUnknown) {
             throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
         }
 
@@ -1040,7 +1117,7 @@ class PropertyController
 
     private function storeManagedMediaFile(string $sourcePath, string $extension): string
     {
-        $uploadDirectory = dirname(__DIR__, 2) . '/public/uploads/properties';
+        $uploadDirectory = $this->propertyUploadsDirectory();
 
         if (!is_dir($uploadDirectory) && !@mkdir($uploadDirectory, 0775, true) && !is_dir($uploadDirectory)) {
             throw new \RuntimeException($this->translator->trans('properties.error_upload_storage'));
@@ -1058,6 +1135,11 @@ class PropertyController
         }
 
         return $this->basePath . '/uploads/properties/' . $filename;
+    }
+
+    private function propertyUploadsDirectory(): string
+    {
+        return dirname(__DIR__, 2) . '/public/uploads/properties';
     }
 
     private function canAttemptImageMagickConversion(string $sourcePath, string $originalName): bool
@@ -1169,7 +1251,11 @@ class PropertyController
                 @unlink($temporaryTarget);
             }
 
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_conversion'));
+            throw new \RuntimeException(
+                $this->translator->trans('properties.error_upload_conversion')
+                . "\nDEBUG: "
+                . ($debugOutput !== '' ? $debugOutput : '[no process output]')
+            );
         }
 
         try {
@@ -1289,8 +1375,16 @@ class PropertyController
 
         error_log($line);
 
-        $debugLogPath = sys_get_temp_dir() . DIRECTORY_SEPARATOR . 'clemexique-property-upload.log';
-        @file_put_contents($debugLogPath, $line, FILE_APPEND);
+        $uploadDirectory = $this->propertyUploadsDirectory();
+
+        if (!is_dir($uploadDirectory)) {
+            @mkdir($uploadDirectory, 0775, true);
+        }
+
+        if (is_dir($uploadDirectory) && is_writable($uploadDirectory)) {
+            $debugLogPath = $uploadDirectory . DIRECTORY_SEPARATOR . 'clemexique-property-upload.log';
+            @file_put_contents($debugLogPath, $line, FILE_APPEND);
+        }
     }
 
     private function resolveImageMagickBinary(): ?string

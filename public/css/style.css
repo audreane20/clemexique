@@ -1616,6 +1616,23 @@ body.home-transition-sun-active .home-hero-orb-sun {
     margin-top: 4px;
 }
 
+.property-upload-group-details {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(159, 18, 57, 0.18);
+    font-size: 0.92rem;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.property-upload-group-details p {
+    margin: 0;
+}
+
+.property-upload-group-details p + p {
+    margin-top: 6px;
+}
+
 .property-field-help {
     color: #52606d;
     font-size: 13px;

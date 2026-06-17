@@ -198,7 +198,7 @@ return array(
     'info_request_rent.note_emphasis_secondary' => 'REGALO GRATIS',
     'info_request_rent.note_suffix' => ' a tu llegada.',
     'info_request_rent.note_code_line' => 'Escríbelo en "¿Tienes un código promocional?" : CLeMexique.',
-    'info_request_rent.cta' => 'SALEA propiedades en renta',
+    'info_request_rent.cta' => 'propiedades en renta',
     'info_request.currency_cad' => 'CAD',
     'info_request.currency_mxn' => 'MXN',
     'info_request.currency_placeholder' => 'Selecciona la moneda',

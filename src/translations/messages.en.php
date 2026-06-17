@@ -243,7 +243,7 @@ return [
     'info_request_rent.note_emphasis_secondary' => 'FREE GIFT',
     'info_request_rent.note_suffix' => ' upon your arrival.',
     'info_request_rent.note_code_line' => 'Enter it in "Do you have a promotional code?" : CLeMexique.',
-    'info_request_rent.cta' => 'SALEA properties for rent',
+    'info_request_rent.cta' => 'properties for rent',
     'info_request.secondary_title' => 'Residency & Immigration steps',
     'info_request.secondary_copy' => 'Open this guide to see the main steps, fees, and a few advantages related to residency in Mexico.',
     'info_request.secondary_cta' => 'Residency and immigration guide',

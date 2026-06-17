@@ -120,11 +120,11 @@
             <div class="header-right header-right-drawer">
                 <div class="header-lang-group">
                     <div class="lang-switch">
-                        <a href="?lang=en" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
+                        <a href="{{ current_language_urls.en }}" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
                         <span class="lang-divider">|</span>
-                        <a href="?lang=es" class="{{ app_lang == 'es' ? 'active' : '' }}">ES</a>
+                        <a href="{{ current_language_urls.es }}" class="{{ app_lang == 'es' ? 'active' : '' }}">ES</a>
                         <span class="lang-divider">|</span>
-                        <a href="?lang=fr" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
+                        <a href="{{ current_language_urls.fr }}" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
                     </div>
                 </div>
             </div>

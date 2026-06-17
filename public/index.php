@@ -258,9 +258,22 @@ $headerMenuLinks = [
     ],
 ];
 
+$currentLanguageUrls = [];
+$currentQueryParams = $_GET;
+unset($currentQueryParams['lang']);
+
+foreach (['en', 'es', 'fr'] as $localeCode) {
+    $queryParams = $currentQueryParams;
+    $queryParams['lang'] = $localeCode;
+    $queryString = http_build_query($queryParams);
+
+    $currentLanguageUrls[$localeCode] = $basePath . $currentRequestPath . ($queryString !== '' ? '?' . $queryString : '');
+}
+
 $twig->getEnvironment()->addGlobal('app_lang', $lang);
 $twig->getEnvironment()->addGlobal('base_path', $basePath);
 $twig->getEnvironment()->addGlobal('entered_home_url', $basePath . '/?enter=1&lang=' . $lang);
+$twig->getEnvironment()->addGlobal('current_language_urls', $currentLanguageUrls);
 $twig->getEnvironment()->addGlobal('default_page_robots', $defaultPageRobots);
 $twig->getEnvironment()->addGlobal('is_admin_authenticated', isAdminAuthenticated());
 $twig->getEnvironment()->addGlobal('admin_username', getAdminDisplayName());
@@ -603,12 +616,13 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
     $queryParams = $request->getQueryParams();
     $mode = strtolower((string) ($queryParams['mode'] ?? 'sale_all'));
     $isEnteredView = ($queryParams['enter'] ?? '') === '1';
+    $hasSeenStartup = (bool) ($_SESSION['startup_seen'] ?? false);
 
     if (!in_array($mode, ['sale_all', 'revente', 'future_projet'], true)) {
         $mode = 'sale_all';
     }
 
-    if (!$isEnteredView) {
+    if (!$isEnteredView && !$hasSeenStartup) {
         return $twig->render($response, 'startup.html.twig', [
             'page_title' => 'CLeMexique - Welcome',
             'hide_site_header' => true,

@@ -1733,6 +1733,18 @@ class PropertyController
             return $resolved;
         }
 
+        $configuredBinary = $this->resolveConfiguredBinaryPath([
+            'IMAGE_MAGICK_BINARY',
+            'IMAGEMAGICK_BINARY',
+            'MAGICK_BINARY',
+        ], ['-version']);
+
+        if ($configuredBinary !== null) {
+            $resolved = $configuredBinary;
+
+            return $resolved;
+        }
+
         $candidates = [];
 
         foreach (['C:\\Program Files\\ImageMagick-*\\magick.exe', 'C:\\Program Files (x86)\\ImageMagick-*\\magick.exe'] as $pattern) {
@@ -1786,6 +1798,16 @@ class PropertyController
             return $resolved;
         }
 
+        $configuredBinary = $this->resolveConfiguredBinaryPath([
+            'HEIF_CONVERT_BINARY',
+        ], ['--help']);
+
+        if ($configuredBinary !== null) {
+            $resolved = $configuredBinary;
+
+            return $resolved;
+        }
+
         if (PHP_OS_FAMILY === 'Windows') {
             $resolved = null;
 
@@ -1812,6 +1834,31 @@ class PropertyController
         }
 
         $resolved = null;
+
+        return null;
+    }
+
+    private function resolveConfiguredBinaryPath(array $environmentKeys, array $validationArguments): ?string
+    {
+        foreach ($environmentKeys as $environmentKey) {
+            $candidate = trim((string) ($_ENV[$environmentKey] ?? getenv($environmentKey) ?: ''));
+
+            if ($candidate === '') {
+                continue;
+            }
+
+            $output = [];
+            $exitCode = 1;
+            @exec(
+                implode(' ', array_map('escapeshellarg', array_merge([$candidate], $validationArguments))) . ' 2>&1',
+                $output,
+                $exitCode
+            );
+
+            if ($exitCode === 0 || ($validationArguments === ['--help'] && $exitCode === 1)) {
+                return $candidate;
+            }
+        }
 
         return null;
     }

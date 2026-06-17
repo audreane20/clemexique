@@ -7,6 +7,45 @@ This application is a Slim 4 PHP app with:
 - MySQL or MariaDB
 - Writable `public/uploads/` and `var/upload-progress/`
 
+## HEIC / AVIF uploads on AWS
+
+If you want HEIC or AVIF property uploads to work in production, the server must have a converter installed.
+
+Recommended production setup:
+
+- Install `ImageMagick`
+- Make sure it has `HEIC` / `AVIF` support through `libheif`
+- Set an explicit env var so the app uses the correct binary path
+
+Recommended `.env` values:
+
+- `IMAGE_MAGICK_BINARY=/usr/bin/magick`
+- `HEIF_CONVERT_BINARY=/usr/bin/heif-convert`
+
+The app can auto-discover converters, but on EC2 it is safer to set the binary paths explicitly.
+
+### Ubuntu example
+
+```bash
+sudo apt update
+sudo apt install -y imagemagick libheif1 libheif-examples
+magick -list format | grep -E 'HEIC|HEIF|AVIF'
+which magick
+which heif-convert
+```
+
+### Amazon Linux example
+
+Package names can vary by image and repo state, but the goal is the same:
+
+```bash
+sudo dnf install -y imagemagick libheif
+magick -list format | grep -E 'HEIC|HEIF|AVIF'
+which magick
+```
+
+If `HEIC` / `AVIF` do not appear in `magick -list format`, ImageMagick was installed without the needed decoder support and uploads will still fail.
+
 ## Recommended first production setup
 
 For the current codebase, the cleanest AWS path is:
@@ -60,6 +99,8 @@ Set these in `.env` on the server:
 - `ADMIN_PIN=change-this`
 - `ADMIN_2FA_EMAIL=...`
 - `ADMIN_2FA_BACKUP_EMAIL=...`
+- `IMAGE_MAGICK_BINARY=/usr/bin/magick`
+- `HEIF_CONVERT_BINARY=/usr/bin/heif-convert`
 
 ## Apache virtual host example
 

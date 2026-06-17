@@ -1733,18 +1733,7 @@ class PropertyController
             return $resolved;
         }
 
-        $candidates = [
-            'magick',
-            'convert',
-            '/usr/bin/magick',
-            '/usr/local/bin/magick',
-            '/bin/magick',
-            '/usr/bin/convert',
-            '/usr/local/bin/convert',
-            '/bin/convert',
-            '/usr/bin/convert-im6',
-            '/usr/bin/convert-im6.q16',
-        ];
+        $candidates = [];
 
         foreach (['C:\\Program Files\\ImageMagick-*\\magick.exe', 'C:\\Program Files (x86)\\ImageMagick-*\\magick.exe'] as $pattern) {
             $matches = glob($pattern);
@@ -1755,6 +1744,22 @@ class PropertyController
                 }
             }
         }
+
+        $candidates = array_merge(
+            $candidates,
+            [
+                'magick',
+                'convert',
+                '/usr/bin/magick',
+                '/usr/local/bin/magick',
+                '/bin/magick',
+                '/usr/bin/convert',
+                '/usr/local/bin/convert',
+                '/bin/convert',
+                '/usr/bin/convert-im6',
+                '/usr/bin/convert-im6.q16',
+            ]
+        );
 
         foreach (array_values(array_unique($candidates)) as $candidate) {
             $output = [];
@@ -1781,6 +1786,12 @@ class PropertyController
             return $resolved;
         }
 
+        if (PHP_OS_FAMILY === 'Windows') {
+            $resolved = null;
+
+            return null;
+        }
+
         $candidates = [
             'heif-convert',
             '/usr/bin/heif-convert',
@@ -1791,8 +1802,9 @@ class PropertyController
             $output = [];
             $exitCode = 1;
             @exec(sprintf('%s --help 2>&1', escapeshellarg($candidate)), $output, $exitCode);
+            $combinedOutput = strtolower(trim(implode(' ', array_filter($output, static fn ($line) => is_string($line) && trim($line) !== ''))));
 
-            if ($exitCode === 0 || $exitCode === 1) {
+            if (($exitCode === 0 || $exitCode === 1) && str_contains($combinedOutput, 'heif-convert')) {
                 $resolved = $candidate;
 
                 return $resolved;

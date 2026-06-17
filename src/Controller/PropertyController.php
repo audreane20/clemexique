@@ -1202,7 +1202,7 @@ class PropertyController
         }
 
         [$magickSourcePath, $cleanupSourcePath] = $this->prepareImageMagickSourcePath($sourcePath, $sourceFormatHint);
-        $magickInputPath = $this->buildImageMagickInputPath($magickSourcePath, $sourceFormatHint);
+        $magickInputCandidates = $this->buildImageMagickInputCandidates($magickSourcePath, $sourceFormatHint);
 
         $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_converted_');
 
@@ -1212,35 +1212,50 @@ class PropertyController
 
         $temporaryTarget .= '.jpg';
         $resizeGeometry = '2400x2400>';
-        $command = [
-            $magickBinary,
-            $magickInputPath,
-            '-auto-orient',
-            '-strip',
-            '-resize',
-            $resizeGeometry,
-            '-sampling-factor',
-            '4:2:0',
-            '-quality',
-            '88',
-            $temporaryTarget,
-        ];
+        $attemptErrors = [];
+        $conversionSucceeded = false;
 
-        $output = [];
-        $exitCode = $this->runProcessCommand($command, $output);
+        foreach ($magickInputCandidates as $magickInputPath) {
+            if (is_file($temporaryTarget)) {
+                @unlink($temporaryTarget);
+            }
 
-        if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) === 0) {
+            $command = [
+                $magickBinary,
+                $magickInputPath,
+                '-auto-orient',
+                '-strip',
+                '-resize',
+                $resizeGeometry,
+                '-sampling-factor',
+                '4:2:0',
+                '-quality',
+                '88',
+                $temporaryTarget,
+            ];
+
+            $output = [];
+            $exitCode = $this->runProcessCommand($command, $output);
             $debugOutput = trim(implode(PHP_EOL, array_filter($output, static fn ($line) => is_string($line) && trim($line) !== '')));
+
+            if ($exitCode === 0 && is_file($temporaryTarget) && filesize($temporaryTarget) > 0) {
+                $conversionSucceeded = true;
+                break;
+            }
+
+            $attemptErrors[] = 'input ' . $magickInputPath . ' (exit ' . $exitCode . '): ' . ($debugOutput !== '' ? $debugOutput : '[no process output]');
+        }
+
+        if (!$conversionSucceeded) {
+            $combinedDebugOutput = implode(' || ', $attemptErrors);
 
             $this->logPropertyConversionDebug(
                 'Property media conversion failed for "'
                 . ($displayName ?? basename($sourcePath))
-                . '" (exit '
-                . $exitCode
-                . ', command '
-                . json_encode($command, JSON_UNESCAPED_SLASHES)
-                . '): '
-                . ($debugOutput !== '' ? $debugOutput : '[no process output]')
+                . '" after '
+                . count($magickInputCandidates)
+                . ' attempt(s): '
+                . ($combinedDebugOutput !== '' ? $combinedDebugOutput : '[no process output]')
             );
 
             if ($cleanupSourcePath !== null && is_file($cleanupSourcePath)) {
@@ -1254,7 +1269,7 @@ class PropertyController
             throw new \RuntimeException(
                 $this->translator->trans('properties.error_upload_conversion')
                 . "\nDEBUG: "
-                . ($debugOutput !== '' ? $debugOutput : '[no process output]')
+                . ($combinedDebugOutput !== '' ? $combinedDebugOutput : '[no process output]')
             );
         }
 
@@ -1312,15 +1327,16 @@ class PropertyController
         return [$extendedTemporarySource, $extendedTemporarySource];
     }
 
-    private function buildImageMagickInputPath(string $sourcePath, ?string $sourceFormatHint = null): string
+    private function buildImageMagickInputCandidates(string $sourcePath, ?string $sourceFormatHint = null): array
     {
         $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
+        $candidates = [$sourcePath];
 
         if ($sourceFormatHint === 'heic' && PHP_OS_FAMILY === 'Linux') {
-            return 'heic:' . $sourcePath;
+            $candidates[] = 'heic:' . $sourcePath;
         }
 
-        return $sourcePath;
+        return array_values(array_unique($candidates));
     }
 
     private function runProcessCommand(array $command, array &$output): int

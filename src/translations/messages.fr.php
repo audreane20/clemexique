@@ -233,7 +233,7 @@ return [
     'info_request_rent.note_emphasis_secondary' => 'CADEAU GRATUIT',
     'info_request_rent.note_suffix' => ' à votre arrivée.',
     'info_request_rent.note_code_line' => 'Inscrivez-le dans "Avez-vous un code promotionnel ?" : CLeMexique.',
-    'info_request_rent.cta' => 'propriétés à louer',
+    'info_request_rent.cta' => 'Propriétés à louer',
     'info_request.secondary_title' => 'Étapes de résidence et d\'immigration',
     'info_request.secondary_copy' => 'Consultez ce guide pour voir les étapes, les frais et quelques avantages liés à la résidence au Mexique.',
     'info_request.secondary_cta' => 'Guide de résidence et d\'immigration',

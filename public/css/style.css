@@ -940,7 +940,9 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .contact-direct-item {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 16px;
     padding: 16px 18px;
     border-radius: 16px;
     border: 1px solid #dcecf1;
@@ -970,6 +972,28 @@ body.home-transition-sun-active .home-hero-orb-sun {
     color: var(--navy);
     font-weight: 700;
     word-break: break-word;
+}
+
+.contact-direct-icon {
+    width: 52px;
+    height: 52px;
+    flex: 0 0 52px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: linear-gradient(135deg, rgba(31, 163, 179, 0.14), rgba(11, 53, 88, 0.12));
+    color: var(--turquoise);
+}
+
+.contact-direct-icon svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+}
+
+.contact-direct-text {
+    min-width: 0;
 }
 
 .form-group {

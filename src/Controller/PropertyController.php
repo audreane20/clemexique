@@ -1274,9 +1274,10 @@ class PropertyController
                 @unlink($temporaryTarget);
             }
 
-            throw new \RuntimeException(
-                $this->translator->trans('properties.error_upload_conversion')
-                . "\nDEBUG: "
+            throw $this->buildFriendlyConversionException(
+                'ImageMagick conversion failed for "'
+                . ($displayName ?? basename($sourcePath))
+                . '": '
                 . ($combinedDebugOutput !== '' ? $combinedDebugOutput : '[no process output]')
             );
         }
@@ -1314,21 +1315,6 @@ class PropertyController
         $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
         $attemptErrors = [];
 
-        if ($this->resolveImageMagickBinary() !== null) {
-            try {
-                return $this->convertMediaWithImageMagick(
-                    $sourcePath,
-                    $progressToken,
-                    $currentUnit,
-                    $totalUnits,
-                    $displayName,
-                    $sourceFormatHint
-                );
-            } catch (\RuntimeException $exception) {
-                $attemptErrors[] = 'magick: ' . $this->extractUploadExceptionDetail($exception, true);
-            }
-        }
-
         if ($sourceFormatHint === 'heic') {
             if ($this->resolveHeifConvertBinary() !== null) {
                 try {
@@ -1344,24 +1330,62 @@ class PropertyController
                 }
             }
 
-            if ($this->resolveFfmpegBinary() !== null) {
+            if ($this->resolveImageMagickBinary() !== null) {
                 try {
-                    return $this->convertMediaWithFfmpeg(
+                    return $this->convertMediaWithImageMagick(
                         $sourcePath,
                         $progressToken,
                         $currentUnit,
                         $totalUnits,
-                        $displayName
+                        $displayName,
+                        $sourceFormatHint
                     );
                 } catch (\RuntimeException $exception) {
-                    $attemptErrors[] = 'ffmpeg: ' . $this->extractUploadExceptionDetail($exception, true);
+                    $attemptErrors[] = 'magick: ' . $this->extractUploadExceptionDetail($exception, true);
                 }
+            }
+
+            throw $this->buildFriendlyConversionException(
+                'HEIC conversion failed for "'
+                . ($displayName ?? basename($sourcePath))
+                . '". Tried: '
+                . (!empty($attemptErrors) ? implode(' || ', $attemptErrors) : '[no converter available]')
+            );
+        }
+
+        if ($this->resolveImageMagickBinary() !== null) {
+            try {
+                return $this->convertMediaWithImageMagick(
+                    $sourcePath,
+                    $progressToken,
+                    $currentUnit,
+                    $totalUnits,
+                    $displayName,
+                    $sourceFormatHint
+                );
+            } catch (\RuntimeException $exception) {
+                $attemptErrors[] = 'magick: ' . $this->extractUploadExceptionDetail($exception, true);
             }
         }
 
-        throw new \RuntimeException(
-            $this->translator->trans('properties.error_upload_conversion')
-            . "\nDEBUG: "
+        if ($this->resolveFfmpegBinary() !== null) {
+            try {
+                return $this->convertMediaWithFfmpeg(
+                    $sourcePath,
+                    $progressToken,
+                    $currentUnit,
+                    $totalUnits,
+                    $displayName
+                );
+            } catch (\RuntimeException $exception) {
+                $attemptErrors[] = 'ffmpeg: ' . $this->extractUploadExceptionDetail($exception, true);
+            }
+        }
+
+        throw $this->buildFriendlyConversionException(
+            'Media conversion failed for "'
+            . ($displayName ?? basename($sourcePath))
+            . '". Tried: '
             . (!empty($attemptErrors) ? implode(' || ', $attemptErrors) : '[no converter available]')
         );
     }
@@ -1397,9 +1421,10 @@ class PropertyController
                 @unlink($temporaryTarget);
             }
 
-            throw new \RuntimeException(
-                $this->translator->trans('properties.error_upload_conversion')
-                . "\nDEBUG: input "
+            throw $this->buildFriendlyConversionException(
+                'heif-convert failed for "'
+                . ($displayName ?? basename($sourcePath))
+                . '" using input '
                 . $sourcePath
                 . ' (exit '
                 . $exitCode
@@ -1481,9 +1506,10 @@ class PropertyController
                 @unlink($temporaryTarget);
             }
 
-            throw new \RuntimeException(
-                $this->translator->trans('properties.error_upload_conversion')
-                . "\nDEBUG: input "
+            throw $this->buildFriendlyConversionException(
+                'ffmpeg conversion failed for "'
+                . ($displayName ?? basename($sourcePath))
+                . '" using input '
                 . $sourcePath
                 . ' (exit '
                 . $exitCode
@@ -1628,6 +1654,13 @@ class PropertyController
             $debugLogPath = $uploadDirectory . DIRECTORY_SEPARATOR . 'clemexique-property-upload.log';
             @file_put_contents($debugLogPath, $line, FILE_APPEND);
         }
+    }
+
+    private function buildFriendlyConversionException(string $debugMessage): \RuntimeException
+    {
+        $this->logPropertyConversionDebug($debugMessage);
+
+        return new \RuntimeException($this->translator->trans('properties.error_upload_conversion'));
     }
 
     private function resolveImageMagickBinary(): ?string

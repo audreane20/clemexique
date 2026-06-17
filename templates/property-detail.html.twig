@@ -32,8 +32,9 @@
                                         <source src="{{ media.url }}" type="{{ media.mime_type ?? 'video/mp4' }}">
                                     </video>
                                 {% else %}
-                                    <button type="button" class="property-lightbox-trigger" data-lightbox-index="{{ loop.index0 }}" data-lightbox-image="{{ media.url }}" data-lightbox-alt="{{ property.name }} photo {{ loop.index }}">
-                                        <img src="{{ media.url starts with '/uploads/' ? base_path ~ media.url : media.url }}" alt="{{ property.name }} photo {{ loop.index }}">
+                                    {% set media_image_url = media.url starts with '/uploads/' ? base_path ~ media.url : media.url %}
+                                    <button type="button" class="property-lightbox-trigger" data-lightbox-index="{{ loop.index0 }}" data-lightbox-image="{{ media_image_url }}" data-lightbox-alt="{{ property.name }} photo {{ loop.index }}">
+                                        <img src="{{ media_image_url }}" alt="{{ property.name }} photo {{ loop.index }}">
                                     </button>
                                 {% endif %}
                             </figure>

@@ -272,6 +272,7 @@ foreach (['en', 'es', 'fr'] as $localeCode) {
 
 $twig->getEnvironment()->addGlobal('app_lang', $lang);
 $twig->getEnvironment()->addGlobal('base_path', $basePath);
+$twig->getEnvironment()->addGlobal('default_canonical_url', $basePath . '/');
 $twig->getEnvironment()->addGlobal('entered_home_url', $basePath . '/?enter=1&lang=' . $lang);
 $twig->getEnvironment()->addGlobal('current_language_urls', $currentLanguageUrls);
 $twig->getEnvironment()->addGlobal('default_page_robots', $defaultPageRobots);

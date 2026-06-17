@@ -5,8 +5,12 @@
     <title>{% if page_title_key is defined %}{{ trans(page_title_key) }}{% else %}{{ page_title ?? 'Riviera Maya' }}{% endif %}</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% set effective_page_robots = page_robots is defined and page_robots ? page_robots : default_page_robots %}
+    {% set effective_canonical_url = canonical_url is defined and canonical_url ? canonical_url : default_canonical_url %}
     {% if effective_page_robots %}
         <meta name="robots" content="{{ effective_page_robots }}">
+    {% endif %}
+    {% if effective_canonical_url %}
+        <link rel="canonical" href="{{ effective_canonical_url }}">
     {% endif %}
     <link rel="icon" type="image/png" sizes="48x48" href="{{ base_path }}/Images/Circle_logo-cropped.png?v=1">
     <link rel="shortcut icon" href="{{ base_path }}/Images/Circle_logo-cropped.png?v=1">

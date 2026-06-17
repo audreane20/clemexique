@@ -4895,7 +4895,7 @@ body.admin-confirm-open {
         grid-template-columns: auto minmax(0, 1fr) auto;
         grid-template-areas:
             "logo title toggle"
-            "panel panel";
+            "panel panel panel";
         justify-items: stretch;
         align-items: center;
         column-gap: 12px;

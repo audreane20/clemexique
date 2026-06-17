@@ -1593,7 +1593,15 @@ $app->group('/admin', function ($group) use ($propertyController) {
     $group->get('/properties', [$propertyController, 'index']);
     $group->post('/properties/upload-progress/init', [$propertyController, 'initUploadProgress']);
     $group->get('/properties/upload-progress/{token}', [$propertyController, 'uploadProgress']);
+    $group->get('/properties/create', function ($request, $response) use ($basePath) {
+        return redirectTo($response, $basePath . '/admin/properties');
+    });
     $group->post('/properties/create', [$propertyController, 'create']);
+    $group->get('/properties/{id}/update', function ($request, $response, $args) use ($basePath) {
+        $propertyId = (int) ($args['id'] ?? 0);
+
+        return redirectTo($response, $basePath . '/admin/properties' . ($propertyId > 0 ? '?edit=' . $propertyId : ''));
+    });
     $group->post('/properties/{id}/update', [$propertyController, 'update']);
     $group->post('/properties/{id}/images/primary', [$propertyController, 'setPrimaryImage']);
     $group->post('/properties/{id}/images/delete', [$propertyController, 'deleteImages']);

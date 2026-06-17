@@ -78,7 +78,7 @@
                 <label>
                     {{ trans('properties.pictures') }}
                     <div class="property-file-input-shell">
-                        <input type="file" name="image_files[]" accept="image/*,video/mp4,video/webm,video/quicktime,.zip,application/zip" multiple {{ editing_property ? '' : 'required' }} data-property-file-input class="property-file-input-native">
+                        <input type="file" name="image_files[]" accept="image/*,.heic,.heif,.avif,video/mp4,video/webm,video/quicktime,.zip,application/zip" multiple {{ editing_property ? '' : 'required' }} data-property-file-input class="property-file-input-native">
                         <div class="property-file-input-display" aria-hidden="true">
                             <span class="property-file-input-button">{{ trans('properties.file_picker_button') }}</span>
                             <span class="property-file-input-text" data-property-file-input-text>{{ trans('properties.no_files_selected') }}</span>

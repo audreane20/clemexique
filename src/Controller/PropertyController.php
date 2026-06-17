@@ -602,7 +602,7 @@ class PropertyController
                 IMAGETYPE_PNG => 'png',
                 IMAGETYPE_GIF => 'gif',
                 IMAGETYPE_WEBP => defined('IMAGETYPE_WEBP') ? 'webp' : null,
-                IMAGETYPE_AVIF => defined('IMAGETYPE_AVIF') ? 'heic' : null,
+                IMAGETYPE_AVIF => defined('IMAGETYPE_AVIF') ? 'avif' : null,
                 default => null,
             };
 
@@ -622,7 +622,8 @@ class PropertyController
                     'image/png' => 'png',
                     'image/gif' => 'gif',
                     'image/webp' => 'webp',
-                    'image/heic', 'image/heif', 'image/avif' => 'heic',
+                    'image/heic', 'image/heif' => 'heic',
+                    'image/avif' => 'avif',
                     default => null,
                 };
             }
@@ -641,7 +642,8 @@ class PropertyController
                         'image/png' => 'png',
                         'image/gif' => 'gif',
                         'image/webp' => 'webp',
-                        'image/heic', 'image/heif', 'image/avif' => 'heic',
+                        'image/heic', 'image/heif' => 'heic',
+                        'image/avif' => 'avif',
                         'video/mp4' => 'mp4',
                         'video/quicktime' => 'mov',
                         'video/webm' => 'webm',
@@ -657,7 +659,11 @@ class PropertyController
 
         $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
 
-        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'mp4', 'mov', 'webm'], true) && @filesize($sourcePath) > 0) {
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp', 'heic', 'heif', 'avif', 'mp4', 'mov', 'webm'], true) && @filesize($sourcePath) > 0) {
+            if ($extension === 'heif') {
+                return 'heic';
+            }
+
             return $extension === 'jpeg' ? 'jpg' : $extension;
         }
 
@@ -689,8 +695,12 @@ class PropertyController
         if (strlen($binary) >= 12 && substr($binary, 4, 4) === 'ftyp') {
             $brand = strtolower(substr($binary, 8, 4));
 
-            if (in_array($brand, ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1', 'avif'], true)) {
+            if (in_array($brand, ['heic', 'heix', 'hevc', 'hevx', 'mif1', 'msf1'], true)) {
                 return 'heic';
+            }
+
+            if (in_array($brand, ['avif', 'avis'], true)) {
+                return 'avif';
             }
 
             if ($brand === 'qt  ') {
@@ -1046,19 +1056,20 @@ class PropertyController
         );
 
         if ($extension !== null) {
-            if ($extension === 'heic') {
-                $canConvertHeic = $this->canAttemptImageMagickConversion($sourcePath, $originalName);
+            if (in_array($extension, ['heic', 'avif'], true)) {
+                $canConvertImage = $this->canAttemptImageMagickConversion($sourcePath, $originalName);
 
                 $this->logPropertyConversionDebug(
-                    'HEIC upload detected for "'
+                    strtoupper($extension)
+                    . ' upload detected for "'
                     . $displayName
                     . '". ImageMagick available: '
                     . ($this->resolveImageMagickBinary() !== null ? 'yes' : 'no')
                     . '. Conversion allowed: '
-                    . ($canConvertHeic ? 'yes' : 'no')
+                    . ($canConvertImage ? 'yes' : 'no')
                 );
 
-                if (!$canConvertHeic) {
+                if (!$canConvertImage) {
                     throw new \RuntimeException($this->translator->trans('properties.error_upload_heic'));
                 }
 
@@ -1071,7 +1082,7 @@ class PropertyController
                     $totalUnits
                 );
 
-                return $this->convertMediaWithAvailableTools($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName, 'heic');
+                return $this->convertMediaWithAvailableTools($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName, $extension);
             }
 
             if ($this->shouldOptimizeOversizedImage($sourcePath, $extension)) {
@@ -1317,7 +1328,7 @@ class PropertyController
         $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
         $attemptErrors = [];
 
-        if ($sourceFormatHint === 'heic') {
+        if (in_array($sourceFormatHint, ['heic', 'avif'], true)) {
             if ($this->resolveHeifConvertBinary() !== null) {
                 try {
                     return $this->convertMediaWithHeifConvert(
@@ -1348,7 +1359,8 @@ class PropertyController
             }
 
             throw $this->buildFriendlyConversionException(
-                'HEIC conversion failed for "'
+                strtoupper((string) $sourceFormatHint)
+                . ' conversion failed for "'
                 . ($displayName ?? basename($sourcePath))
                 . '". Tried: '
                 . (!empty($attemptErrors) ? implode(' || ', $attemptErrors) : '[no converter available]')
@@ -1587,8 +1599,8 @@ class PropertyController
         $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
         $candidates = [$sourcePath];
 
-        if ($sourceFormatHint === 'heic' && PHP_OS_FAMILY === 'Linux') {
-            $candidates[] = 'heic:' . $sourcePath;
+        if (in_array($sourceFormatHint, ['heic', 'avif'], true) && PHP_OS_FAMILY === 'Linux') {
+            $candidates[] = $sourceFormatHint . ':' . $sourcePath;
         }
 
         return array_values(array_unique($candidates));

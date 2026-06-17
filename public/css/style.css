@@ -137,7 +137,7 @@ body.startup-screen-body .page-content {
     padding: 16px 28px;
     border: 2px solid #ffffff;
     border-radius: 999px;
-    background: rgba(206, 38, 38, 0.92);
+    background: linear-gradient(135deg, var(--turquoise), var(--navy));
     color: #ffffff;
     text-decoration: none;
     font-size: 1.05rem;
@@ -148,8 +148,8 @@ body.startup-screen-body .page-content {
 
 .startup-screen-button:hover,
 .startup-screen-button:focus-visible {
-    background: #df2f2f;
-    box-shadow: 0 18px 36px rgba(137, 15, 15, 0.35);
+    background: linear-gradient(135deg, #28b9ca, #114a77);
+    box-shadow: 0 18px 36px rgba(11, 53, 88, 0.35);
     transform: translateY(-2px);
 }
 

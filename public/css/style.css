@@ -888,9 +888,17 @@ body.home-transition-sun-active .home-hero-orb-sun {
     }
 
 .contact-container {
-    max-width: 700px;
+    max-width: 1200px;
     margin: 60px auto;
     padding: 0 20px;
+}
+
+.contact-main-layout {
+    display: grid;
+    grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
+    gap: 34px;
+    align-items: start;
+    margin-bottom: 28px;
 }
 
 .contact-form {
@@ -900,13 +908,18 @@ body.home-transition-sun-active .home-hero-orb-sun {
     box-shadow: 0 15px 35px rgba(11, 53, 88, 0.12);
 }
 
+.contact-form-shell {
+    min-width: 0;
+}
+
 .contact-direct-card {
     background: linear-gradient(180deg, #f5fbfd 0%, #ffffff 100%);
     border: 1px solid rgba(31, 163, 179, 0.14);
     padding: 28px;
     border-radius: 22px;
     box-shadow: 0 15px 35px rgba(11, 53, 88, 0.08);
-    margin-bottom: 24px;
+    position: sticky;
+    top: 110px;
 }
 
 .contact-direct-card h2 {
@@ -922,7 +935,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
 
 .contact-direct-grid {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
     gap: 14px;
 }
 
@@ -5039,12 +5052,17 @@ body.admin-confirm-open {
         margin: 24px auto 36px;
     }
 
+    .contact-main-layout {
+        gap: 24px;
+    }
+
     .admin-properties-header {
         display: block;
     }
 
     .admin-properties-layout,
     .admin-content-layout,
+    .contact-main-layout,
     .property-form-row,
     .property-radio-group,
     .residency-steps,
@@ -5746,6 +5764,7 @@ body.admin-confirm-open {
 
     .contact-direct-card {
         padding: 20px 16px;
+        position: static;
     }
 
     .contact-direct-card h2 {
@@ -6007,6 +6026,7 @@ body.admin-confirm-open {
 
     .contact-direct-card {
         padding: 18px 14px;
+        position: static;
     }
 
     .contact-direct-card h2 {

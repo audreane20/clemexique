@@ -8,96 +8,99 @@
 </section>
 
 <section class="contact-container">
+    <div class="contact-main-layout">
+        <div class="contact-direct-card">
+            <h2>{{ trans('contact.direct_title') }}</h2>
+            <p>{{ trans('contact.direct_copy') }}</p>
 
-    <div class="contact-direct-card">
-        <h2>{{ trans('contact.direct_title') }}</h2>
-        <p>{{ trans('contact.direct_copy') }}</p>
+            <div class="contact-direct-grid">
+                <a class="contact-direct-item" href="tel:5146681690">
+                    <span class="contact-direct-label">{{ trans('contact.phone_label') }}</span>
+                    <span class="contact-direct-value">514-668-1690</span>
+                </a>
 
-        <div class="contact-direct-grid">
-            <a class="contact-direct-item" href="tel:5146681690">
-                <span class="contact-direct-label">{{ trans('contact.phone_label') }}</span>
-                <span class="contact-direct-value">514-668-1690</span>
-            </a>
+                <a class="contact-direct-item" href="sms:5146681690">
+                    <span class="contact-direct-label">{{ trans('contact.text_label') }}</span>
+                    <span class="contact-direct-value">514-668-1690</span>
+                </a>
 
-            <a class="contact-direct-item" href="sms:5146681690">
-                <span class="contact-direct-label">{{ trans('contact.text_label') }}</span>
-                <span class="contact-direct-value">514-668-1690</span>
-            </a>
+                <a class="contact-direct-item" href="https://wa.me/15146681690" target="_blank" rel="noopener noreferrer">
+                    <span class="contact-direct-label">{{ trans('contact.whatsapp_label') }}</span>
+                    <span class="contact-direct-value">514-668-1690</span>
+                </a>
 
-            <a class="contact-direct-item" href="https://wa.me/15146681690" target="_blank" rel="noopener noreferrer">
-                <span class="contact-direct-label">{{ trans('contact.whatsapp_label') }}</span>
-                <span class="contact-direct-value">514-668-1690</span>
-            </a>
+                <a class="contact-direct-item" href="mailto:francois.playadelcarmen@hotmail.com">
+                    <span class="contact-direct-label">{{ trans('contact.email_label') }}</span>
+                    <span class="contact-direct-value">francois.playadelcarmen@hotmail.com</span>
+                </a>
 
-            <a class="contact-direct-item" href="mailto:francois.playadelcarmen@hotmail.com">
-                <span class="contact-direct-label">{{ trans('contact.email_label') }}</span>
-                <span class="contact-direct-value">francois.playadelcarmen@hotmail.com</span>
-            </a>
+                <a class="contact-direct-item" href="https://www.facebook.com/francois.rochon.184" target="_blank" rel="noopener noreferrer">
+                    <span class="contact-direct-label">{{ trans('contact.facebook_label') }}</span>
+                    <span class="contact-direct-value">facebook.com/francois.rochon.184</span>
+                </a>
+            </div>
+        </div>
 
-            <a class="contact-direct-item" href="https://www.facebook.com/francois.rochon.184" target="_blank" rel="noopener noreferrer">
-                <span class="contact-direct-label">{{ trans('contact.facebook_label') }}</span>
-                <span class="contact-direct-value">facebook.com/francois.rochon.184</span>
-            </a>
+        <div class="contact-form-shell">
+            {% if success %}
+                <div class="form-success">
+                    {{ trans('contact.success') }}
+                </div>
+            {% endif %}
+
+            {% if error %}
+                <div class="form-error">
+                    {{ error }}
+                </div>
+            {% endif %}
+
+            <form id="contact-form" class="contact-form" method="POST" action="{{ base_path }}/contact">
+                <input type="hidden" name="preferred_language" value="{{ app_lang }}">
+
+                <div class="form-group">
+                    <label>{{ trans('contact.name') }}</label>
+                    <input type="text" name="name" value="{{ name }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>{{ trans('contact.email') }}</label>
+                    <input type="email" name="email" value="{{ email }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label>{{ trans('contact.phone') }}</label>
+                    <input type="text" name="phone" value="{{ phone }}">
+                </div>
+
+                <div class="form-group">
+                    <label>{{ trans('contact.project') }}</label>
+                    <input type="text" name="project" value="{{ project }}">
+                </div>
+
+                <div class="form-group">
+                    <label>{{ trans('contact.subject') }}</label>
+                    <input type="text" name="subject" value="{{ subject }}">
+                </div>
+
+                <div class="form-group">
+                    <label>{{ trans('contact.message') }}</label>
+                    <textarea name="message" rows="6" required>{{ message }}</textarea>
+                </div>
+
+                <div class="form-group">
+                    {% if recaptcha_site_key %}
+                        <div id="contact-recaptcha"></div>
+                    {% else %}
+                        <p class="form-error-inline">{{ trans('contact.error_captcha_unavailable') }}</p>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="contact-btn" data-contact-submit>
+                    {{ trans('contact.submit') }}
+                </button>
+            </form>
         </div>
     </div>
-
-    {% if success %}
-        <div class="form-success">
-            {{ trans('contact.success') }}
-        </div>
-    {% endif %}
-
-    {% if error %}
-        <div class="form-error">
-            {{ error }}
-        </div>
-    {% endif %}
-
-    <form id="contact-form" class="contact-form" method="POST" action="{{ base_path }}/contact">
-        <input type="hidden" name="preferred_language" value="{{ app_lang }}">
-
-        <div class="form-group">
-            <label>{{ trans('contact.name') }}</label>
-            <input type="text" name="name" value="{{ name }}" required>
-        </div>
-
-        <div class="form-group">
-            <label>{{ trans('contact.email') }}</label>
-            <input type="email" name="email" value="{{ email }}" required>
-        </div>
-
-        <div class="form-group">
-            <label>{{ trans('contact.phone') }}</label>
-            <input type="text" name="phone" value="{{ phone }}">
-        </div>
-
-        <div class="form-group">
-            <label>{{ trans('contact.project') }}</label>
-            <input type="text" name="project" value="{{ project }}">
-        </div>
-
-        <div class="form-group">
-            <label>{{ trans('contact.subject') }}</label>
-            <input type="text" name="subject" value="{{ subject }}">
-        </div>
-
-        <div class="form-group">
-            <label>{{ trans('contact.message') }}</label>
-            <textarea name="message" rows="6" required>{{ message }}</textarea>
-        </div>
-
-        <div class="form-group">
-            {% if recaptcha_site_key %}
-                <div id="contact-recaptcha"></div>
-            {% else %}
-                <p class="form-error-inline">{{ trans('contact.error_captcha_unavailable') }}</p>
-            {% endif %}
-        </div>
-
-        <button type="submit" class="contact-btn" data-contact-submit>
-            {{ trans('contact.submit') }}
-        </button>
-    </form>
 
     <div class="page-home-actions">
         <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link">{{ trans('common.back_home') }}</a>

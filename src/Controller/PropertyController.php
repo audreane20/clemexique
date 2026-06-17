@@ -1614,14 +1614,17 @@ class PropertyController
             2 => ['pipe', 'w'],
         ];
 
-        $process = @proc_open($command, $descriptors, $pipes);
+        $processCommand = $this->buildProcessCommand($command);
+        $process = @proc_open($processCommand, $descriptors, $pipes);
 
         if (!is_resource($process)) {
             $this->logPropertyConversionDebug(
                 'Property media conversion process could not start. Command: '
                 . json_encode($command, JSON_UNESCAPED_SLASHES)
+                . ' | Prepared: '
+                . (is_string($processCommand) ? $processCommand : json_encode($processCommand, JSON_UNESCAPED_SLASHES))
             );
-            return 1;
+            return $this->runExecFallbackCommand($command, $output);
         }
 
         try {
@@ -1650,6 +1653,51 @@ class PropertyController
         }
 
         return proc_close($process);
+    }
+
+    private function buildProcessCommand(array $command): array|string
+    {
+        if (PHP_OS_FAMILY !== 'Windows') {
+            return $command;
+        }
+
+        $escapedParts = array_map(
+            static fn (mixed $part): string => escapeshellarg((string) $part),
+            $command
+        );
+
+        return implode(' ', $escapedParts);
+    }
+
+    private function runExecFallbackCommand(array $command, array &$output): int
+    {
+        $output = [];
+        $commandString = implode(
+            ' ',
+            array_map(
+                static fn (mixed $part): string => escapeshellarg((string) $part),
+                $command
+            )
+        ) . ' 2>&1';
+
+        $exitCode = 1;
+        @exec($commandString, $output, $exitCode);
+
+        $output = array_values(array_filter(
+            array_map(static fn (string $line): string => trim($line), $output),
+            static fn (string $line): bool => $line !== ''
+        ));
+
+        $this->logPropertyConversionDebug(
+            'Property media conversion used exec fallback. Exit code: '
+            . $exitCode
+            . '. Command: '
+            . $commandString
+            . '. Output: '
+            . ($output !== [] ? implode(' || ', $output) : '[no process output]')
+        );
+
+        return $exitCode;
     }
 
     private function logPropertyConversionDebug(string $message): void

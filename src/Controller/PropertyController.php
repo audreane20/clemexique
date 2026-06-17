@@ -810,7 +810,9 @@ class PropertyController
             $groups[$reason]['names'][] = $name;
 
             $detail = trim((string) ($item['detail'] ?? ''));
-            if ($detail !== '') {
+            // Keep conversion failures user-friendly in the UI while the
+            // technical decoder output still goes to the server logs.
+            if ($detail !== '' && $reason !== 'conversion') {
                 $groups[$reason]['details'][$detail] = true;
             }
         }

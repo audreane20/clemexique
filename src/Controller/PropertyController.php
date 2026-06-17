@@ -1130,24 +1130,36 @@ class PropertyController
 
         $temporaryTarget .= '.jpg';
         $resizeGeometry = '2400x2400>';
-        $command = sprintf(
-            '%s %s -auto-orient -strip -resize %s -sampling-factor 4:2:0 -quality 88 %s 2>&1',
-            escapeshellarg($magickBinary),
-            escapeshellarg($magickInputPath),
-            escapeshellarg($resizeGeometry),
-            escapeshellarg($temporaryTarget)
-        );
+        $command = [
+            $magickBinary,
+            $magickInputPath,
+            '-auto-orient',
+            '-strip',
+            '-resize',
+            $resizeGeometry,
+            '-sampling-factor',
+            '4:2:0',
+            '-quality',
+            '88',
+            $temporaryTarget,
+        ];
 
         $output = [];
-        $exitCode = 1;
-        @exec($command, $output, $exitCode);
+        $exitCode = $this->runProcessCommand($command, $output);
 
         if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) === 0) {
             $debugOutput = trim(implode(PHP_EOL, array_filter($output, static fn ($line) => is_string($line) && trim($line) !== '')));
 
-            if ($debugOutput !== '') {
-                error_log('Property media conversion failed for "' . ($displayName ?? basename($sourcePath)) . '": ' . $debugOutput);
-            }
+            error_log(
+                'Property media conversion failed for "'
+                . ($displayName ?? basename($sourcePath))
+                . '" (exit '
+                . $exitCode
+                . ', command '
+                . json_encode($command, JSON_UNESCAPED_SLASHES)
+                . '): '
+                . ($debugOutput !== '' ? $debugOutput : '[no process output]')
+            );
 
             if ($cleanupSourcePath !== null && is_file($cleanupSourcePath)) {
                 @unlink($cleanupSourcePath);
@@ -1223,6 +1235,48 @@ class PropertyController
         }
 
         return $sourcePath;
+    }
+
+    private function runProcessCommand(array $command, array &$output): int
+    {
+        $output = [];
+        $descriptors = [
+            1 => ['pipe', 'w'],
+            2 => ['pipe', 'w'],
+        ];
+
+        $process = @proc_open($command, $descriptors, $pipes);
+
+        if (!is_resource($process)) {
+            return 1;
+        }
+
+        try {
+            $stdout = isset($pipes[1]) && is_resource($pipes[1]) ? stream_get_contents($pipes[1]) : '';
+            $stderr = isset($pipes[2]) && is_resource($pipes[2]) ? stream_get_contents($pipes[2]) : '';
+        } finally {
+            foreach ($pipes as $pipe) {
+                if (is_resource($pipe)) {
+                    fclose($pipe);
+                }
+            }
+        }
+
+        foreach ([$stdout, $stderr] as $streamOutput) {
+            if (!is_string($streamOutput) || $streamOutput === '') {
+                continue;
+            }
+
+            $lines = preg_split('/\r\n|\r|\n/', $streamOutput) ?: [];
+            foreach ($lines as $line) {
+                $line = trim($line);
+                if ($line !== '') {
+                    $output[] = $line;
+                }
+            }
+        }
+
+        return proc_close($process);
     }
 
     private function resolveImageMagickBinary(): ?string

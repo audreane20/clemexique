@@ -897,7 +897,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
     display: grid;
     grid-template-columns: minmax(300px, 0.9fr) minmax(0, 1.1fr);
     gap: 34px;
-    align-items: start;
+    align-items: stretch;
     margin-bottom: 28px;
 }
 
@@ -906,6 +906,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
     padding: 35px;
     border-radius: 22px;
     box-shadow: 0 15px 35px rgba(11, 53, 88, 0.12);
+    height: 100%;
 }
 
 .contact-form-shell {
@@ -918,6 +919,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
     padding: 28px;
     border-radius: 22px;
     box-shadow: 0 15px 35px rgba(11, 53, 88, 0.08);
+    height: 100%;
     position: sticky;
     top: 110px;
 }

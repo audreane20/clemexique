@@ -616,13 +616,14 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
     $queryParams = $request->getQueryParams();
     $mode = strtolower((string) ($queryParams['mode'] ?? 'sale_all'));
     $isEnteredView = ($queryParams['enter'] ?? '') === '1';
-    $hasSeenStartup = (bool) ($_SESSION['startup_seen'] ?? false);
+    $today = date('Y-m-d');
+    $hasSeenStartupToday = (string) ($_SESSION['startup_seen_date'] ?? '') === $today;
 
     if (!in_array($mode, ['sale_all', 'revente', 'future_projet'], true)) {
         $mode = 'sale_all';
     }
 
-    if (!$isEnteredView && !$hasSeenStartup) {
+    if (!$isEnteredView && !$hasSeenStartupToday) {
         return $twig->render($response, 'startup.html.twig', [
             'page_title' => 'CLeMexique',
             'hide_site_header' => true,
@@ -640,6 +641,7 @@ $app->get('/', function ($request, $response) use ($twig, $translator, $property
 });
 
 $app->get('/enter', function ($request, $response) use ($basePath) {
+    $_SESSION['startup_seen_date'] = date('Y-m-d');
     $_SESSION['startup_seen'] = true;
 
     $language = Locale::normalize((string) ($request->getQueryParams()['lang'] ?? ($_SESSION['lang'] ?? Locale::DEFAULT)));

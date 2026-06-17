@@ -877,13 +877,19 @@ class PropertyController
         return 'unsupported';
     }
 
-    private function extractUploadExceptionDetail(\RuntimeException $exception): ?string
+    private function extractUploadExceptionDetail(\RuntimeException $exception, bool $stripDebugPrefix = false): ?string
     {
         $message = trim($exception->getMessage());
         $conversionPrefix = $this->translator->trans('properties.error_upload_conversion');
 
         if (str_starts_with($message, $conversionPrefix) && $message !== $conversionPrefix) {
-            return trim(substr($message, strlen($conversionPrefix)));
+            $detail = trim(substr($message, strlen($conversionPrefix)));
+
+            if ($stripDebugPrefix && str_starts_with($detail, 'DEBUG:')) {
+                $detail = trim(substr($detail, strlen('DEBUG:')));
+            }
+
+            return $detail;
         }
 
         return null;
@@ -1063,7 +1069,7 @@ class PropertyController
                     $totalUnits
                 );
 
-                return $this->convertMediaWithImageMagick($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName, 'heic');
+                return $this->convertMediaWithAvailableTools($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName, 'heic');
             }
 
             if ($this->shouldOptimizeOversizedImage($sourcePath, $extension)) {
@@ -1076,7 +1082,7 @@ class PropertyController
                     $totalUnits
                 );
 
-                return $this->convertMediaWithImageMagick($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName);
+                return $this->convertMediaWithAvailableTools($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName);
             }
 
             $this->updateUploadProgress(
@@ -1112,7 +1118,7 @@ class PropertyController
             $totalUnits
         );
 
-        return $this->convertMediaWithImageMagick($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName);
+        return $this->convertMediaWithAvailableTools($sourcePath, $progressToken, $currentUnit, $totalUnits, $displayName);
     }
 
     private function storeManagedMediaFile(string $sourcePath, string $extension): string
@@ -1168,7 +1174,9 @@ class PropertyController
             }
         }
 
-        return $this->resolveImageMagickBinary() !== null;
+        return $this->resolveImageMagickBinary() !== null
+            || $this->resolveHeifConvertBinary() !== null
+            || $this->resolveFfmpegBinary() !== null;
     }
 
     private function shouldOptimizeOversizedImage(string $sourcePath, string $extension): bool
@@ -1288,6 +1296,225 @@ class PropertyController
                 @unlink($cleanupSourcePath);
             }
 
+            if (is_file($temporaryTarget)) {
+                @unlink($temporaryTarget);
+            }
+        }
+    }
+
+    private function convertMediaWithAvailableTools(
+        string $sourcePath,
+        ?string $progressToken = null,
+        int $currentUnit = 0,
+        int $totalUnits = 1,
+        ?string $displayName = null,
+        ?string $sourceFormatHint = null
+    ): string
+    {
+        $sourceFormatHint = $sourceFormatHint !== null ? strtolower(trim($sourceFormatHint)) : null;
+        $attemptErrors = [];
+
+        if ($this->resolveImageMagickBinary() !== null) {
+            try {
+                return $this->convertMediaWithImageMagick(
+                    $sourcePath,
+                    $progressToken,
+                    $currentUnit,
+                    $totalUnits,
+                    $displayName,
+                    $sourceFormatHint
+                );
+            } catch (\RuntimeException $exception) {
+                $attemptErrors[] = 'magick: ' . $this->extractUploadExceptionDetail($exception, true);
+            }
+        }
+
+        if ($sourceFormatHint === 'heic') {
+            if ($this->resolveHeifConvertBinary() !== null) {
+                try {
+                    return $this->convertMediaWithHeifConvert(
+                        $sourcePath,
+                        $progressToken,
+                        $currentUnit,
+                        $totalUnits,
+                        $displayName
+                    );
+                } catch (\RuntimeException $exception) {
+                    $attemptErrors[] = 'heif-convert: ' . $this->extractUploadExceptionDetail($exception, true);
+                }
+            }
+
+            if ($this->resolveFfmpegBinary() !== null) {
+                try {
+                    return $this->convertMediaWithFfmpeg(
+                        $sourcePath,
+                        $progressToken,
+                        $currentUnit,
+                        $totalUnits,
+                        $displayName
+                    );
+                } catch (\RuntimeException $exception) {
+                    $attemptErrors[] = 'ffmpeg: ' . $this->extractUploadExceptionDetail($exception, true);
+                }
+            }
+        }
+
+        throw new \RuntimeException(
+            $this->translator->trans('properties.error_upload_conversion')
+            . "\nDEBUG: "
+            . (!empty($attemptErrors) ? implode(' || ', $attemptErrors) : '[no converter available]')
+        );
+    }
+
+    private function convertMediaWithHeifConvert(
+        string $sourcePath,
+        ?string $progressToken = null,
+        int $currentUnit = 0,
+        int $totalUnits = 1,
+        ?string $displayName = null
+    ): string
+    {
+        $binary = $this->resolveHeifConvertBinary();
+
+        if ($binary === null) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+        }
+
+        $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_heif_convert_');
+
+        if ($temporaryTarget === false) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+        }
+
+        $temporaryTarget .= '.jpg';
+        $command = [$binary, $sourcePath, $temporaryTarget];
+        $output = [];
+        $exitCode = $this->runProcessCommand($command, $output);
+        $debugOutput = trim(implode(PHP_EOL, array_filter($output, static fn ($line) => is_string($line) && trim($line) !== '')));
+
+        if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) <= 0) {
+            if (is_file($temporaryTarget)) {
+                @unlink($temporaryTarget);
+            }
+
+            throw new \RuntimeException(
+                $this->translator->trans('properties.error_upload_conversion')
+                . "\nDEBUG: input "
+                . $sourcePath
+                . ' (exit '
+                . $exitCode
+                . '): '
+                . ($debugOutput !== '' ? $debugOutput : '[no process output]')
+            );
+        }
+
+        try {
+            if ($this->resolveImageMagickBinary() !== null) {
+                return $this->convertMediaWithImageMagick(
+                    $temporaryTarget,
+                    $progressToken,
+                    $currentUnit,
+                    $totalUnits,
+                    $displayName,
+                    'jpg'
+                );
+            }
+
+            $this->updateUploadProgress(
+                $progressToken,
+                'processing',
+                $this->translator->trans('properties.upload_progress_saving_phase'),
+                $this->translator->trans('properties.upload_progress_saving_message') . ' ' . ($displayName ?? basename($sourcePath)),
+                $currentUnit,
+                $totalUnits
+            );
+
+            return $this->storeManagedMediaFile($temporaryTarget, 'jpg');
+        } finally {
+            if (is_file($temporaryTarget)) {
+                @unlink($temporaryTarget);
+            }
+        }
+    }
+
+    private function convertMediaWithFfmpeg(
+        string $sourcePath,
+        ?string $progressToken = null,
+        int $currentUnit = 0,
+        int $totalUnits = 1,
+        ?string $displayName = null
+    ): string
+    {
+        $binary = $this->resolveFfmpegBinary();
+
+        if ($binary === null) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+        }
+
+        $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_ffmpeg_convert_');
+
+        if ($temporaryTarget === false) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+        }
+
+        $temporaryTarget .= '.jpg';
+        $command = [
+            $binary,
+            '-y',
+            '-i',
+            $sourcePath,
+            '-frames:v',
+            '1',
+            '-vf',
+            'scale=w=2400:h=2400:force_original_aspect_ratio=decrease',
+            '-q:v',
+            '2',
+            $temporaryTarget,
+        ];
+
+        $output = [];
+        $exitCode = $this->runProcessCommand($command, $output);
+        $debugOutput = trim(implode(PHP_EOL, array_filter($output, static fn ($line) => is_string($line) && trim($line) !== '')));
+
+        if ($exitCode !== 0 || !is_file($temporaryTarget) || filesize($temporaryTarget) <= 0) {
+            if (is_file($temporaryTarget)) {
+                @unlink($temporaryTarget);
+            }
+
+            throw new \RuntimeException(
+                $this->translator->trans('properties.error_upload_conversion')
+                . "\nDEBUG: input "
+                . $sourcePath
+                . ' (exit '
+                . $exitCode
+                . '): '
+                . ($debugOutput !== '' ? $debugOutput : '[no process output]')
+            );
+        }
+
+        try {
+            if ($this->resolveImageMagickBinary() !== null) {
+                return $this->convertMediaWithImageMagick(
+                    $temporaryTarget,
+                    $progressToken,
+                    $currentUnit,
+                    $totalUnits,
+                    $displayName,
+                    'jpg'
+                );
+            }
+
+            $this->updateUploadProgress(
+                $progressToken,
+                'processing',
+                $this->translator->trans('properties.upload_progress_saving_phase'),
+                $this->translator->trans('properties.upload_progress_saving_message') . ' ' . ($displayName ?? basename($sourcePath)),
+                $currentUnit,
+                $totalUnits
+            );
+
+            return $this->storeManagedMediaFile($temporaryTarget, 'jpg');
+        } finally {
             if (is_file($temporaryTarget)) {
                 @unlink($temporaryTarget);
             }
@@ -1433,6 +1660,68 @@ class PropertyController
                 }
             }
         }
+
+        foreach (array_values(array_unique($candidates)) as $candidate) {
+            $output = [];
+            $exitCode = 1;
+            @exec(sprintf('%s -version 2>&1', escapeshellarg($candidate)), $output, $exitCode);
+
+            if ($exitCode === 0) {
+                $resolved = $candidate;
+
+                return $resolved;
+            }
+        }
+
+        $resolved = null;
+
+        return null;
+    }
+
+    private function resolveHeifConvertBinary(): ?string
+    {
+        static $resolved = false;
+
+        if ($resolved !== false) {
+            return $resolved;
+        }
+
+        $candidates = [
+            'heif-convert',
+            '/usr/bin/heif-convert',
+            '/usr/local/bin/heif-convert',
+        ];
+
+        foreach (array_values(array_unique($candidates)) as $candidate) {
+            $output = [];
+            $exitCode = 1;
+            @exec(sprintf('%s --help 2>&1', escapeshellarg($candidate)), $output, $exitCode);
+
+            if ($exitCode === 0 || $exitCode === 1) {
+                $resolved = $candidate;
+
+                return $resolved;
+            }
+        }
+
+        $resolved = null;
+
+        return null;
+    }
+
+    private function resolveFfmpegBinary(): ?string
+    {
+        static $resolved = false;
+
+        if ($resolved !== false) {
+            return $resolved;
+        }
+
+        $candidates = [
+            'ffmpeg',
+            '/usr/bin/ffmpeg',
+            '/usr/local/bin/ffmpeg',
+        ];
 
         foreach (array_values(array_unique($candidates)) as $candidate) {
             $output = [];

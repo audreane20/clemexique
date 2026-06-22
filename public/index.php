@@ -1592,7 +1592,7 @@ $app->post('/admin/profile', function ($request, $response) use ($basePath) {
     return redirectTo($response, $basePath . '/admin/profile');
 })->add($adminAuthMiddleware);
 
-$app->group('/admin', function ($group) use ($propertyController) {
+$app->group('/admin', function ($group) use ($propertyController, $basePath) {
     $group->get('/properties', [$propertyController, 'index']);
     $group->post('/properties/upload-progress/init', [$propertyController, 'initUploadProgress']);
     $group->get('/properties/upload-progress/{token}', [$propertyController, 'uploadProgress']);

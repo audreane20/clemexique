@@ -266,6 +266,11 @@
             const noFilesSelectedLabel = {{ trans('properties.no_files_selected')|json_encode|raw }};
             const oneFileSelectedLabel = {{ trans('properties.one_file_selected')|json_encode|raw }};
             const multipleFilesSelectedLabel = {{ trans('properties.multiple_files_selected')|json_encode|raw }};
+            const uploadErrorPhaseLabel = {{ trans('properties.upload_progress_error_phase')|json_encode|raw }};
+            const uploadRequestFailedLabel = {{ trans('properties.upload_progress_request_failed')|json_encode|raw }};
+            const uploadRequestAbortedLabel = {{ trans('properties.upload_progress_request_aborted')|json_encode|raw }};
+            const uploadRequestTimedOutLabel = {{ trans('properties.upload_progress_request_timed_out')|json_encode|raw }};
+            const uploadInitFailedLabel = {{ trans('properties.upload_progress_init_failed')|json_encode|raw }};
 
             const updateFileInputText = () => {
                 const count = fileInput.files ? fileInput.files.length : 0;
@@ -306,6 +311,24 @@
                 processingFill.style.width = '0%';
                 processingLabel.textContent = 'Processing files';
                 processingText.textContent = 'Waiting for server...';
+                submitButton.disabled = false;
+                submitButton.removeAttribute('aria-busy');
+            };
+
+            const showUploadFailure = (message, percent = null) => {
+                stopPolling();
+                progressShell.hidden = false;
+                processingStage.hidden = false;
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                processingLabel.textContent = uploadErrorPhaseLabel;
+                processingFill.style.width = '100%';
+                if (typeof percent === 'number' && Number.isFinite(percent)) {
+                    const boundedPercent = Math.max(0, Math.min(100, Math.round(percent)));
+                    processingText.textContent = `${boundedPercent}% - ${message}`;
+                } else {
+                    processingText.textContent = message;
+                }
                 submitButton.disabled = false;
                 submitButton.removeAttribute('aria-busy');
             };
@@ -387,7 +410,7 @@
                     });
 
                     if (!initResponse.ok) {
-                        resetProgress();
+                        showUploadFailure(uploadInitFailedLabel);
                         return;
                     }
 
@@ -395,11 +418,11 @@
                     progressToken = typeof initPayload.token === 'string' ? initPayload.token : '';
 
                     if (!progressToken) {
-                        resetProgress();
+                        showUploadFailure(uploadInitFailedLabel);
                         return;
                     }
                 } catch (error) {
-                    resetProgress();
+                    showUploadFailure(uploadInitFailedLabel);
                     return;
                 }
 
@@ -409,6 +432,7 @@
                 requestUrl.searchParams.set('upload_progress_token', progressToken);
                 request.open(form.method, requestUrl.toString(), true);
                 request.responseType = 'text';
+                request.timeout = 300000;
 
                 progressShell.hidden = false;
                 processingStage.hidden = true;
@@ -459,11 +483,25 @@
                         return;
                     }
 
-                    resetProgress();
+                    const statusMessage = request.status
+                        ? `${uploadRequestFailedLabel} (HTTP ${request.status})`
+                        : uploadRequestFailedLabel;
+                    const currentPercent = parseFloat(processingFill.style.width) || parseFloat(progressFill.style.width) || 0;
+                    showUploadFailure(statusMessage, currentPercent);
                 });
 
-                request.addEventListener('error', resetProgress);
-                request.addEventListener('abort', resetProgress);
+                request.addEventListener('error', () => {
+                    const currentPercent = parseFloat(processingFill.style.width) || parseFloat(progressFill.style.width) || 0;
+                    showUploadFailure(uploadRequestFailedLabel, currentPercent);
+                });
+                request.addEventListener('abort', () => {
+                    const currentPercent = parseFloat(processingFill.style.width) || parseFloat(progressFill.style.width) || 0;
+                    showUploadFailure(uploadRequestAbortedLabel, currentPercent);
+                });
+                request.addEventListener('timeout', () => {
+                    const currentPercent = parseFloat(processingFill.style.width) || parseFloat(progressFill.style.width) || 0;
+                    showUploadFailure(uploadRequestTimedOutLabel, currentPercent);
+                });
                 request.send(new FormData(form));
             });
         })();

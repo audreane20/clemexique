@@ -142,7 +142,7 @@ class TodoModel
             'video_url' => trim((string) ($data['video_url'] ?? '')),
         ];
 
-        foreach (['name', 'address', 'website_url'] as $requiredField) {
+        foreach (['name', 'address'] as $requiredField) {
             if (trim((string) ($payload[$requiredField] ?? '')) === '') {
                 throw new InvalidArgumentException($this->localizedMessage('required_fields', $language));
             }

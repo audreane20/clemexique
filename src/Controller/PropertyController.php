@@ -865,9 +865,9 @@ class PropertyController
             $zip->close();
         }
 
-        if ($storedImages === [] && $skippedFiles === []) {
+        if ($this->shouldAttemptZipExtractFallback($storedImages, $skippedFiles)) {
             $this->logPropertyConversionDebug(
-                'ZIP archive produced no stored or skipped media entries on the first pass. Attempting extract-to-directory fallback for '
+                'ZIP archive produced no stored media entries on the first pass. Attempting extract-to-directory fallback for '
                 . $temporaryZipPath
             );
 
@@ -882,7 +882,10 @@ class PropertyController
             if (($fallbackOutcome['stored'] ?? []) !== [] || ($fallbackOutcome['skipped'] ?? []) !== []) {
                 return [
                     'stored' => $fallbackOutcome['stored'] ?? [],
-                    'skipped' => $this->uniqueSkippedFiles($fallbackOutcome['skipped'] ?? []),
+                    'skipped' => $this->uniqueSkippedFiles(array_merge(
+                        $fallbackOutcome['skipped'] ?? [],
+                        $storedImages === [] ? [] : $skippedFiles
+                    )),
                 ];
             }
 
@@ -901,6 +904,27 @@ class PropertyController
             'stored' => $storedImages,
             'skipped' => $this->uniqueSkippedFiles($skippedFiles),
         ];
+    }
+
+    private function shouldAttemptZipExtractFallback(array $storedImages, array $skippedFiles): bool
+    {
+        if ($storedImages !== []) {
+            return false;
+        }
+
+        if ($skippedFiles === []) {
+            return true;
+        }
+
+        foreach ($skippedFiles as $skippedFile) {
+            $reason = strtolower((string) ($skippedFile['reason'] ?? 'unsupported'));
+
+            if ($reason !== 'unsupported') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function storeZipMediaFromExtractedDirectory(

@@ -280,6 +280,7 @@
             const directUploadPrepareFailedLabel = {{ trans('properties.direct_upload_prepare_failed')|json_encode|raw }};
             const directUploadFailedLabel = {{ trans('properties.direct_upload_failed')|json_encode|raw }};
             const directUploadProcessingLabel = {{ trans('properties.direct_upload_processing_message')|json_encode|raw }};
+            const uploadTimeoutMs = 1800000;
 
             const updateFileInputText = () => {
                 const count = fileInput.files ? fileInput.files.length : 0;
@@ -433,7 +434,7 @@
                 requestUrl.searchParams.set('upload_progress_token', progressToken);
                 request.open(form.method, requestUrl.toString(), true);
                 request.responseType = 'text';
-                request.timeout = 300000;
+                request.timeout = uploadTimeoutMs;
 
                 submitButton.disabled = true;
                 submitButton.setAttribute('aria-busy', 'true');
@@ -558,7 +559,7 @@
                 uploadRequest.addEventListener('error', () => reject(new Error(directUploadFailedLabel)));
                 uploadRequest.addEventListener('abort', () => reject(new Error(uploadRequestAbortedLabel)));
                 uploadRequest.addEventListener('timeout', () => reject(new Error(uploadRequestTimedOutLabel)));
-                uploadRequest.timeout = 300000;
+                uploadRequest.timeout = uploadTimeoutMs;
                 uploadRequest.send(file);
             });
 

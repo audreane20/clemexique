@@ -866,13 +866,33 @@ class PropertyController
         }
 
         if ($storedImages === [] && $skippedFiles === []) {
+            $this->logPropertyConversionDebug(
+                'ZIP archive produced no stored or skipped media entries on the first pass. Attempting extract-to-directory fallback for '
+                . $temporaryZipPath
+            );
+
+            $fallbackOutcome = $this->storeZipMediaFromExtractedDirectory(
+                $temporaryZipPath,
+                $knownHashes,
+                $progressToken,
+                $currentUnit,
+                $totalUnits
+            );
+
+            if (($fallbackOutcome['stored'] ?? []) !== [] || ($fallbackOutcome['skipped'] ?? []) !== []) {
+                return [
+                    'stored' => $fallbackOutcome['stored'] ?? [],
+                    'skipped' => $this->uniqueSkippedFiles($fallbackOutcome['skipped'] ?? []),
+                ];
+            }
+
             $skippedFiles[] = [
                 'name' => basename($temporaryZipPath),
                 'reason' => 'unsupported',
                 'detail' => 'The ZIP archive was opened, but no supported media files were found inside.',
             ];
             $this->logPropertyConversionDebug(
-                'ZIP archive produced no stored or skipped media entries: '
+                'ZIP archive produced no stored or skipped media entries even after extract-to-directory fallback: '
                 . $temporaryZipPath
             );
         }
@@ -881,6 +901,177 @@ class PropertyController
             'stored' => $storedImages,
             'skipped' => $this->uniqueSkippedFiles($skippedFiles),
         ];
+    }
+
+    private function storeZipMediaFromExtractedDirectory(
+        string $temporaryZipPath,
+        array &$knownHashes,
+        ?string $progressToken = null,
+        int &$currentUnit = 0,
+        int $totalUnits = 1
+    ): array {
+        $zip = new \ZipArchive();
+        $storedImages = [];
+        $skippedFiles = [];
+
+        if ($zip->open($temporaryZipPath) !== true) {
+            return [
+                'stored' => [],
+                'skipped' => [],
+            ];
+        }
+
+        $extractDirectory = $this->createTemporaryDirectory('property_zip_extract_');
+
+        try {
+            if (!$zip->extractTo($extractDirectory)) {
+                $this->logPropertyConversionDebug(
+                    'ZIP extract-to-directory fallback failed for ' . $temporaryZipPath
+                );
+
+                return [
+                    'stored' => [],
+                    'skipped' => [],
+                ];
+            }
+        } finally {
+            $zip->close();
+        }
+
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($extractDirectory, \FilesystemIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $fileInfo) {
+                if (!$fileInfo instanceof \SplFileInfo || !$fileInfo->isFile()) {
+                    continue;
+                }
+
+                $sourcePath = $fileInfo->getPathname();
+                $relativePath = str_replace('\\', '/', substr($sourcePath, strlen($extractDirectory) + 1));
+
+                $this->updateUploadProgress(
+                    $progressToken,
+                    'processing',
+                    $this->translator->trans('properties.upload_progress_checking_phase'),
+                    $this->translator->trans('properties.upload_progress_checking_message') . ' ' . $relativePath,
+                    $currentUnit,
+                    $totalUnits
+                );
+
+                try {
+                    $storedUrl = $this->storeMediaFileFromPath(
+                        $sourcePath,
+                        $relativePath,
+                        $progressToken,
+                        $currentUnit,
+                        $totalUnits,
+                        $relativePath
+                    );
+                } catch (\RuntimeException $exception) {
+                    $this->logPropertyConversionDebug(
+                        'ZIP extract fallback skipped for "'
+                        . $relativePath
+                        . '" with reason "'
+                        . $this->mapUploadExceptionToReason($exception)
+                        . '" and message: '
+                        . $exception->getMessage()
+                    );
+                    $skippedFiles[] = [
+                        'name' => $relativePath,
+                        'reason' => $this->mapUploadExceptionToReason($exception),
+                        'detail' => $this->extractUploadExceptionDetail($exception),
+                    ];
+                    $currentUnit++;
+                    continue;
+                } catch (\Throwable $throwable) {
+                    $this->logPropertyConversionDebug(
+                        'Unexpected ZIP extract fallback failure for "'
+                        . $relativePath
+                        . '": '
+                        . $throwable::class
+                        . ' - '
+                        . $throwable->getMessage()
+                    );
+                    $skippedFiles[] = [
+                        'name' => $relativePath,
+                        'reason' => 'unsupported',
+                        'detail' => 'Unexpected processing failure: ' . $throwable->getMessage(),
+                    ];
+                    $currentUnit++;
+                    continue;
+                }
+
+                $storedHash = $this->computeStoredMediaHash($storedUrl);
+
+                if ($storedHash !== '' && isset($knownHashes[$storedHash])) {
+                    $this->deleteManagedUploadFile($storedUrl);
+                    $skippedFiles[] = ['name' => $relativePath, 'reason' => 'duplicate'];
+                    $currentUnit++;
+                    continue;
+                }
+
+                $storedImages[] = $storedUrl;
+                $currentUnit++;
+
+                if ($storedHash !== '') {
+                    $knownHashes[$storedHash] = true;
+                }
+            }
+        } finally {
+            $this->deleteDirectoryRecursively($extractDirectory);
+        }
+
+        $this->logPropertyConversionDebug(
+            'ZIP extract fallback completed for '
+            . $temporaryZipPath
+            . ' with '
+            . count($storedImages)
+            . ' stored file(s) and '
+            . count($skippedFiles)
+            . ' skipped file(s).'
+        );
+
+        return [
+            'stored' => $storedImages,
+            'skipped' => $this->uniqueSkippedFiles($skippedFiles),
+        ];
+    }
+
+    private function createTemporaryDirectory(string $prefix): string
+    {
+        $baseDirectory = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR);
+        $directory = $baseDirectory . DIRECTORY_SEPARATOR . $prefix . bin2hex(random_bytes(8));
+
+        if (!@mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+        }
+
+        return $directory;
+    }
+
+    private function deleteDirectoryRecursively(string $directory): void
+    {
+        if (!is_dir($directory)) {
+            return;
+        }
+
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($iterator as $item) {
+            if ($item->isDir()) {
+                @rmdir($item->getPathname());
+                continue;
+            }
+
+            @unlink($item->getPathname());
+        }
+
+        @rmdir($directory);
     }
 
     private function detectImageExtension(UploadedFileInterface $uploadedFile): ?string

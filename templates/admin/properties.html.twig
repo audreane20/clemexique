@@ -75,6 +75,7 @@
 
             <form id="property-upload-form" method="POST" action="{{ editing_property ? base_path ~ '/admin/properties/' ~ editing_property.id ~ '/update' : base_path ~ '/admin/properties/create' }}" class="property-form" enctype="multipart/form-data">
                 <input type="hidden" name="upload_progress_token" value="" data-property-upload-token>
+                <input type="hidden" name="direct_upload_manifest" value="" data-property-direct-upload-manifest>
                 <label>
                     {{ trans('properties.pictures') }}
                     <div class="property-file-input-shell">
@@ -257,12 +258,15 @@
             const processingText = document.querySelector('[data-property-processing-text]');
             const processingLabel = document.querySelector('[data-property-processing-label]');
             const progressTokenInput = form.querySelector('[data-property-upload-token]');
+            const directUploadManifestInput = form.querySelector('[data-property-direct-upload-manifest]');
             const submitButton = form.querySelector('button[type="submit"]');
 
-            if (!fileInput || !fileInputText || !progressShell || !progressFill || !progressText || !processingStage || !processingFill || !processingText || !processingLabel || !progressTokenInput || !submitButton) {
+            if (!fileInput || !fileInputText || !progressShell || !progressFill || !progressText || !processingStage || !processingFill || !processingText || !processingLabel || !progressTokenInput || !directUploadManifestInput || !submitButton) {
                 return;
             }
 
+            const directUploadEnabled = {{ direct_upload_enabled ? 'true' : 'false' }};
+            const directUploadPrepareUrl = {{ (base_path ~ '/admin/properties/direct-upload/prepare')|json_encode|raw }};
             const noFilesSelectedLabel = {{ trans('properties.no_files_selected')|json_encode|raw }};
             const oneFileSelectedLabel = {{ trans('properties.one_file_selected')|json_encode|raw }};
             const multipleFilesSelectedLabel = {{ trans('properties.multiple_files_selected')|json_encode|raw }};
@@ -271,6 +275,11 @@
             const uploadRequestAbortedLabel = {{ trans('properties.upload_progress_request_aborted')|json_encode|raw }};
             const uploadRequestTimedOutLabel = {{ trans('properties.upload_progress_request_timed_out')|json_encode|raw }};
             const uploadInitFailedLabel = {{ trans('properties.upload_progress_init_failed')|json_encode|raw }};
+            const directUploadCloudPhaseLabel = {{ trans('properties.direct_upload_cloud_phase')|json_encode|raw }};
+            const directUploadCloudMessageLabel = {{ trans('properties.direct_upload_cloud_message')|json_encode|raw }};
+            const directUploadPrepareFailedLabel = {{ trans('properties.direct_upload_prepare_failed')|json_encode|raw }};
+            const directUploadFailedLabel = {{ trans('properties.direct_upload_failed')|json_encode|raw }};
+            const directUploadProcessingLabel = {{ trans('properties.direct_upload_processing_message')|json_encode|raw }};
 
             const updateFileInputText = () => {
                 const count = fileInput.files ? fileInput.files.length : 0;
@@ -389,15 +398,7 @@
                 pollTimer = window.setInterval(poll, 500);
             };
 
-            form.addEventListener('submit', async (event) => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-
-                if (!fileInput.files || fileInput.files.length === 0) {
-                    return;
-                }
-
-                event.preventDefault();
-
+            const submitFormToServer = async (excludeLocalFiles = false) => {
                 let progressToken = '';
 
                 try {
@@ -434,17 +435,14 @@
                 request.responseType = 'text';
                 request.timeout = 300000;
 
-                progressShell.hidden = false;
-                processingStage.hidden = true;
-                progressFill.style.width = '0%';
-                progressText.textContent = '0%';
-                processingFill.style.width = '0%';
-                processingLabel.textContent = 'Processing files';
-                processingText.textContent = 'Waiting for server...';
                 submitButton.disabled = true;
                 submitButton.setAttribute('aria-busy', 'true');
 
                 request.upload.addEventListener('progress', (progressEvent) => {
+                    if (excludeLocalFiles) {
+                        return;
+                    }
+
                     if (!progressEvent.lengthComputable) {
                         return;
                     }
@@ -502,7 +500,145 @@
                     const currentPercent = parseFloat(processingFill.style.width) || parseFloat(progressFill.style.width) || 0;
                     showUploadFailure(uploadRequestTimedOutLabel, currentPercent);
                 });
-                request.send(new FormData(form));
+                const formData = new FormData(form);
+                if (excludeLocalFiles) {
+                    formData.delete('image_files[]');
+                }
+                request.send(formData);
+            };
+
+            const prepareDirectUploadTargets = async (files) => {
+                const response = await fetch(directUploadPrepareUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        files: files.map((file) => ({
+                            name: file.webkitRelativePath || file.name,
+                            type: file.type || '',
+                            size: file.size || 0
+                        }))
+                    })
+                });
+
+                const payload = await response.json().catch(() => null);
+
+                if (!response.ok || !payload || !Array.isArray(payload.targets) || payload.targets.length !== files.length) {
+                    throw new Error((payload && payload.error) || directUploadPrepareFailedLabel);
+                }
+
+                return payload.targets;
+            };
+
+            const uploadFileToDirectTarget = (file, target, onProgress) => new Promise((resolve, reject) => {
+                const uploadRequest = new XMLHttpRequest();
+                uploadRequest.open('PUT', target.upload_url, true);
+                if (target.type) {
+                    uploadRequest.setRequestHeader('Content-Type', target.type);
+                }
+
+                uploadRequest.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        onProgress(event.loaded, event.total);
+                    }
+                });
+
+                uploadRequest.addEventListener('load', () => {
+                    if (uploadRequest.status >= 200 && uploadRequest.status < 300) {
+                        resolve();
+                        return;
+                    }
+
+                    reject(new Error(`${directUploadFailedLabel} (HTTP ${uploadRequest.status || 0})`));
+                });
+
+                uploadRequest.addEventListener('error', () => reject(new Error(directUploadFailedLabel)));
+                uploadRequest.addEventListener('abort', () => reject(new Error(uploadRequestAbortedLabel)));
+                uploadRequest.addEventListener('timeout', () => reject(new Error(uploadRequestTimedOutLabel)));
+                uploadRequest.timeout = 300000;
+                uploadRequest.send(file);
+            });
+
+            const uploadFilesDirectly = async (files) => {
+                const targets = await prepareDirectUploadTargets(files);
+                const totalBytes = files.reduce((sum, file) => sum + Math.max(1, file.size || 0), 0);
+                let completedBytes = 0;
+                const manifest = [];
+
+                progressShell.hidden = false;
+                processingStage.hidden = false;
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                processingFill.style.width = '0%';
+                processingLabel.textContent = directUploadCloudPhaseLabel;
+                processingText.textContent = `0% - ${directUploadCloudMessageLabel}`;
+                submitButton.disabled = true;
+                submitButton.setAttribute('aria-busy', 'true');
+
+                for (let index = 0; index < files.length; index += 1) {
+                    const file = files[index];
+                    const target = targets[index];
+
+                    await uploadFileToDirectTarget(file, target, (loaded) => {
+                        const overallBytes = completedBytes + loaded;
+                        const percent = Math.max(0, Math.min(100, Math.round((overallBytes / totalBytes) * 100)));
+                        progressFill.style.width = percent + '%';
+                        progressText.textContent = percent + '%';
+                        processingLabel.textContent = directUploadCloudPhaseLabel;
+                        processingText.textContent = `${percent}% - ${directUploadCloudMessageLabel} ${target.name}`;
+                    });
+
+                    completedBytes += Math.max(1, file.size || 0);
+                    manifest.push({
+                        key: target.key,
+                        name: target.name,
+                        type: target.type || ''
+                    });
+                }
+
+                progressFill.style.width = '100%';
+                progressText.textContent = '100%';
+                processingFill.style.width = '0%';
+                processingLabel.textContent = directUploadCloudPhaseLabel;
+                processingText.textContent = `0% - ${directUploadProcessingLabel}`;
+
+                return manifest;
+            };
+
+            form.addEventListener('submit', async (event) => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                if (!fileInput.files || fileInput.files.length === 0) {
+                    directUploadManifestInput.value = '';
+                    return;
+                }
+
+                event.preventDefault();
+                directUploadManifestInput.value = '';
+
+                if (directUploadEnabled) {
+                    try {
+                        const directUploadManifest = await uploadFilesDirectly(Array.from(fileInput.files));
+                        directUploadManifestInput.value = JSON.stringify(directUploadManifest);
+                        await submitFormToServer(true);
+                    } catch (error) {
+                        const currentPercent = parseFloat(progressFill.style.width) || 0;
+                        showUploadFailure(error instanceof Error ? error.message : directUploadFailedLabel, currentPercent);
+                    }
+                    return;
+                }
+
+                progressShell.hidden = false;
+                processingStage.hidden = true;
+                progressFill.style.width = '0%';
+                progressText.textContent = '0%';
+                processingFill.style.width = '0%';
+                processingLabel.textContent = 'Processing files';
+                processingText.textContent = 'Waiting for server...';
+                await submitFormToServer(false);
             });
         })();
     </script>

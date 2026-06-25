@@ -19,6 +19,7 @@ class PropertyController
     private const MAX_SKIPPED_NAMES_IN_MESSAGE = 12;
     private const IMAGE_OPTIMIZE_THRESHOLD_BYTES = 10000000;
     private const UPLOAD_PROGRESS_TTL = 1800;
+    private const DIRECT_UPLOAD_URL_TTL = 900;
 
     public function __construct(PropertyModel $propertyModel, Twig $twig, string $basePath, Translator $translator)
     {
@@ -62,7 +63,9 @@ class PropertyController
 
     public function create(Request $request, Response $response): Response
     {
-        $data = $this->normalizePropertyFormData((array) $request->getParsedBody());
+        $rawData = (array) $request->getParsedBody();
+        $directUploadManifest = $this->extractDirectUploadManifest($rawData);
+        $data = $this->normalizePropertyFormData($rawData);
         $queryParams = $request->getQueryParams();
         $progressToken = $this->sanitizeUploadProgressToken((string) ($queryParams['upload_progress_token'] ?? ($data['upload_progress_token'] ?? '')));
         unset($data['upload_progress_token']);
@@ -80,12 +83,19 @@ class PropertyController
 
         try {
             $uploadedFiles = $request->getUploadedFiles();
-            $uploadOutcome = $this->storeUploadedImages($uploadedFiles['image_files'] ?? [], true, [], $progressToken);
+            $uploadOutcome = $this->mergeUploadOutcomes(
+                $this->storeUploadedImages($uploadedFiles['image_files'] ?? [], false, [], $progressToken),
+                $this->storeDirectUploadedMedia($directUploadManifest, false, [], $progressToken)
+            );
             $imageUrls = $uploadOutcome['stored'];
             $data['image_url'] = $this->firstImageUrl($imageUrls) ?? '';
 
             if ($data['image_url'] === '') {
-                throw new \RuntimeException($this->buildUploadFailureMessage($uploadOutcome['skipped']));
+                if ($uploadOutcome['submitted_count'] > 0) {
+                    throw new \RuntimeException($this->buildUploadFailureMessage($uploadOutcome['skipped']));
+                }
+
+                throw new \RuntimeException($this->translator->trans('properties.error_upload_required'));
             }
 
             $propertyId = $this->propertyModel->create($data);
@@ -115,7 +125,9 @@ class PropertyController
     public function update(Request $request, Response $response, array $args): Response
     {
         $id = (int) ($args['id'] ?? 0);
-        $data = $this->normalizePropertyFormData((array) $request->getParsedBody());
+        $rawData = (array) $request->getParsedBody();
+        $directUploadManifest = $this->extractDirectUploadManifest($rawData);
+        $data = $this->normalizePropertyFormData($rawData);
         $queryParams = $request->getQueryParams();
         $progressToken = $this->sanitizeUploadProgressToken((string) ($queryParams['upload_progress_token'] ?? ($data['upload_progress_token'] ?? '')));
         unset($data['upload_progress_token']);
@@ -144,7 +156,10 @@ class PropertyController
         try {
             $uploadedFiles = $request->getUploadedFiles();
             $data['image_url'] = $property['image_url'];
-            $uploadOutcome = $this->storeUploadedImages($uploadedFiles['image_files'] ?? [], false, $property['images'] ?? [], $progressToken);
+            $uploadOutcome = $this->mergeUploadOutcomes(
+                $this->storeUploadedImages($uploadedFiles['image_files'] ?? [], false, $property['images'] ?? [], $progressToken),
+                $this->storeDirectUploadedMedia($directUploadManifest, false, $property['images'] ?? [], $progressToken)
+            );
             $newImageUrls = $uploadOutcome['stored'];
 
             if ($newImageUrls === [] && $uploadOutcome['submitted_count'] > 0) {
@@ -301,6 +316,205 @@ class PropertyController
         return $response
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    public function prepareDirectUpload(Request $request, Response $response): Response
+    {
+        if (!$this->isDirectUploadEnabled()) {
+            return $this->jsonResponse($response, [
+                'error' => $this->translator->trans('properties.error_direct_upload_not_configured'),
+            ], 503);
+        }
+
+        $payload = json_decode((string) $request->getBody(), true);
+        $files = is_array($payload['files'] ?? null) ? $payload['files'] : [];
+
+        if ($files === []) {
+            return $this->jsonResponse($response, [
+                'error' => $this->translator->trans('properties.error_direct_upload_prepare_failed'),
+            ], 400);
+        }
+
+        $targets = [];
+
+        foreach ($files as $index => $file) {
+            if (!is_array($file)) {
+                return $this->jsonResponse($response, [
+                    'error' => $this->translator->trans('properties.error_direct_upload_prepare_failed'),
+                ], 400);
+            }
+
+            $name = trim((string) ($file['name'] ?? ''));
+            $contentType = $this->normalizeDirectUploadContentType(
+                trim((string) ($file['type'] ?? '')),
+                $name
+            );
+
+            if ($name === '' || $contentType === null) {
+                return $this->jsonResponse($response, [
+                    'error' => $this->translator->trans('properties.error_upload_invalid'),
+                ], 400);
+            }
+
+            $key = $this->buildDirectUploadObjectKey($name, (int) $index);
+
+            $targets[] = [
+                'key' => $key,
+                'name' => $name,
+                'type' => $contentType,
+                'upload_url' => $this->createDirectUploadSignedUrl('PUT', $key, self::DIRECT_UPLOAD_URL_TTL, $contentType),
+            ];
+        }
+
+        return $this->jsonResponse($response, [
+            'targets' => $targets,
+        ]);
+    }
+
+    private function storeDirectUploadedMedia(array $manifest, bool $required = true, array $existingImageUrls = [], ?string $progressToken = null): array
+    {
+        if ($manifest === []) {
+            return [
+                'stored' => [],
+                'skipped' => [],
+                'submitted_count' => 0,
+            ];
+        }
+
+        $storedImages = [];
+        $skippedFiles = [];
+        $submittedCount = 0;
+        $knownHashes = $this->computeExistingImageHashes($existingImageUrls);
+        $totalUnits = max(1, count($manifest));
+        $currentUnit = 0;
+
+        $this->updateUploadProgress(
+            $progressToken,
+            'processing',
+            $this->translator->trans('properties.upload_progress_scanning_phase'),
+            $this->translator->trans('properties.upload_progress_scanning_message'),
+            0,
+            $totalUnits
+        );
+
+        foreach ($manifest as $entry) {
+            $submittedCount++;
+            $displayName = $entry['name'];
+
+            $this->updateUploadProgress(
+                $progressToken,
+                'processing',
+                $this->translator->trans('properties.upload_progress_download_phase'),
+                $this->translator->trans('properties.upload_progress_download_message') . ' ' . $displayName,
+                $currentUnit,
+                $totalUnits
+            );
+
+            $temporaryPath = null;
+
+            try {
+                $temporaryPath = $this->downloadDirectUploadedObjectToTemporaryPath($entry['key'], $displayName);
+
+                if ($this->isZipFilePath($temporaryPath, $displayName)) {
+                    $zipEntryCount = $this->countZipEntriesFromPath($temporaryPath);
+
+                    if ($zipEntryCount > 1) {
+                        $totalUnits += ($zipEntryCount - 1);
+                    }
+
+                    $zipOutcome = $this->storeZipMediaFromPath($temporaryPath, $knownHashes, $progressToken, $currentUnit, $totalUnits);
+                    $storedImages = array_merge($storedImages, $zipOutcome['stored']);
+                    $skippedFiles = array_merge($skippedFiles, $zipOutcome['skipped']);
+                    continue;
+                }
+
+                $this->updateUploadProgress(
+                    $progressToken,
+                    'processing',
+                    $this->translator->trans('properties.upload_progress_checking_phase'),
+                    $this->translator->trans('properties.upload_progress_checking_message') . ' ' . $displayName,
+                    $currentUnit,
+                    $totalUnits
+                );
+
+                $storedUrl = $this->storeMediaFileFromPath($temporaryPath, $displayName, $progressToken, $currentUnit, $totalUnits, $displayName);
+                $storedHash = $this->computeStoredMediaHash($storedUrl);
+
+                $this->updateUploadProgress(
+                    $progressToken,
+                    'processing',
+                    $this->translator->trans('properties.upload_progress_duplicates_phase'),
+                    $this->translator->trans('properties.upload_progress_duplicates_message') . ' ' . $displayName,
+                    $currentUnit,
+                    $totalUnits
+                );
+
+                if ($storedHash !== '' && isset($knownHashes[$storedHash])) {
+                    $this->deleteManagedUploadFile($storedUrl);
+                    $skippedFiles[] = ['name' => $displayName, 'reason' => 'duplicate'];
+                    $currentUnit++;
+                    continue;
+                }
+
+                $storedImages[] = $storedUrl;
+                $currentUnit++;
+
+                if ($storedHash !== '') {
+                    $knownHashes[$storedHash] = true;
+                }
+
+                $this->updateUploadProgress(
+                    $progressToken,
+                    'processing',
+                    $this->translator->trans('properties.upload_progress_saving_phase'),
+                    $this->translator->trans('properties.upload_progress_saving_message') . ' ' . $displayName,
+                    $currentUnit,
+                    $totalUnits
+                );
+            } catch (\RuntimeException $exception) {
+                $skippedFiles[] = [
+                    'name' => $displayName,
+                    'reason' => $this->mapUploadExceptionToReason($exception),
+                    'detail' => $this->extractUploadExceptionDetail($exception),
+                ];
+                $currentUnit++;
+            } finally {
+                if (is_string($temporaryPath) && is_file($temporaryPath)) {
+                    @unlink($temporaryPath);
+                }
+
+                $this->deleteDirectUploadedObject($entry['key']);
+            }
+        }
+
+        if ($required && $storedImages === []) {
+            throw new \RuntimeException($this->buildUploadFailureMessage($skippedFiles));
+        }
+
+        return [
+            'stored' => $storedImages,
+            'skipped' => $this->uniqueSkippedFiles($skippedFiles),
+            'submitted_count' => $submittedCount,
+        ];
+    }
+
+    private function mergeUploadOutcomes(array ...$outcomes): array
+    {
+        $stored = [];
+        $skipped = [];
+        $submittedCount = 0;
+
+        foreach ($outcomes as $outcome) {
+            $stored = array_merge($stored, $outcome['stored'] ?? []);
+            $skipped = array_merge($skipped, $outcome['skipped'] ?? []);
+            $submittedCount += (int) ($outcome['submitted_count'] ?? 0);
+        }
+
+        return [
+            'stored' => $stored,
+            'skipped' => $this->uniqueSkippedFiles($skipped),
+            'submitted_count' => $submittedCount,
+        ];
     }
 
     private function storeUploadedImages(mixed $uploadedFiles, bool $required = true, array $existingImageUrls = [], ?string $progressToken = null): array
@@ -475,15 +689,31 @@ class PropertyController
 
         $temporaryZipPath = $this->copyUploadedFileToTemporaryPath($uploadedFile);
 
+        try {
+            return $this->storeZipMediaFromPath($temporaryZipPath, $knownHashes, $progressToken, $currentUnit, $totalUnits);
+        } finally {
+            if (is_file($temporaryZipPath)) {
+                @unlink($temporaryZipPath);
+            }
+        }
+    }
+
+    private function storeZipMediaFromPath(
+        string $temporaryZipPath,
+        array &$knownHashes,
+        ?string $progressToken = null,
+        int &$currentUnit = 0,
+        int $totalUnits = 1
+    ): array {
         $zip = new \ZipArchive();
         $storedImages = [];
         $skippedFiles = [];
 
-        try {
-            if ($zip->open($temporaryZipPath) !== true) {
-                throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
-            }
+        if ($zip->open($temporaryZipPath) !== true) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+        }
 
+        try {
             for ($index = 0; $index < $zip->numFiles; $index++) {
                 $entryName = (string) $zip->getNameIndex($index);
 
@@ -560,10 +790,6 @@ class PropertyController
             }
         } finally {
             $zip->close();
-
-            if (is_file($temporaryZipPath)) {
-                @unlink($temporaryZipPath);
-            }
         }
 
         return [
@@ -751,6 +977,7 @@ class PropertyController
             'form_notice_groups' => $noticeGroups,
             'form_data' => $formData,
             'form_error_groups' => $error !== null ? $this->buildUploadSkippedGroupsFromMessageContext($error) : null,
+            'direct_upload_enabled' => $this->isDirectUploadEnabled(),
         ]);
     }
 
@@ -1939,14 +2166,26 @@ class PropertyController
     private function countZipEntries(UploadedFileInterface $uploadedFile): int
     {
         $temporaryZipPath = $this->copyUploadedFileToTemporaryPath($uploadedFile);
+
+        try {
+            return $this->countZipEntriesFromPath($temporaryZipPath);
+        } finally {
+            if (is_file($temporaryZipPath)) {
+                @unlink($temporaryZipPath);
+            }
+        }
+    }
+
+    private function countZipEntriesFromPath(string $temporaryZipPath): int
+    {
         $zip = new \ZipArchive();
         $count = 0;
 
-        try {
-            if ($zip->open($temporaryZipPath) !== true) {
-                return 1;
-            }
+        if ($zip->open($temporaryZipPath) !== true) {
+            return 1;
+        }
 
+        try {
             for ($index = 0; $index < $zip->numFiles; $index++) {
                 $entryName = (string) $zip->getNameIndex($index);
 
@@ -1958,13 +2197,314 @@ class PropertyController
             }
         } finally {
             $zip->close();
-
-            if (is_file($temporaryZipPath)) {
-                @unlink($temporaryZipPath);
-            }
         }
 
         return max(1, $count);
+    }
+
+    private function extractDirectUploadManifest(array $payload): array
+    {
+        $rawManifest = trim((string) ($payload['direct_upload_manifest'] ?? ''));
+
+        if ($rawManifest === '') {
+            return [];
+        }
+
+        try {
+            $decoded = json_decode($rawManifest, true, 512, JSON_THROW_ON_ERROR);
+        } catch (\JsonException) {
+            throw new \InvalidArgumentException($this->translator->trans('properties.error_direct_upload_manifest_invalid'));
+        }
+
+        if (!is_array($decoded)) {
+            throw new \InvalidArgumentException($this->translator->trans('properties.error_direct_upload_manifest_invalid'));
+        }
+
+        $manifest = [];
+
+        foreach ($decoded as $entry) {
+            if (!is_array($entry)) {
+                throw new \InvalidArgumentException($this->translator->trans('properties.error_direct_upload_manifest_invalid'));
+            }
+
+            $key = trim((string) ($entry['key'] ?? ''));
+            $name = trim((string) ($entry['name'] ?? ''));
+
+            if ($key === '' || $name === '') {
+                throw new \InvalidArgumentException($this->translator->trans('properties.error_direct_upload_manifest_invalid'));
+            }
+
+            $manifest[] = [
+                'key' => $key,
+                'name' => $name,
+                'type' => trim((string) ($entry['type'] ?? '')),
+            ];
+        }
+
+        return $manifest;
+    }
+
+    private function isDirectUploadEnabled(): bool
+    {
+        return $this->directUploadSettings() !== null;
+    }
+
+    private function directUploadSettings(): ?array
+    {
+        $accountId = trim((string) ($_ENV['CLOUDFLARE_R2_ACCOUNT_ID'] ?? ''));
+        $accessKeyId = trim((string) ($_ENV['CLOUDFLARE_R2_ACCESS_KEY_ID'] ?? ''));
+        $secretAccessKey = trim((string) ($_ENV['CLOUDFLARE_R2_SECRET_ACCESS_KEY'] ?? ''));
+        $bucket = trim((string) ($_ENV['CLOUDFLARE_R2_BUCKET'] ?? ''));
+
+        if ($accountId === '' || $accessKeyId === '' || $secretAccessKey === '' || $bucket === '') {
+            return null;
+        }
+
+        return [
+            'account_id' => $accountId,
+            'access_key_id' => $accessKeyId,
+            'secret_access_key' => $secretAccessKey,
+            'bucket' => $bucket,
+            'region' => trim((string) ($_ENV['CLOUDFLARE_R2_REGION'] ?? 'auto')) ?: 'auto',
+            'prefix' => trim((string) ($_ENV['CLOUDFLARE_R2_UPLOAD_PREFIX'] ?? 'property-staging'), '/'),
+        ];
+    }
+
+    private function normalizeDirectUploadContentType(string $contentType, string $name): ?string
+    {
+        $normalizedType = strtolower(trim($contentType));
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+
+        $allowedTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp',
+            'image/heic',
+            'image/heif',
+            'image/avif',
+            'video/mp4',
+            'video/quicktime',
+            'video/webm',
+            'application/zip',
+            'application/x-zip-compressed',
+        ];
+
+        if (in_array($normalizedType, $allowedTypes, true)) {
+            return $normalizedType === 'application/x-zip-compressed' ? 'application/zip' : $normalizedType;
+        }
+
+        return match ($extension) {
+            'jpg', 'jpeg' => 'image/jpeg',
+            'png' => 'image/png',
+            'gif' => 'image/gif',
+            'webp' => 'image/webp',
+            'heic', 'heif' => 'image/heic',
+            'avif' => 'image/avif',
+            'mp4' => 'video/mp4',
+            'mov' => 'video/quicktime',
+            'webm' => 'video/webm',
+            'zip' => 'application/zip',
+            default => null,
+        };
+    }
+
+    private function buildDirectUploadObjectKey(string $name, int $index = 0): string
+    {
+        $settings = $this->directUploadSettings();
+        $extension = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+        $extensionSuffix = $extension !== '' ? '.' . preg_replace('/[^a-z0-9]+/i', '', $extension) : '';
+        $prefix = $settings['prefix'] ?? 'property-staging';
+        $datePath = gmdate('Y/m');
+
+        return $prefix
+            . '/'
+            . $datePath
+            . '/'
+            . bin2hex(random_bytes(12))
+            . '-'
+            . $index
+            . $extensionSuffix;
+    }
+
+    private function createDirectUploadSignedUrl(string $method, string $objectKey, int $expiresSeconds, ?string $contentType = null): string
+    {
+        $settings = $this->directUploadSettings();
+
+        if ($settings === null) {
+            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_not_configured'));
+        }
+
+        $service = 's3';
+        $host = $settings['account_id'] . '.r2.cloudflarestorage.com';
+        $region = $settings['region'];
+        $amzDate = gmdate('Ymd\THis\Z');
+        $dateStamp = gmdate('Ymd');
+        $canonicalUri = '/' . rawurlencode($settings['bucket']) . '/' . $this->encodeR2ObjectKey($objectKey);
+        $signedHeaders = $contentType !== null ? 'content-type;host' : 'host';
+        $headers = [
+            'host' => $host,
+        ];
+
+        if ($contentType !== null) {
+            $headers['content-type'] = $contentType;
+        }
+
+        ksort($headers);
+
+        $credentialScope = $dateStamp . '/' . $region . '/' . $service . '/aws4_request';
+        $queryParameters = [
+            'X-Amz-Algorithm' => 'AWS4-HMAC-SHA256',
+            'X-Amz-Credential' => $settings['access_key_id'] . '/' . $credentialScope,
+            'X-Amz-Date' => $amzDate,
+            'X-Amz-Expires' => (string) max(60, min($expiresSeconds, 86400)),
+            'X-Amz-SignedHeaders' => $signedHeaders,
+        ];
+
+        ksort($queryParameters);
+
+        $canonicalHeaders = '';
+
+        foreach ($headers as $headerName => $headerValue) {
+            $canonicalHeaders .= strtolower($headerName) . ':' . trim((string) $headerValue) . "\n";
+        }
+
+        $canonicalQueryString = http_build_query($queryParameters, '', '&', PHP_QUERY_RFC3986);
+        $canonicalRequest = strtoupper($method)
+            . "\n"
+            . $canonicalUri
+            . "\n"
+            . $canonicalQueryString
+            . "\n"
+            . $canonicalHeaders
+            . "\n"
+            . $signedHeaders
+            . "\nUNSIGNED-PAYLOAD";
+
+        $stringToSign = 'AWS4-HMAC-SHA256'
+            . "\n"
+            . $amzDate
+            . "\n"
+            . $credentialScope
+            . "\n"
+            . hash('sha256', $canonicalRequest);
+
+        $signingKey = $this->buildAwsV4SigningKey($settings['secret_access_key'], $dateStamp, $region, $service);
+        $signature = hash_hmac('sha256', $stringToSign, $signingKey);
+
+        return 'https://' . $host . $canonicalUri . '?' . $canonicalQueryString . '&X-Amz-Signature=' . $signature;
+    }
+
+    private function buildAwsV4SigningKey(string $secretKey, string $dateStamp, string $region, string $service): string
+    {
+        $dateKey = hash_hmac('sha256', $dateStamp, 'AWS4' . $secretKey, true);
+        $regionKey = hash_hmac('sha256', $region, $dateKey, true);
+        $serviceKey = hash_hmac('sha256', $service, $regionKey, true);
+
+        return hash_hmac('sha256', 'aws4_request', $serviceKey, true);
+    }
+
+    private function encodeR2ObjectKey(string $objectKey): string
+    {
+        $segments = array_map(
+            static fn (string $segment): string => rawurlencode($segment),
+            explode('/', ltrim($objectKey, '/'))
+        );
+
+        return implode('/', $segments);
+    }
+
+    private function downloadDirectUploadedObjectToTemporaryPath(string $objectKey, string $originalName): string
+    {
+        $signedUrl = $this->createDirectUploadSignedUrl('GET', $objectKey, self::DIRECT_UPLOAD_URL_TTL);
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'property_r2_');
+
+        if ($temporaryPath === false) {
+            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_failed'));
+        }
+
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if ($extension !== '') {
+            $targetPath = $temporaryPath . '.' . preg_replace('/[^a-z0-9]+/i', '', $extension);
+            @rename($temporaryPath, $targetPath);
+            $temporaryPath = $targetPath;
+        }
+
+        $input = @fopen($signedUrl, 'rb');
+        $output = @fopen($temporaryPath, 'wb');
+
+        if ($input === false || $output === false) {
+            if (is_resource($input)) {
+                fclose($input);
+            }
+
+            if (is_resource($output)) {
+                fclose($output);
+            }
+
+            if (is_file($temporaryPath)) {
+                @unlink($temporaryPath);
+            }
+
+            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_failed'));
+        }
+
+        try {
+            stream_copy_to_stream($input, $output);
+        } finally {
+            fclose($input);
+            fclose($output);
+        }
+
+        if (!is_file($temporaryPath) || (int) @filesize($temporaryPath) <= 0) {
+            if (is_file($temporaryPath)) {
+                @unlink($temporaryPath);
+            }
+
+            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_failed'));
+        }
+
+        return $temporaryPath;
+    }
+
+    private function deleteDirectUploadedObject(string $objectKey): void
+    {
+        if ($objectKey === '' || !$this->isDirectUploadEnabled()) {
+            return;
+        }
+
+        $signedUrl = $this->createDirectUploadSignedUrl('DELETE', $objectKey, 300);
+        $context = stream_context_create([
+            'http' => [
+                'method' => 'DELETE',
+                'ignore_errors' => true,
+                'timeout' => 15,
+            ],
+        ]);
+
+        @file_get_contents($signedUrl, false, $context);
+    }
+
+    private function isZipFilePath(string $sourcePath, string $originalName = ''): bool
+    {
+        $header = @file_get_contents($sourcePath, false, null, 0, 4);
+
+        if (is_string($header) && in_array($header, ["PK\x03\x04", "PK\x05\x06", "PK\x07\x08"], true)) {
+            return true;
+        }
+
+        return strtolower(pathinfo($originalName, PATHINFO_EXTENSION)) === 'zip';
+    }
+
+    private function jsonResponse(Response $response, array $payload, int $status = 200): Response
+    {
+        $response->getBody()->write((string) json_encode($payload));
+
+        return $response
+            ->withStatus($status)
+            ->withHeader('Content-Type', 'application/json')
+            ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
     }
 
     private function sanitizeUploadProgressToken(string $token): ?string

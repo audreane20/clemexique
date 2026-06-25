@@ -17,7 +17,8 @@ class PropertyController
     private Translator $translator;
 
     private const MAX_SKIPPED_NAMES_IN_MESSAGE = 12;
-    private const IMAGE_OPTIMIZE_THRESHOLD_BYTES = 10000000;
+    private const IMAGE_OPTIMIZE_THRESHOLD_BYTES = 8000000;
+    private const PNG_OPTIMIZE_THRESHOLD_BYTES = 4000000;
     private const UPLOAD_PROGRESS_TTL = 1800;
     private const DIRECT_UPLOAD_URL_TTL = 900;
 
@@ -1065,8 +1066,7 @@ class PropertyController
 
     private function createTemporaryDirectory(string $prefix): string
     {
-        $baseDirectory = rtrim(sys_get_temp_dir(), DIRECTORY_SEPARATOR);
-        $directory = $baseDirectory . DIRECTORY_SEPARATOR . $prefix . bin2hex(random_bytes(8));
+        $directory = $this->managedTemporaryDirectory() . DIRECTORY_SEPARATOR . $prefix . bin2hex(random_bytes(8));
 
         if (!@mkdir($directory, 0775, true) && !is_dir($directory)) {
             throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
@@ -1517,20 +1517,7 @@ class PropertyController
     private function copyUploadedFileToTemporaryPath(UploadedFileInterface $uploadedFile): string
     {
         $originalName = $this->uploadedFileDisplayName($uploadedFile);
-        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-        $temporaryPath = tempnam(sys_get_temp_dir(), 'property_media_');
-
-        if ($temporaryPath === false) {
-            throw $this->invalidUploadException('Could not create a temporary file for uploaded media.');
-        }
-
-        if ($extension !== '') {
-            $extendedPath = $temporaryPath . '.' . preg_replace('/[^a-z0-9]+/i', '', $extension);
-
-            if (@rename($temporaryPath, $extendedPath)) {
-                $temporaryPath = $extendedPath;
-            }
-        }
+        $temporaryPath = $this->createManagedTemporaryFile('property_media_', $originalName, 'Could not create a temporary file for uploaded media.');
 
         $stream = $uploadedFile->getStream();
         $stream->rewind();
@@ -1552,20 +1539,11 @@ class PropertyController
 
     private function writeTemporaryBinaryFile(string $binary, string $originalName): string
     {
-        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-        $temporaryPath = tempnam(sys_get_temp_dir(), 'property_zip_media_');
-
-        if ($temporaryPath === false) {
-            throw $this->invalidUploadException('Could not create a temporary file for ZIP media entry "' . $originalName . '".');
-        }
-
-        if ($extension !== '') {
-            $extendedPath = $temporaryPath . '.' . preg_replace('/[^a-z0-9]+/i', '', $extension);
-
-            if (@rename($temporaryPath, $extendedPath)) {
-                $temporaryPath = $extendedPath;
-            }
-        }
+        $temporaryPath = $this->createManagedTemporaryFile(
+            'property_zip_media_',
+            $originalName,
+            'Could not create a temporary file for ZIP media entry "' . $originalName . '".'
+        );
 
         if (@file_put_contents($temporaryPath, $binary) === false) {
             throw $this->invalidUploadException('Could not write the ZIP media entry "' . $originalName . '" to temporary storage.');
@@ -1749,13 +1727,23 @@ class PropertyController
 
     private function shouldOptimizeOversizedImage(string $sourcePath, string $extension): bool
     {
-        if (!in_array(strtolower($extension), ['jpg', 'jpeg', 'png', 'webp'], true)) {
+        $extension = strtolower($extension);
+
+        if (!in_array($extension, ['jpg', 'jpeg', 'png', 'webp'], true)) {
             return false;
         }
 
         $fileSize = @filesize($sourcePath);
 
-        if (!is_int($fileSize) || $fileSize <= self::IMAGE_OPTIMIZE_THRESHOLD_BYTES) {
+        if (!is_int($fileSize)) {
+            return false;
+        }
+
+        $threshold = $extension === 'png'
+            ? self::PNG_OPTIMIZE_THRESHOLD_BYTES
+            : self::IMAGE_OPTIMIZE_THRESHOLD_BYTES;
+
+        if ($fileSize <= $threshold) {
             return false;
         }
 
@@ -1780,13 +1768,11 @@ class PropertyController
         [$magickSourcePath, $cleanupSourcePath] = $this->prepareImageMagickSourcePath($sourcePath, $sourceFormatHint);
         $magickInputCandidates = $this->buildImageMagickInputCandidates($magickSourcePath, $sourceFormatHint);
 
-        $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_converted_');
-
-        if ($temporaryTarget === false) {
-            throw $this->invalidUploadException('Could not create a temporary conversion target for "' . ($displayName ?? basename($sourcePath)) . '".');
-        }
-
-        $temporaryTarget .= '.jpg';
+        $temporaryTarget = $this->createManagedTemporaryFile(
+            'property_converted_',
+            ($displayName ?? basename($sourcePath)) . '.jpg',
+            'Could not create a temporary conversion target for "' . ($displayName ?? basename($sourcePath)) . '".'
+        );
         $resizeGeometry = '2400x2400>';
         $attemptErrors = [];
         $conversionSucceeded = false;
@@ -1973,13 +1959,11 @@ class PropertyController
             throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
         }
 
-        $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_heif_convert_');
-
-        if ($temporaryTarget === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
-        }
-
-        $temporaryTarget .= '.jpg';
+        $temporaryTarget = $this->createManagedTemporaryFile(
+            'property_heif_convert_',
+            ($displayName ?? basename($sourcePath)) . '.jpg',
+            'Could not create a temporary HEIF conversion target for "' . ($displayName ?? basename($sourcePath)) . '".'
+        );
         $command = [$binary, $sourcePath, $temporaryTarget];
         $output = [];
         $exitCode = $this->runProcessCommand($command, $output);
@@ -2045,13 +2029,11 @@ class PropertyController
             throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
         }
 
-        $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_ffmpeg_convert_');
-
-        if ($temporaryTarget === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
-        }
-
-        $temporaryTarget .= '.jpg';
+        $temporaryTarget = $this->createManagedTemporaryFile(
+            'property_ffmpeg_convert_',
+            ($displayName ?? basename($sourcePath)) . '.jpg',
+            'Could not create a temporary FFmpeg conversion target for "' . ($displayName ?? basename($sourcePath)) . '".'
+        );
         $command = [
             $binary,
             '-y',
@@ -2130,21 +2112,21 @@ class PropertyController
             return [$sourcePath, null];
         }
 
-        $temporarySource = tempnam(sys_get_temp_dir(), 'property_magick_source_');
-
-        if ($temporarySource === false) {
+        try {
+            $extendedTemporarySource = $this->createManagedTemporaryFile(
+                'property_magick_source_',
+                'source.' . $sourceFormatHint,
+                'Could not create an ImageMagick source staging file.'
+            );
+        } catch (\RuntimeException) {
             return [$sourcePath, null];
         }
-
-        $extendedTemporarySource = $temporarySource . '.' . preg_replace('/[^a-z0-9]+/i', '', $sourceFormatHint);
 
         if (!@copy($sourcePath, $extendedTemporarySource)) {
-            @unlink($temporarySource);
+            @unlink($extendedTemporarySource);
 
             return [$sourcePath, null];
         }
-
-        @unlink($temporarySource);
 
         return [$extendedTemporarySource, $extendedTemporarySource];
     }
@@ -2745,19 +2727,11 @@ class PropertyController
     private function downloadDirectUploadedObjectToTemporaryPath(string $objectKey, string $originalName): string
     {
         $signedUrl = $this->createDirectUploadSignedUrl('GET', $objectKey, self::DIRECT_UPLOAD_URL_TTL);
-        $temporaryPath = tempnam(sys_get_temp_dir(), 'property_r2_');
-
-        if ($temporaryPath === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_failed'));
-        }
-
-        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
-
-        if ($extension !== '') {
-            $targetPath = $temporaryPath . '.' . preg_replace('/[^a-z0-9]+/i', '', $extension);
-            @rename($temporaryPath, $targetPath);
-            $temporaryPath = $targetPath;
-        }
+        $temporaryPath = $this->createManagedTemporaryFile(
+            'property_r2_',
+            $originalName,
+            'Could not create temporary storage for the direct-uploaded file "' . $originalName . '".'
+        );
 
         $input = @fopen($signedUrl, 'rb');
         $output = @fopen($temporaryPath, 'wb');
@@ -2794,6 +2768,74 @@ class PropertyController
         }
 
         return $temporaryPath;
+    }
+
+    private function managedTemporaryDirectory(): string
+    {
+        $directory = dirname(__DIR__, 2) . '/var/upload-runtime';
+
+        if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_storage'));
+        }
+
+        if (!is_writable($directory)) {
+            throw new \RuntimeException($this->translator->trans('properties.error_upload_storage'));
+        }
+
+        $this->cleanupManagedTemporaryFiles($directory);
+
+        return $directory;
+    }
+
+    private function createManagedTemporaryFile(string $prefix, string $originalName = '', ?string $failureDebugMessage = null): string
+    {
+        $temporaryPath = tempnam($this->managedTemporaryDirectory(), $prefix);
+
+        if ($temporaryPath === false) {
+            throw $this->invalidUploadException($failureDebugMessage ?? ('Could not create a managed temporary file for "' . $originalName . '".'));
+        }
+
+        $extension = strtolower(pathinfo($originalName, PATHINFO_EXTENSION));
+
+        if ($extension !== '') {
+            $extendedPath = $temporaryPath . '.' . preg_replace('/[^a-z0-9]+/i', '', $extension);
+
+            if (@rename($temporaryPath, $extendedPath)) {
+                $temporaryPath = $extendedPath;
+            }
+        }
+
+        return $temporaryPath;
+    }
+
+    private function cleanupManagedTemporaryFiles(string $directory): void
+    {
+        static $hasRun = false;
+
+        if ($hasRun) {
+            return;
+        }
+
+        $hasRun = true;
+        $expirationSeconds = 6 * 3600;
+        $now = time();
+        $files = glob($directory . '/*');
+
+        if (!is_array($files)) {
+            return;
+        }
+
+        foreach ($files as $filePath) {
+            if (!is_file($filePath)) {
+                continue;
+            }
+
+            $lastModified = @filemtime($filePath);
+
+            if ($lastModified !== false && ($now - $lastModified) > $expirationSeconds) {
+                @unlink($filePath);
+            }
+        }
     }
 
     private function deleteDirectUploadedObject(string $objectKey): void

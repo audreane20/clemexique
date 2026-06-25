@@ -1407,7 +1407,27 @@ class PropertyController
             return $detail;
         }
 
+        $debugMarker = 'DEBUG:';
+        $debugPosition = strpos($message, $debugMarker);
+
+        if ($debugPosition !== false) {
+            $detail = trim(substr($message, $debugPosition + strlen($debugMarker)));
+
+            if ($detail !== '') {
+                return $detail;
+            }
+        }
+
         return null;
+    }
+
+    private function invalidUploadException(string $debugDetail): \RuntimeException
+    {
+        return new \RuntimeException(
+            $this->translator->trans('properties.error_upload_invalid')
+            . ' DEBUG: '
+            . $debugDetail
+        );
     }
 
     private function translateSkipReason(string $reason): string
@@ -1477,7 +1497,7 @@ class PropertyController
         $temporaryPath = tempnam(sys_get_temp_dir(), 'property_media_');
 
         if ($temporaryPath === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException('Could not create a temporary file for uploaded media.');
         }
 
         if ($extension !== '') {
@@ -1493,7 +1513,7 @@ class PropertyController
         $destination = @fopen($temporaryPath, 'wb');
 
         if ($destination === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException('Could not open the temporary upload destination for writing: ' . $temporaryPath);
         }
 
         while (!$stream->eof()) {
@@ -1512,7 +1532,7 @@ class PropertyController
         $temporaryPath = tempnam(sys_get_temp_dir(), 'property_zip_media_');
 
         if ($temporaryPath === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException('Could not create a temporary file for ZIP media entry "' . $originalName . '".');
         }
 
         if ($extension !== '') {
@@ -1524,7 +1544,7 @@ class PropertyController
         }
 
         if (@file_put_contents($temporaryPath, $binary) === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException('Could not write the ZIP media entry "' . $originalName . '" to temporary storage.');
         }
 
         return $temporaryPath;
@@ -1622,7 +1642,15 @@ class PropertyController
         );
 
         if (!$canConvertUnknown) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException(
+                'Media type could not be validated for "'
+                . $displayName
+                . '" (original: '
+                . $originalName
+                . ', detected extension: '
+                . ($extension ?? '[none]')
+                . ').'
+            );
         }
 
         $this->updateUploadProgress(
@@ -1722,7 +1750,7 @@ class PropertyController
         $magickBinary = $this->resolveImageMagickBinary();
 
         if ($magickBinary === null) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException('ImageMagick is unavailable for converting "' . ($displayName ?? basename($sourcePath)) . '".');
         }
 
         [$magickSourcePath, $cleanupSourcePath] = $this->prepareImageMagickSourcePath($sourcePath, $sourceFormatHint);
@@ -1731,7 +1759,7 @@ class PropertyController
         $temporaryTarget = tempnam(sys_get_temp_dir(), 'property_converted_');
 
         if ($temporaryTarget === false) {
-            throw new \RuntimeException($this->translator->trans('properties.error_upload_invalid'));
+            throw $this->invalidUploadException('Could not create a temporary conversion target for "' . ($displayName ?? basename($sourcePath)) . '".');
         }
 
         $temporaryTarget .= '.jpg';

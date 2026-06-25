@@ -423,6 +423,20 @@ class PropertyController
                     }
 
                     $zipOutcome = $this->storeZipMediaFromPath($temporaryPath, $knownHashes, $progressToken, $currentUnit, $totalUnits);
+
+                    if (($zipOutcome['stored'] ?? []) === [] && ($zipOutcome['skipped'] ?? []) === []) {
+                        $zipOutcome['skipped'] = [[
+                            'name' => $displayName,
+                            'reason' => 'unsupported',
+                            'detail' => 'The ZIP upload was read, but no supported media files could be processed from it.',
+                        ]];
+                        $this->logPropertyConversionDebug(
+                            'ZIP upload produced no stored or skipped media entries for "'
+                            . $displayName
+                            . '".'
+                        );
+                    }
+
                     $storedImages = array_merge($storedImages, $zipOutcome['stored']);
                     $skippedFiles = array_merge($skippedFiles, $zipOutcome['skipped']);
                     continue;
@@ -472,10 +486,33 @@ class PropertyController
                     $totalUnits
                 );
             } catch (\RuntimeException $exception) {
+                $this->logPropertyConversionDebug(
+                    'Direct upload media skipped for "'
+                    . $displayName
+                    . '" with reason "'
+                    . $this->mapUploadExceptionToReason($exception)
+                    . '" and message: '
+                    . $exception->getMessage()
+                );
                 $skippedFiles[] = [
                     'name' => $displayName,
                     'reason' => $this->mapUploadExceptionToReason($exception),
                     'detail' => $this->extractUploadExceptionDetail($exception),
+                ];
+                $currentUnit++;
+            } catch (\Throwable $throwable) {
+                $this->logPropertyConversionDebug(
+                    'Unexpected direct upload processing failure for "'
+                    . $displayName
+                    . '": '
+                    . $throwable::class
+                    . ' - '
+                    . $throwable->getMessage()
+                );
+                $skippedFiles[] = [
+                    'name' => $displayName,
+                    'reason' => 'unsupported',
+                    'detail' => 'Unexpected processing failure: ' . $throwable->getMessage(),
                 ];
                 $currentUnit++;
             } finally {
@@ -724,6 +761,18 @@ class PropertyController
                 $entryContents = $zip->getFromIndex($index);
 
                 if (!is_string($entryContents) || $entryContents === '') {
+                    $skippedFiles[] = [
+                        'name' => $entryName,
+                        'reason' => 'unsupported',
+                        'detail' => 'The ZIP entry could not be read or was empty.',
+                    ];
+                    $this->logPropertyConversionDebug(
+                        'ZIP entry could not be read for "'
+                        . $entryName
+                        . '" from archive '
+                        . $temporaryZipPath
+                    );
+                    $currentUnit++;
                     continue;
                 }
 
@@ -741,10 +790,34 @@ class PropertyController
                 try {
                     $storedUrl = $this->storeMediaFileFromPath($temporaryEntryPath, $entryName, $progressToken, $currentUnit, $totalUnits, $entryName);
                 } catch (\RuntimeException $exception) {
+                    $this->logPropertyConversionDebug(
+                        'ZIP media entry skipped for "'
+                        . $entryName
+                        . '" with reason "'
+                        . $this->mapUploadExceptionToReason($exception)
+                        . '" and message: '
+                        . $exception->getMessage()
+                    );
                     $skippedFiles[] = [
                         'name' => $entryName,
                         'reason' => $this->mapUploadExceptionToReason($exception),
                         'detail' => $this->extractUploadExceptionDetail($exception),
+                    ];
+                    $currentUnit++;
+                    continue;
+                } catch (\Throwable $throwable) {
+                    $this->logPropertyConversionDebug(
+                        'Unexpected ZIP media processing failure for "'
+                        . $entryName
+                        . '": '
+                        . $throwable::class
+                        . ' - '
+                        . $throwable->getMessage()
+                    );
+                    $skippedFiles[] = [
+                        'name' => $entryName,
+                        'reason' => 'unsupported',
+                        'detail' => 'Unexpected processing failure: ' . $throwable->getMessage(),
                     ];
                     $currentUnit++;
                     continue;
@@ -790,6 +863,18 @@ class PropertyController
             }
         } finally {
             $zip->close();
+        }
+
+        if ($storedImages === [] && $skippedFiles === []) {
+            $skippedFiles[] = [
+                'name' => basename($temporaryZipPath),
+                'reason' => 'unsupported',
+                'detail' => 'The ZIP archive was opened, but no supported media files were found inside.',
+            ];
+            $this->logPropertyConversionDebug(
+                'ZIP archive produced no stored or skipped media entries: '
+                . $temporaryZipPath
+            );
         }
 
         return [

@@ -785,9 +785,9 @@ class PropertyController
                     $totalUnits
                 );
 
-                $temporaryEntryPath = $this->writeTemporaryBinaryFile($entryContents, $entryName);
-
+                $temporaryEntryPath = null;
                 try {
+                    $temporaryEntryPath = $this->writeTemporaryBinaryFile($entryContents, $entryName);
                     $storedUrl = $this->storeMediaFileFromPath($temporaryEntryPath, $entryName, $progressToken, $currentUnit, $totalUnits, $entryName);
                 } catch (\RuntimeException $exception) {
                     $this->logPropertyConversionDebug(
@@ -822,7 +822,7 @@ class PropertyController
                     $currentUnit++;
                     continue;
                 } finally {
-                    if (is_file($temporaryEntryPath)) {
+                    if (is_string($temporaryEntryPath) && is_file($temporaryEntryPath)) {
                         @unlink($temporaryEntryPath);
                     }
                 }

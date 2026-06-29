@@ -14,6 +14,7 @@
         <div class="form-success" data-property-import-job data-job-id="{{ active_import_job.job_id }}" data-job-status-url="{{ base_path }}/admin/properties/import-job/{{ active_import_job.job_id }}">
             <strong>Import job</strong>
             <p data-property-import-job-message>{{ active_import_job.message }}</p>
+            <p data-property-import-job-progress>0% - Waiting for server...</p>
         </div>
     {% endif %}
 
@@ -259,8 +260,9 @@
 
                 const statusUrl = importJobBanner.getAttribute('data-job-status-url');
                 const messageNode = importJobBanner.querySelector('[data-property-import-job-message]');
+                const progressNode = importJobBanner.querySelector('[data-property-import-job-progress]');
 
-                if (!statusUrl || !messageNode) {
+                if (!statusUrl || !messageNode || !progressNode) {
                     return;
                 }
 
@@ -282,8 +284,27 @@
                             messageNode.textContent = payload.message;
                         }
 
-                        if (payload.progress && payload.progress.message) {
-                            messageNode.textContent = payload.progress.message;
+                        if (payload.progress) {
+                            const percent = Math.max(0, Math.min(100, Number(payload.progress.percent || 0)));
+                            const detailMessage = payload.progress.message || payload.message || 'Processing files...';
+                            progressNode.textContent = `${percent}% - ${detailMessage}`;
+                        }
+
+                        if (payload.status === 'complete') {
+                            window.clearInterval(timer);
+                            progressNode.textContent = '100% - Import complete. Refreshing...';
+                            window.setTimeout(() => {
+                                window.location.reload();
+                            }, 1200);
+                            return;
+                        }
+
+                        if (payload.status === 'failed') {
+                            window.clearInterval(timer);
+                            if (!payload.progress) {
+                                progressNode.textContent = payload.message || 'Import failed.';
+                            }
+                            return;
                         }
 
                         if (!['queued', 'processing'].includes(payload.status || '')) {

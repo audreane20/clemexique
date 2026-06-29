@@ -98,12 +98,12 @@
 
                 <label>
                     {{ trans('properties.name') }}
-                    <input type="text" name="name" placeholder="Tohoku Living" value="{{ form_data.name ?? editing_property.name ?? '' }}" required>
+                    <input type="text" name="name" placeholder="{{ trans('properties.name_placeholder') }}" value="{{ form_data.name ?? editing_property.name ?? '' }}" required>
                 </label>
 
                 <label>
                     {{ trans('properties.city') }}
-                    <input type="text" name="city" placeholder="Playa del Carmen" value="{{ form_data.city ?? editing_property.city ?? '' }}" required>
+                    <input type="text" name="city" placeholder="{{ trans('properties.city_placeholder') }}" value="{{ form_data.city ?? editing_property.city ?? '' }}" required>
                 </label>
 
                 <label>
@@ -124,7 +124,7 @@
                 <div class="property-form-row">
                     <label>
                         {{ trans('properties.price') }}
-                        <input type="number" name="price_amount" step="0.01" min="0" placeholder="0" value="{{ form_data.price_amount ?? editing_property.price_amount ?? '' }}" required>
+                        <input type="number" name="price_amount" step="0.01" min="0" placeholder="{{ trans('properties.price_placeholder') }}" value="{{ form_data.price_amount ?? editing_property.price_amount ?? '' }}" required>
                     </label>
 
                     <label>

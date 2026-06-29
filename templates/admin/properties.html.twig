@@ -267,6 +267,8 @@
 
             const directUploadEnabled = {{ direct_upload_enabled ? 'true' : 'false' }};
             const directUploadPrepareUrl = {{ (base_path ~ '/admin/properties/direct-upload/prepare')|json_encode|raw }};
+            const directUploadCompleteMultipartUrl = {{ (base_path ~ '/admin/properties/direct-upload/complete-multipart')|json_encode|raw }};
+            const directUploadAbortMultipartUrl = {{ (base_path ~ '/admin/properties/direct-upload/abort-multipart')|json_encode|raw }};
             const noFilesSelectedLabel = {{ trans('properties.no_files_selected')|json_encode|raw }};
             const oneFileSelectedLabel = {{ trans('properties.one_file_selected')|json_encode|raw }};
             const multipleFilesSelectedLabel = {{ trans('properties.multiple_files_selected')|json_encode|raw }};
@@ -281,6 +283,7 @@
             const directUploadFailedLabel = {{ trans('properties.direct_upload_failed')|json_encode|raw }};
             const directUploadProcessingLabel = {{ trans('properties.direct_upload_processing_message')|json_encode|raw }};
             const uploadTimeoutMs = 7200000;
+            const multipartPartRetryLimit = 3;
 
             const updateFileInputText = () => {
                 const count = fileInput.files ? fileInput.files.length : 0;
@@ -563,6 +566,110 @@
                 uploadRequest.send(file);
             });
 
+            const uploadMultipartPartToDirectTarget = (blob, target, onProgress) => new Promise((resolve, reject) => {
+                const uploadRequest = new XMLHttpRequest();
+                uploadRequest.open('PUT', target.upload_url, true);
+
+                uploadRequest.upload.addEventListener('progress', (event) => {
+                    if (event.lengthComputable) {
+                        onProgress(event.loaded, event.total);
+                    }
+                });
+
+                uploadRequest.addEventListener('load', () => {
+                    if (uploadRequest.status >= 200 && uploadRequest.status < 300) {
+                        resolve();
+                        return;
+                    }
+
+                    reject(new Error(`${directUploadFailedLabel} (HTTP ${uploadRequest.status || 0})`));
+                });
+
+                uploadRequest.addEventListener('error', () => reject(new Error(directUploadFailedLabel)));
+                uploadRequest.addEventListener('abort', () => reject(new Error(uploadRequestAbortedLabel)));
+                uploadRequest.addEventListener('timeout', () => reject(new Error(uploadRequestTimedOutLabel)));
+                uploadRequest.timeout = uploadTimeoutMs;
+                uploadRequest.send(blob);
+            });
+
+            const completeMultipartDirectUpload = async (target) => {
+                const response = await fetch(directUploadCompleteMultipartUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        key: target.key,
+                        upload_id: target.upload_id,
+                        part_count: Array.isArray(target.parts) ? target.parts.length : 0
+                    })
+                });
+
+                const payload = await response.json().catch(() => null);
+
+                if (!response.ok || !payload || payload.ok !== true) {
+                    throw new Error((payload && payload.error) || directUploadFailedLabel);
+                }
+            };
+
+            const abortMultipartDirectUpload = async (target) => {
+                try {
+                    await fetch(directUploadAbortMultipartUrl, {
+                        method: 'POST',
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            key: target.key,
+                            upload_id: target.upload_id
+                        })
+                    });
+                } catch (error) {
+                }
+            };
+
+            const uploadFileMultipart = async (file, target, onProgress) => {
+                const partSize = Math.max(5 * 1024 * 1024, Number(target.part_size || 0));
+                const parts = Array.isArray(target.parts) ? target.parts : [];
+                let committedBytes = 0;
+
+                for (let index = 0; index < parts.length; index += 1) {
+                    const partTarget = parts[index];
+                    const start = index * partSize;
+                    const end = Math.min(file.size, start + partSize);
+                    const blob = file.slice(start, end);
+                    let attempt = 0;
+
+                    while (true) {
+                        try {
+                            await uploadMultipartPartToDirectTarget(blob, partTarget, (loaded) => {
+                                onProgress(committedBytes + loaded, file.size);
+                            });
+                            committedBytes += blob.size;
+                            onProgress(committedBytes, file.size);
+                            break;
+                        } catch (error) {
+                            attempt += 1;
+                            if (attempt >= multipartPartRetryLimit) {
+                                await abortMultipartDirectUpload(target);
+                                throw error;
+                            }
+                        }
+                    }
+                }
+
+                try {
+                    await completeMultipartDirectUpload(target);
+                } catch (error) {
+                    await abortMultipartDirectUpload(target);
+                    throw error;
+                }
+            };
+
             const uploadFilesDirectly = async (files) => {
                 const targets = await prepareDirectUploadTargets(files);
                 const totalBytes = files.reduce((sum, file) => sum + Math.max(1, file.size || 0), 0);
@@ -583,14 +690,24 @@
                     const file = files[index];
                     const target = targets[index];
 
-                    await uploadFileToDirectTarget(file, target, (loaded) => {
+                    const updateOverallProgress = (loaded) => {
                         const overallBytes = completedBytes + loaded;
                         const percent = Math.max(0, Math.min(100, Math.round((overallBytes / totalBytes) * 100)));
                         progressFill.style.width = percent + '%';
                         progressText.textContent = percent + '%';
                         processingLabel.textContent = directUploadCloudPhaseLabel;
                         processingText.textContent = `${percent}% - ${directUploadCloudMessageLabel} ${target.name}`;
-                    });
+                    };
+
+                    if (target.strategy === 'multipart') {
+                        await uploadFileMultipart(file, target, (loaded) => {
+                            updateOverallProgress(loaded);
+                        });
+                    } else {
+                        await uploadFileToDirectTarget(file, target, (loaded) => {
+                            updateOverallProgress(loaded);
+                        });
+                    }
 
                     completedBytes += Math.max(1, file.size || 0);
                     manifest.push({

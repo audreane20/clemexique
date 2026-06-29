@@ -21,6 +21,8 @@ class PropertyController
     private const PNG_OPTIMIZE_THRESHOLD_BYTES = 4000000;
     private const UPLOAD_PROGRESS_TTL = 1800;
     private const DIRECT_UPLOAD_URL_TTL = 7200;
+    private const DIRECT_UPLOAD_MULTIPART_THRESHOLD_BYTES = 67108864;
+    private const DIRECT_UPLOAD_MULTIPART_PART_SIZE = 26214400;
 
     public function __construct(PropertyModel $propertyModel, Twig $twig, string $basePath, Translator $translator)
     {
@@ -346,6 +348,7 @@ class PropertyController
             }
 
             $name = trim((string) ($file['name'] ?? ''));
+            $size = max(0, (int) ($file['size'] ?? 0));
             $contentType = $this->normalizeDirectUploadContentType(
                 trim((string) ($file['type'] ?? '')),
                 $name
@@ -359,16 +362,95 @@ class PropertyController
 
             $key = $this->buildDirectUploadObjectKey($name, (int) $index);
 
+            if ($this->shouldUseMultipartDirectUpload($size)) {
+                $uploadId = $this->createMultipartDirectUpload($key, $contentType);
+
+                $targets[] = [
+                    'key' => $key,
+                    'name' => $name,
+                    'type' => $contentType,
+                    'strategy' => 'multipart',
+                    'upload_id' => $uploadId,
+                    'part_size' => self::DIRECT_UPLOAD_MULTIPART_PART_SIZE,
+                    'parts' => $this->buildMultipartDirectUploadPartTargets($key, $uploadId, $size),
+                ];
+                continue;
+            }
+
             $targets[] = [
                 'key' => $key,
                 'name' => $name,
                 'type' => $contentType,
+                'strategy' => 'single',
                 'upload_url' => $this->createDirectUploadSignedUrl('PUT', $key, self::DIRECT_UPLOAD_URL_TTL, $contentType),
             ];
         }
 
         return $this->jsonResponse($response, [
             'targets' => $targets,
+        ]);
+    }
+
+    public function completeDirectUploadMultipart(Request $request, Response $response): Response
+    {
+        if (!$this->isDirectUploadEnabled()) {
+            return $this->jsonResponse($response, [
+                'error' => $this->translator->trans('properties.error_direct_upload_not_configured'),
+            ], 503);
+        }
+
+        $payload = json_decode((string) $request->getBody(), true);
+        $key = trim((string) ($payload['key'] ?? ''));
+        $uploadId = trim((string) ($payload['upload_id'] ?? ''));
+        $expectedPartCount = max(0, (int) ($payload['part_count'] ?? 0));
+
+        if (!$this->isDirectUploadObjectKeyAllowed($key) || $uploadId === '' || $expectedPartCount <= 0) {
+            return $this->jsonResponse($response, [
+                'error' => $this->translator->trans('properties.error_direct_upload_manifest_invalid'),
+            ], 400);
+        }
+
+        try {
+            $parts = $this->listMultipartDirectUploadParts($key, $uploadId);
+
+            if (count($parts) !== $expectedPartCount) {
+                throw new \RuntimeException($this->translator->trans('properties.direct_upload_failed'));
+            }
+
+            $this->completeMultipartDirectUpload($key, $uploadId, $parts);
+        } catch (\RuntimeException $exception) {
+            return $this->jsonResponse($response, [
+                'error' => $exception->getMessage(),
+            ], 502);
+        }
+
+        return $this->jsonResponse($response, [
+            'ok' => true,
+        ]);
+    }
+
+    public function abortDirectUploadMultipart(Request $request, Response $response): Response
+    {
+        if (!$this->isDirectUploadEnabled()) {
+            return $this->jsonResponse($response, [
+                'error' => $this->translator->trans('properties.error_direct_upload_not_configured'),
+            ], 503);
+        }
+
+        $payload = json_decode((string) $request->getBody(), true);
+        $key = trim((string) ($payload['key'] ?? ''));
+        $uploadId = trim((string) ($payload['upload_id'] ?? ''));
+
+        if (!$this->isDirectUploadObjectKeyAllowed($key) || $uploadId === '') {
+            return $this->jsonResponse($response, [
+                'error' => $this->translator->trans('properties.error_direct_upload_manifest_invalid'),
+            ], 400);
+        }
+
+        $this->abortMultipartDirectUpload($key, $uploadId);
+
+        return $this->jsonResponse($response, [
+            'ok' => true,
         ]);
     }
 
@@ -2580,6 +2662,28 @@ class PropertyController
         ];
     }
 
+    private function shouldUseMultipartDirectUpload(int $size): bool
+    {
+        return $size >= self::DIRECT_UPLOAD_MULTIPART_THRESHOLD_BYTES;
+    }
+
+    private function isDirectUploadObjectKeyAllowed(string $objectKey): bool
+    {
+        $settings = $this->directUploadSettings();
+
+        if ($settings === null) {
+            return false;
+        }
+
+        $prefix = trim((string) ($settings['prefix'] ?? ''), '/');
+
+        if ($prefix === '') {
+            return false;
+        }
+
+        return str_starts_with(ltrim($objectKey, '/'), $prefix . '/');
+    }
+
     private function normalizeDirectUploadContentType(string $contentType, string $name): ?string
     {
         $normalizedType = strtolower(trim($contentType));
@@ -2637,7 +2741,13 @@ class PropertyController
             . $extensionSuffix;
     }
 
-    private function createDirectUploadSignedUrl(string $method, string $objectKey, int $expiresSeconds, ?string $contentType = null): string
+    private function createDirectUploadSignedUrl(
+        string $method,
+        string $objectKey,
+        int $expiresSeconds,
+        ?string $contentType = null,
+        array $extraQueryParameters = []
+    ): string
     {
         $settings = $this->directUploadSettings();
 
@@ -2670,6 +2780,10 @@ class PropertyController
             'X-Amz-Expires' => (string) max(60, min($expiresSeconds, 86400)),
             'X-Amz-SignedHeaders' => $signedHeaders,
         ];
+
+        foreach ($extraQueryParameters as $key => $value) {
+            $queryParameters[(string) $key] = (string) $value;
+        }
 
         ksort($queryParameters);
 
@@ -2705,6 +2819,116 @@ class PropertyController
         return 'https://' . $host . $canonicalUri . '?' . $canonicalQueryString . '&X-Amz-Signature=' . $signature;
     }
 
+    private function createMultipartDirectUpload(string $objectKey, string $contentType): string
+    {
+        $url = $this->createDirectUploadSignedUrl(
+            'POST',
+            $objectKey,
+            self::DIRECT_UPLOAD_URL_TTL,
+            $contentType,
+            ['uploads' => '']
+        );
+
+        $result = $this->performDirectUploadHttpRequest('POST', $url, '', [
+            'Content-Type: ' . $contentType,
+        ]);
+
+        if (($result['status'] ?? 0) < 200 || ($result['status'] ?? 0) >= 300) {
+            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_prepare_failed'));
+        }
+
+        $uploadId = $this->extractXmlTagValue((string) ($result['body'] ?? ''), 'UploadId');
+
+        if ($uploadId === '') {
+            throw new \RuntimeException($this->translator->trans('properties.error_direct_upload_prepare_failed'));
+        }
+
+        return $uploadId;
+    }
+
+    private function buildMultipartDirectUploadPartTargets(string $objectKey, string $uploadId, int $size): array
+    {
+        $partSize = self::DIRECT_UPLOAD_MULTIPART_PART_SIZE;
+        $partCount = max(1, (int) ceil(max(1, $size) / $partSize));
+        $targets = [];
+
+        for ($partNumber = 1; $partNumber <= $partCount; $partNumber++) {
+            $targets[] = [
+                'part_number' => $partNumber,
+                'upload_url' => $this->createDirectUploadSignedUrl(
+                    'PUT',
+                    $objectKey,
+                    self::DIRECT_UPLOAD_URL_TTL,
+                    null,
+                    [
+                        'partNumber' => (string) $partNumber,
+                        'uploadId' => $uploadId,
+                    ]
+                ),
+            ];
+        }
+
+        return $targets;
+    }
+
+    private function listMultipartDirectUploadParts(string $objectKey, string $uploadId): array
+    {
+        $url = $this->createDirectUploadSignedUrl(
+            'GET',
+            $objectKey,
+            self::DIRECT_UPLOAD_URL_TTL,
+            null,
+            ['uploadId' => $uploadId]
+        );
+
+        $result = $this->performDirectUploadHttpRequest('GET', $url);
+
+        if (($result['status'] ?? 0) < 200 || ($result['status'] ?? 0) >= 300) {
+            throw new \RuntimeException($this->translator->trans('properties.direct_upload_failed'));
+        }
+
+        $parts = $this->extractMultipartPartsFromXml((string) ($result['body'] ?? ''));
+
+        if ($parts === []) {
+            throw new \RuntimeException($this->translator->trans('properties.direct_upload_failed'));
+        }
+
+        return $parts;
+    }
+
+    private function completeMultipartDirectUpload(string $objectKey, string $uploadId, array $parts): void
+    {
+        $xml = $this->buildMultipartCompleteXml($parts);
+        $url = $this->createDirectUploadSignedUrl(
+            'POST',
+            $objectKey,
+            self::DIRECT_UPLOAD_URL_TTL,
+            null,
+            ['uploadId' => $uploadId]
+        );
+
+        $result = $this->performDirectUploadHttpRequest('POST', $url, $xml, [
+            'Content-Type: application/xml',
+        ]);
+
+        if (($result['status'] ?? 0) < 200 || ($result['status'] ?? 0) >= 300) {
+            throw new \RuntimeException($this->translator->trans('properties.direct_upload_failed'));
+        }
+    }
+
+    private function abortMultipartDirectUpload(string $objectKey, string $uploadId): void
+    {
+        $url = $this->createDirectUploadSignedUrl(
+            'DELETE',
+            $objectKey,
+            300,
+            null,
+            ['uploadId' => $uploadId]
+        );
+
+        $this->performDirectUploadHttpRequest('DELETE', $url);
+    }
+
     private function buildAwsV4SigningKey(string $secretKey, string $dateStamp, string $region, string $service): string
     {
         $dateKey = hash_hmac('sha256', $dateStamp, 'AWS4' . $secretKey, true);
@@ -2722,6 +2946,144 @@ class PropertyController
         );
 
         return implode('/', $segments);
+    }
+
+    private function performDirectUploadHttpRequest(string $method, string $url, string $body = '', array $headers = []): array
+    {
+        $headerLines = array_merge([
+            'Accept: application/xml, text/xml, */*',
+        ], $headers);
+
+        $context = stream_context_create([
+            'http' => [
+                'method' => strtoupper($method),
+                'header' => implode("\r\n", $headerLines),
+                'content' => $body,
+                'ignore_errors' => true,
+                'timeout' => 120,
+            ],
+        ]);
+
+        $responseBody = @file_get_contents($url, false, $context);
+        $responseHeaders = function_exists('http_get_last_response_headers')
+            ? (http_get_last_response_headers() ?: [])
+            : [];
+
+        return [
+            'status' => $this->extractHttpStatusCode($responseHeaders),
+            'body' => is_string($responseBody) ? $responseBody : '',
+            'headers' => $responseHeaders,
+        ];
+    }
+
+    private function extractHttpStatusCode(array $headers): int
+    {
+        if ($headers === []) {
+            return 0;
+        }
+
+        if (preg_match('/\s(\d{3})\s/', (string) $headers[0], $matches)) {
+            return (int) $matches[1];
+        }
+
+        return 0;
+    }
+
+    private function extractXmlTagValue(string $xml, string $tagName): string
+    {
+        if ($xml === '' || $tagName === '') {
+            return '';
+        }
+
+        if (function_exists('simplexml_load_string')) {
+            $parsed = @simplexml_load_string($xml);
+
+            if ($parsed !== false) {
+                $result = $parsed->xpath('//*[local-name()="' . $tagName . '"]');
+
+                if (is_array($result) && isset($result[0])) {
+                    return trim((string) $result[0]);
+                }
+            }
+        }
+
+        if (preg_match('/<' . preg_quote($tagName, '/') . '>(.*?)<\/' . preg_quote($tagName, '/') . '>/s', $xml, $matches)) {
+            return trim(html_entity_decode($matches[1], ENT_QUOTES | ENT_XML1, 'UTF-8'));
+        }
+
+        return '';
+    }
+
+    private function extractMultipartPartsFromXml(string $xml): array
+    {
+        $parts = [];
+
+        if ($xml === '') {
+            return $parts;
+        }
+
+        if (function_exists('simplexml_load_string')) {
+            $parsed = @simplexml_load_string($xml);
+
+            if ($parsed !== false) {
+                $nodes = $parsed->xpath('//*[local-name()="Part"]');
+
+                if (is_array($nodes)) {
+                    foreach ($nodes as $node) {
+                        $partNumber = (int) ($node->PartNumber ?? 0);
+                        $etag = trim((string) ($node->ETag ?? ''));
+
+                        if ($partNumber > 0 && $etag !== '') {
+                            $parts[] = [
+                                'part_number' => $partNumber,
+                                'etag' => $etag,
+                            ];
+                        }
+                    }
+                }
+            }
+        }
+
+        if ($parts !== []) {
+            usort($parts, static fn (array $left, array $right): int => $left['part_number'] <=> $right['part_number']);
+            return $parts;
+        }
+
+        if (preg_match_all('/<Part>\s*<PartNumber>(\d+)<\/PartNumber>\s*<ETag>(.*?)<\/ETag>\s*<\/Part>/s', $xml, $matches, PREG_SET_ORDER)) {
+            foreach ($matches as $match) {
+                $parts[] = [
+                    'part_number' => (int) $match[1],
+                    'etag' => trim(html_entity_decode($match[2], ENT_QUOTES | ENT_XML1, 'UTF-8')),
+                ];
+            }
+        }
+
+        usort($parts, static fn (array $left, array $right): int => $left['part_number'] <=> $right['part_number']);
+
+        return $parts;
+    }
+
+    private function buildMultipartCompleteXml(array $parts): string
+    {
+        $xml = "<CompleteMultipartUpload>\n";
+
+        foreach ($parts as $part) {
+            $partNumber = (int) ($part['part_number'] ?? 0);
+            $etag = trim((string) ($part['etag'] ?? ''));
+
+            if ($partNumber <= 0 || $etag === '') {
+                continue;
+            }
+
+            $xml .= "  <Part>\n";
+            $xml .= '    <PartNumber>' . $partNumber . "</PartNumber>\n";
+            $xml .= '    <ETag>' . htmlspecialchars($etag, ENT_XML1 | ENT_QUOTES, 'UTF-8') . "</ETag>\n";
+            $xml .= "  </Part>\n";
+        }
+
+        $xml .= "</CompleteMultipartUpload>";
+
+        return $xml;
     }
 
     private function downloadDirectUploadedObjectToTemporaryPath(string $objectKey, string $originalName): string

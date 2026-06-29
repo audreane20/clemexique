@@ -1600,6 +1600,8 @@ $app->post('/admin/profile', function ($request, $response) use ($basePath) {
 $app->group('/admin', function ($group) use ($propertyController, $basePath) {
     $group->get('/properties', [$propertyController, 'index']);
     $group->post('/properties/direct-upload/prepare', [$propertyController, 'prepareDirectUpload']);
+    $group->post('/properties/direct-upload/complete-multipart', [$propertyController, 'completeDirectUploadMultipart']);
+    $group->post('/properties/direct-upload/abort-multipart', [$propertyController, 'abortDirectUploadMultipart']);
     $group->post('/properties/upload-progress/init', [$propertyController, 'initUploadProgress']);
     $group->get('/properties/upload-progress/{token}', [$propertyController, 'uploadProgress']);
     $group->get('/properties/create', function ($request, $response) use ($basePath) {

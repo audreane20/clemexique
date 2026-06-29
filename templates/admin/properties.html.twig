@@ -113,7 +113,7 @@
 
                 <label>
                     {{ trans('properties.type') }}
-                    {% set listing_mode_value = form_data.listing_mode ?? editing_property.listing_mode ?? 'revente' %}
+                    {% set listing_mode_value = form_data.listing_mode ?? editing_property.listing_mode ?? 'future_projet' %}
                     {% set listing_mode_value = listing_mode_value == 'achat' ? 'revente' : listing_mode_value %}
                     <select name="listing_mode" required>
                         <option value="future_projet" {{ listing_mode_value == 'future_projet' ? 'selected' : '' }}>{{ trans('properties.mode_future_project') }}</option>

@@ -510,7 +510,7 @@ class PropertyModel
         $property['exchange_rate_date'] = self::USD_TO_CAD_RATE_DATE;
         $property['listing_mode_label'] = match ($property['listing_mode']) {
             'location' => 'Location',
-            'future_projet' => 'Projet futur',
+            'future_projet' => 'Nouveau projet',
             'revente', 'achat' => 'Revente',
             default => 'Revente',
         };

@@ -62,6 +62,17 @@
         </nav>
 
         <div class="header-right header-right-desktop">
+            {% if not is_admin_authenticated %}
+                <div class="header-lang-group">
+                    <div class="lang-switch">
+                        <a href="{{ current_language_urls.en }}" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
+                        <span class="lang-divider">|</span>
+                        <a href="{{ current_language_urls.es }}" class="{{ app_lang == 'es' ? 'active' : '' }}">ES</a>
+                        <span class="lang-divider">|</span>
+                        <a href="{{ current_language_urls.fr }}" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
+                    </div>
+                </div>
+            {% endif %}
             <div class="header-auth-actions">
                 {% if is_admin_authenticated %}
                     <details class="account-menu">
@@ -128,15 +139,17 @@
             {% endif %}
 
             <div class="header-right header-right-drawer">
-                <div class="header-lang-group">
-                    <div class="lang-switch">
-                        <a href="{{ current_language_urls.en }}" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
-                        <span class="lang-divider">|</span>
-                        <a href="{{ current_language_urls.es }}" class="{{ app_lang == 'es' ? 'active' : '' }}">ES</a>
-                        <span class="lang-divider">|</span>
-                        <a href="{{ current_language_urls.fr }}" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
+                {% if is_admin_authenticated %}
+                    <div class="header-lang-group">
+                        <div class="lang-switch">
+                            <a href="{{ current_language_urls.en }}" class="{{ app_lang == 'en' ? 'active' : '' }}">EN</a>
+                            <span class="lang-divider">|</span>
+                            <a href="{{ current_language_urls.es }}" class="{{ app_lang == 'es' ? 'active' : '' }}">ES</a>
+                            <span class="lang-divider">|</span>
+                            <a href="{{ current_language_urls.fr }}" class="{{ app_lang == 'fr' ? 'active' : '' }}">FR</a>
+                        </div>
                     </div>
-                </div>
+                {% endif %}
             </div>
         </div>
 

@@ -21,8 +21,8 @@ class PropertyController
     private const PNG_OPTIMIZE_THRESHOLD_BYTES = 4000000;
     private const UPLOAD_PROGRESS_TTL = 1800;
     private const DIRECT_UPLOAD_URL_TTL = 7200;
-    private const DIRECT_UPLOAD_MULTIPART_THRESHOLD_BYTES = 67108864;
-    private const DIRECT_UPLOAD_MULTIPART_PART_SIZE = 26214400;
+    private const DIRECT_UPLOAD_MULTIPART_THRESHOLD_BYTES = 20971520;
+    private const DIRECT_UPLOAD_MULTIPART_PART_SIZE = 10485760;
 
     public function __construct(PropertyModel $propertyModel, Twig $twig, string $basePath, Translator $translator)
     {
@@ -362,7 +362,7 @@ class PropertyController
 
             $key = $this->buildDirectUploadObjectKey($name, (int) $index);
 
-            if ($this->shouldUseMultipartDirectUpload($size)) {
+            if ($this->shouldUseMultipartDirectUpload($size, $name)) {
                 $uploadId = $this->createMultipartDirectUpload($key, $contentType);
 
                 $targets[] = [
@@ -2662,8 +2662,12 @@ class PropertyController
         ];
     }
 
-    private function shouldUseMultipartDirectUpload(int $size): bool
+    private function shouldUseMultipartDirectUpload(int $size, string $name = ''): bool
     {
+        if (strtolower(pathinfo($name, PATHINFO_EXTENSION)) === 'zip') {
+            return true;
+        }
+
         return $size >= self::DIRECT_UPLOAD_MULTIPART_THRESHOLD_BYTES;
     }
 

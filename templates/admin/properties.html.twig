@@ -283,7 +283,7 @@
             const directUploadFailedLabel = {{ trans('properties.direct_upload_failed')|json_encode|raw }};
             const directUploadProcessingLabel = {{ trans('properties.direct_upload_processing_message')|json_encode|raw }};
             const uploadTimeoutMs = 7200000;
-            const multipartPartRetryLimit = 3;
+            const multipartPartRetryLimit = 5;
 
             const updateFileInputText = () => {
                 const count = fileInput.files ? fileInput.files.length : 0;
@@ -566,6 +566,10 @@
                 uploadRequest.send(file);
             });
 
+            const waitFor = (ms) => new Promise((resolve) => {
+                window.setTimeout(resolve, ms);
+            });
+
             const uploadMultipartPartToDirectTarget = (blob, target, onProgress) => new Promise((resolve, reject) => {
                 const uploadRequest = new XMLHttpRequest();
                 uploadRequest.open('PUT', target.upload_url, true);
@@ -658,6 +662,9 @@
                                 await abortMultipartDirectUpload(target);
                                 throw error;
                             }
+
+                            const retryDelayMs = Math.min(15000, 1000 * Math.pow(2, attempt - 1));
+                            await waitFor(retryDelayMs);
                         }
                     }
                 }

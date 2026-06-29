@@ -1599,6 +1599,7 @@ $app->post('/admin/profile', function ($request, $response) use ($basePath) {
 
 $app->group('/admin', function ($group) use ($propertyController, $basePath) {
     $group->get('/properties', [$propertyController, 'index']);
+    $group->get('/properties/import-job/{jobId}', [$propertyController, 'importJobStatus']);
     $group->post('/properties/direct-upload/prepare', [$propertyController, 'prepareDirectUpload']);
     $group->post('/properties/direct-upload/complete-multipart', [$propertyController, 'completeDirectUploadMultipart']);
     $group->post('/properties/direct-upload/abort-multipart', [$propertyController, 'abortDirectUploadMultipart']);

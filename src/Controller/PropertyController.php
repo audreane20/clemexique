@@ -77,6 +77,16 @@ class PropertyController
             $this->initializeUploadProgress($progressToken);
         }
 
+        if ($this->shouldQueueDirectUploadImport($directUploadManifest)) {
+            $jobId = $this->queuePropertyImportJob('create', $data, $directUploadManifest);
+            $this->startBackgroundPropertyImportJob($jobId);
+            $this->resumeSessionLock();
+
+            return $response
+                ->withHeader('Location', $this->basePath . '/admin/properties')
+                ->withStatus(302);
+        }
+
         if ($this->requestExceedsPostLimit($request)) {
             $this->failUploadProgress($progressToken, $this->translator->trans('properties.error_upload_too_large'));
             return $this->renderAdminProperties($response, null, $this->translator->trans('properties.error_upload_too_large'), $data);
@@ -142,6 +152,16 @@ class PropertyController
 
         if ($progressToken !== null) {
             $this->initializeUploadProgress($progressToken);
+        }
+
+        if ($this->shouldQueueDirectUploadImport($directUploadManifest)) {
+            $jobId = $this->queuePropertyImportJob('update', $data, $directUploadManifest, $id);
+            $this->startBackgroundPropertyImportJob($jobId);
+            $this->resumeSessionLock();
+
+            return $response
+                ->withHeader('Location', $this->basePath . '/admin/properties')
+                ->withStatus(302);
         }
 
         if ($this->requestExceedsPostLimit($request)) {
@@ -319,6 +339,34 @@ class PropertyController
         return $response
             ->withHeader('Content-Type', 'application/json')
             ->withHeader('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0');
+    }
+
+    public function importJobStatus(Request $request, Response $response, array $args): Response
+    {
+        $jobId = trim((string) ($args['jobId'] ?? ''));
+        $job = $this->readPropertyImportJob($jobId);
+
+        if ($job === null) {
+            return $this->jsonResponse($response, [
+                'error' => 'Import job not found.',
+            ], 404);
+        }
+
+        $payload = [
+            'job_id' => $job['job_id'] ?? $jobId,
+            'status' => $job['status'] ?? 'queued',
+            'message' => $job['message'] ?? '',
+            'mode' => $job['mode'] ?? 'create',
+        ];
+
+        $progressToken = trim((string) ($job['progress_token'] ?? ''));
+        $progress = $progressToken !== '' ? $this->readUploadProgress($progressToken) : null;
+
+        if (is_array($progress)) {
+            $payload['progress'] = $progress;
+        }
+
+        return $this->jsonResponse($response, $payload);
     }
 
     public function prepareDirectUpload(Request $request, Response $response): Response
@@ -1350,6 +1398,7 @@ class PropertyController
     ): Response {
         $noticeGroups = $_SESSION['property_admin_notice_groups'] ?? null;
         unset($_SESSION['property_admin_notice_groups']);
+        $activeImportJob = $this->consumeActivePropertyImportJobSummary();
 
         return $this->twig->render($response, 'admin/properties.html.twig', [
             'page_title_key' => 'properties.page_title',
@@ -1360,7 +1409,95 @@ class PropertyController
             'form_data' => $formData,
             'form_error_groups' => $error !== null ? $this->buildUploadSkippedGroupsFromMessageContext($error) : null,
             'direct_upload_enabled' => $this->isDirectUploadEnabled(),
+            'active_import_job' => $activeImportJob,
         ]);
+    }
+
+    public function processImportJobById(string $jobId): void
+    {
+        $job = $this->readPropertyImportJob($jobId);
+
+        if ($job === null) {
+            return;
+        }
+
+        $currentStatus = (string) ($job['status'] ?? 'queued');
+
+        if (!in_array($currentStatus, ['queued', 'processing'], true)) {
+            return;
+        }
+
+        $progressToken = trim((string) ($job['progress_token'] ?? ''));
+        $formData = is_array($job['form_data'] ?? null) ? $job['form_data'] : [];
+        $directUploadManifest = is_array($job['direct_upload_manifest'] ?? null) ? $job['direct_upload_manifest'] : [];
+        $mode = (string) ($job['mode'] ?? 'create');
+        $propertyId = (int) ($job['property_id'] ?? 0);
+
+        $this->writePropertyImportJob($jobId, array_merge($job, [
+            'status' => 'processing',
+            'message' => 'Downloading and processing uploaded files.',
+            'updated_at' => time(),
+        ]));
+        $this->initializeUploadProgress($progressToken);
+
+        try {
+            if ($mode === 'update') {
+                $property = $this->propertyModel->findById($propertyId);
+
+                if ($property === null) {
+                    throw new \RuntimeException('Property not found.');
+                }
+
+                $data = $this->normalizePropertyFormData($formData);
+                $data['image_url'] = $property['image_url'];
+
+                $uploadOutcome = $this->storeDirectUploadedMedia($directUploadManifest, false, $property['images'] ?? [], $progressToken);
+                $newImageUrls = $uploadOutcome['stored'];
+
+                if ($newImageUrls === [] && $uploadOutcome['submitted_count'] > 0) {
+                    throw new \RuntimeException($this->buildUploadFailureMessage($uploadOutcome['skipped']));
+                }
+
+                if ($newImageUrls !== []) {
+                    $this->propertyModel->addImages($propertyId, $newImageUrls);
+                }
+
+                $this->propertyModel->update($propertyId, $data);
+            } else {
+                $data = $this->normalizePropertyFormData($formData);
+                $uploadOutcome = $this->storeDirectUploadedMedia($directUploadManifest, false, [], $progressToken);
+                $imageUrls = $uploadOutcome['stored'];
+                $data['image_url'] = $this->firstImageUrl($imageUrls) ?? '';
+
+                if ($data['image_url'] === '') {
+                    if ($uploadOutcome['submitted_count'] > 0) {
+                        throw new \RuntimeException($this->buildUploadFailureMessage($uploadOutcome['skipped']));
+                    }
+
+                    throw new \RuntimeException($this->translator->trans('properties.error_upload_required'));
+                }
+
+                $createdPropertyId = $this->propertyModel->create($data);
+                $this->propertyModel->replaceImages($createdPropertyId, $imageUrls);
+                $propertyId = $createdPropertyId;
+            }
+
+            $this->completeUploadProgress($progressToken, 'Import complete.');
+            $this->writePropertyImportJob($jobId, array_merge($job, [
+                'status' => 'complete',
+                'message' => 'Import complete.',
+                'property_id' => $propertyId,
+                'updated_at' => time(),
+            ]));
+        } catch (\Throwable $exception) {
+            $this->failUploadProgress($progressToken, $exception->getMessage());
+            $this->writePropertyImportJob($jobId, array_merge($job, [
+                'status' => 'failed',
+                'message' => $exception->getMessage(),
+                'updated_at' => time(),
+            ]));
+            $this->logPropertyConversionDebug('Background property import failed for job "' . $jobId . '": ' . $exception->getMessage());
+        }
     }
 
     private function uploadedFileDisplayName(UploadedFileInterface $uploadedFile): string
@@ -3399,6 +3536,151 @@ class PropertyController
                 @unlink($filePath);
             }
         }
+    }
+
+    private function shouldQueueDirectUploadImport(array $manifest): bool
+    {
+        foreach ($manifest as $entry) {
+            if (!is_array($entry)) {
+                continue;
+            }
+
+            $name = strtolower(trim((string) ($entry['name'] ?? '')));
+
+            if ($name !== '' && str_ends_with($name, '.zip')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function queuePropertyImportJob(string $mode, array $formData, array $directUploadManifest, ?int $propertyId = null): string
+    {
+        $jobId = 'property-import-' . bin2hex(random_bytes(12));
+        $progressToken = 'import-' . bin2hex(random_bytes(12));
+
+        $job = [
+            'job_id' => $jobId,
+            'mode' => $mode,
+            'property_id' => $propertyId,
+            'form_data' => $formData,
+            'direct_upload_manifest' => $directUploadManifest,
+            'progress_token' => $progressToken,
+            'status' => 'queued',
+            'message' => 'Upload complete. Import queued.',
+            'created_at' => time(),
+            'updated_at' => time(),
+        ];
+
+        $this->writePropertyImportJob($jobId, $job);
+
+        $_SESSION['property_admin_import_job_id'] = $jobId;
+
+        return $jobId;
+    }
+
+    private function startBackgroundPropertyImportJob(string $jobId): void
+    {
+        $phpBinary = trim((string) ($_ENV['PROPERTY_IMPORT_PHP_BINARY'] ?? ''));
+
+        if ($phpBinary === '') {
+            $phpBinary = strtoupper(substr(PHP_OS_FAMILY, 0, 3)) === 'WIN' ? 'php.exe' : 'php';
+        }
+
+        $scriptPath = dirname(__DIR__, 2) . '/bin/process_property_import.php';
+
+        if (!is_file($scriptPath)) {
+            $this->logPropertyConversionDebug('Background property import script is missing: ' . $scriptPath);
+            return;
+        }
+
+        if (stripos(PHP_OS_FAMILY, 'Windows') === 0) {
+            $command = 'start /B "" ' . escapeshellarg($phpBinary) . ' ' . escapeshellarg($scriptPath) . ' ' . escapeshellarg($jobId);
+            @pclose(@popen($command, 'r'));
+            return;
+        }
+
+        $command = escapeshellcmd($phpBinary)
+            . ' '
+            . escapeshellarg($scriptPath)
+            . ' '
+            . escapeshellarg($jobId)
+            . ' >/dev/null 2>&1 &';
+
+        @exec($command);
+    }
+
+    private function consumeActivePropertyImportJobSummary(): ?array
+    {
+        $jobId = trim((string) ($_SESSION['property_admin_import_job_id'] ?? ''));
+
+        if ($jobId === '') {
+            return null;
+        }
+
+        $job = $this->readPropertyImportJob($jobId);
+
+        if ($job === null) {
+            unset($_SESSION['property_admin_import_job_id']);
+            return null;
+        }
+
+        $status = (string) ($job['status'] ?? 'queued');
+
+        if (in_array($status, ['complete', 'failed'], true)) {
+            unset($_SESSION['property_admin_import_job_id']);
+        }
+
+        return [
+            'job_id' => $jobId,
+            'status' => $status,
+            'message' => (string) ($job['message'] ?? ''),
+        ];
+    }
+
+    private function propertyImportJobsDirectory(): string
+    {
+        $directory = dirname(__DIR__, 2) . '/var/property-import-jobs';
+
+        if (!is_dir($directory) && !@mkdir($directory, 0775, true) && !is_dir($directory)) {
+            throw new \RuntimeException('Could not create the property import jobs directory.');
+        }
+
+        return $directory;
+    }
+
+    private function propertyImportJobPath(string $jobId): string
+    {
+        return $this->propertyImportJobsDirectory() . '/' . preg_replace('/[^A-Za-z0-9_-]+/', '', $jobId) . '.json';
+    }
+
+    private function writePropertyImportJob(string $jobId, array $job): void
+    {
+        file_put_contents(
+            $this->propertyImportJobPath($jobId),
+            (string) json_encode($job, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES),
+            LOCK_EX
+        );
+    }
+
+    private function readPropertyImportJob(string $jobId): ?array
+    {
+        $jobId = preg_replace('/[^A-Za-z0-9_-]+/', '', trim($jobId));
+
+        if ($jobId === '') {
+            return null;
+        }
+
+        $path = $this->propertyImportJobPath($jobId);
+
+        if (!is_file($path)) {
+            return null;
+        }
+
+        $decoded = json_decode((string) file_get_contents($path), true);
+
+        return is_array($decoded) ? $decoded : null;
     }
 
     private function releaseSessionLock(): void

@@ -557,7 +557,7 @@ return [
     'excursions.hero' => 'Une page rapide pour regrouper les excursions et les bons contacts au meme endroit.',
     'excursions.intro' => 'Voici un premier point de depart pour les excursions autour de Playa del Carmen.',
     'excursions.section_title' => 'Contact suggere',
-    'excursions.section_copy' => 'Utilisez cette page comme repere simple pour les excursions et la planification des sorties.',
+    'excursions.section_copy' => 'Découvrez nos différentes expériences, qu elles soient nautiques, terrestres ou culturelles.',
     'excursions.toc_eyebrow' => 'Guide rapide',
     'excursions.toc_title' => 'Parcourir par section',
     'excursions.toc_copy' => 'Utilisez ces raccourcis pour aller directement a la section qui vous interesse.',

@@ -129,7 +129,7 @@ return array(
     'excursions.home_cta' => 'Abrir pagina de excursiones',
     'excursions.intro' => 'Aqui tienes un primer punto de partida para excursiones alrededor de Playa del Carmen.',
     'excursions.page_title' => 'Excursiones',
-    'excursions.section_copy' => 'Usa esta pagina como referencia rapida para excursiones y planeacion.',
+    'excursions.section_copy' => 'Descubre nuestras diferentes experiencias, ya sean nauticas, terrestres o culturales.',
     'excursions.section_title' => 'Contacto sugerido',
     'excursions.title' => 'Excursiones',
     'excursions.toc_copy' => 'Usa estos accesos directos para ir a la seccion que te interesa.',

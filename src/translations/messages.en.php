@@ -504,7 +504,7 @@ return [
     'excursions.hero' => 'A quick excursion page to keep useful activity providers in one easy place.',
     'excursions.intro' => 'Here is a simple starting point for excursion options around Playa del Carmen.',
     'excursions.section_title' => 'Suggested contact',
-    'excursions.section_copy' => 'Use this page as a quick reference for excursions and tour planning.',
+    'excursions.section_copy' => 'Discover our different experiences, whether they are nautical, land-based, or cultural.',
     'excursions.toc_eyebrow' => 'Quick guide',
     'excursions.toc_title' => 'Browse by section',
     'excursions.toc_copy' => 'Jump straight to the excursion category you want to review.',

@@ -13,3 +13,9 @@ Slim 4 PHP application for the CLeMexique site.
 ## AWS
 
 Deployment notes are in [docs/aws-deployment.md](E:/eCommerce/Wampoon/htdocs/clemexique/docs/aws-deployment.md).
+
+Use this to save chages after pushing to the `main` branch:
+
+cd /var/www/clemexique
+git pull
+sudo systemctl restart apache2

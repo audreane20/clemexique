@@ -392,6 +392,7 @@ return [
     'residency.note_title' => 'Note',
     'residency.note_item_1' => 'You need an RFC number, which is the Mexican tax number: 3,500 MX pesos.',
     'residency.note_item_2' => 'Lost or replacement card: 1,780 MX pesos.',
+    'residency.note_item_3' => '* Estimated price only.',
     'residency.advantages_title' => 'Advantages',
     'residency.advantages_item_1' => 'Possibility of buying a vehicle.',
     'residency.advantages_item_2' => 'Opening a bank account.',

@@ -40,6 +40,11 @@
                         {% for property in property_row %}
                             <article class="property-public-card">
                                 <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}" class="property-public-image">
+                                <p class="property-public-type">
+                                    {{ property.listing_mode == 'future_projet'
+                                        ? trans('properties.mode_future_project')
+                                        : trans('properties.mode_resale') }}
+                                </p>
 
                                 <h2>{{ property.name }}</h2>
                                 <p class="property-public-city">{{ property.city }}</p>

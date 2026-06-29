@@ -1,0 +1,31 @@
+{% extends "layout.html.twig" %}
+
+{% block content %}
+<section class="about-hero">
+    <p>{{ trans('info_request_rent.hero') }}</p>
+</section>
+
+<section class="residency-container">
+    <h1>{{ trans('info_request_rent.title') }}</h1>
+    <p>{{ trans('info_request_rent.copy') }}</p>
+
+    <div class="residency-note">
+        <p>
+            <strong>
+                {{ trans('info_request_rent.note_prefix') }}<em>{{ trans('info_request_rent.note_emphasis') }}</em>{{ trans('info_request_rent.note_middle') }}<em>{{ trans('info_request_rent.note_emphasis_secondary') }}</em>{{ trans('info_request_rent.note_suffix') }}
+            </strong>
+        </p>
+        <p>
+            <strong>{{ trans('info_request_rent.note_code_line') }}</strong>
+        </p>
+
+        <div class="page-home-actions">
+            <a href="https://saleah.stays.net/" class="info-request-link" target="_blank" rel="noopener noreferrer">{{ trans('info_request_rent.cta') }}</a>
+        </div>
+    </div>
+
+    <div class="page-home-actions">
+        <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
+    </div>
+</section>
+{% endblock %}

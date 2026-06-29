@@ -246,6 +246,7 @@ return [
     'info_request.cta' => 'Click here for more information',
     'info_request.form_cta' => 'Open the form',
     'info_request_rent.title' => 'Property rental',
+    'info_request_rent.hero' => 'A simple page to discover our trusted property rental partner.',
     'info_request_rent.copy' => 'You will be transferred to a trusted collaborator who takes care of rental properties.',
     'info_request_rent.note_prefix' => 'If you mention ',
     'info_request_rent.note_emphasis' => 'CLeMexique',

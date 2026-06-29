@@ -196,6 +196,7 @@ return array(
     'info_request.cta' => 'Haz clic aqui para mas informacion',
     'info_request.form_cta' => 'Abrir formulario',
     'info_request_rent.title' => 'Renta de propiedad',
+    'info_request_rent.hero' => 'Una página simple para descubrir nuestro socio de confianza para la renta de propiedades.',
     'info_request_rent.copy' => 'Serás transferido a un colaborador de confianza que se encarga de las propiedades en renta.',
     'info_request_rent.note_prefix' => 'Si mencionas ',
     'info_request_rent.note_emphasis' => 'CLeMexique',

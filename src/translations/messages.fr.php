@@ -236,6 +236,7 @@ return [
     'info_request.cta' => 'Cliquez ici pour plus d\'information',
     'info_request.form_cta' => 'Ouvrir le formulaire',
     'info_request_rent.title' => 'Location de propriété',
+    'info_request_rent.hero' => 'Une page simple pour découvrir notre partenaire de confiance pour la location de propriété.',
     'info_request_rent.copy' => 'Vous serez transféré vers un collaborateur de confiance qui s’occupe des locations de propriétés.',
     'info_request_rent.note_prefix' => 'Si vous mentionnez ',
     'info_request_rent.note_emphasis' => 'CLeMexique',

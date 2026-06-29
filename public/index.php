@@ -207,9 +207,8 @@ $headerMenuLinks = [
         'label' => $translator->trans('info_request.title'),
     ],
     [
-        'href' => 'https://saleah.stays.net/',
+        'path' => '/location-proprietes',
         'label' => $translator->trans('info_request_rent.title'),
-        'external' => true,
     ],
     [
         'path' => '/residence-immigration',
@@ -683,6 +682,12 @@ $app->get('/residence-immigration', function ($request, $response) use ($twig, $
 $app->get('/location-automobiles', function ($request, $response) use ($twig, $translator) {
     return $twig->render($response, 'auto-rental.html.twig', [
         'page_title' => $translator->trans('auto_rental.page_title'),
+    ]);
+});
+
+$app->get('/location-proprietes', function ($request, $response) use ($twig, $translator) {
+    return $twig->render($response, 'rental-properties.html.twig', [
+        'page_title' => $translator->trans('info_request_rent.title'),
     ]);
 });
 

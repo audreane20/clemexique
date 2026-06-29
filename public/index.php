@@ -1472,8 +1472,13 @@ $app->get('/admin/login', function ($request, $response) use ($twig, $basePath, 
     ]);
 });
 
-$app->get('/rmadmin', function ($request, $response) use ($basePath) {
-    return redirectTo($response, $basePath . '/admin/login');
+$app->get('/rmadmin', function ($request, $response) {
+    $response->getBody()->write('Gone');
+
+    return $response
+        ->withHeader('Content-Type', 'text/plain; charset=UTF-8')
+        ->withHeader('X-Robots-Tag', 'noindex, nofollow, noarchive')
+        ->withStatus(410);
 });
 
 $app->post('/admin/login', function ($request, $response) use ($basePath) {

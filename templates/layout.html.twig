@@ -161,9 +161,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const panel = document.querySelector('[data-header-menu-panel]');
     const backdrop = document.querySelector('[data-header-menu-close]');
     const headerMenus = Array.from(document.querySelectorAll('.site-header details.account-menu'));
-    const adminShortcutSequence = ['1', '6', '9', '0'];
-    const adminShortcutPin = adminShortcutSequence.join('');
-    let adminShortcutBuffer = [];
 
     if (!toggle || !panel) {
         return;
@@ -229,66 +226,14 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    const submitAdminShortcut = function () {
-        const form = document.createElement('form');
-        const pinField = document.createElement('input');
-
-        form.method = 'POST';
-        form.action = '{{ base_path }}/admin/login';
-        form.hidden = true;
-
-        pinField.type = 'hidden';
-        pinField.name = 'pin';
-        pinField.value = adminShortcutPin;
-
-        form.appendChild(pinField);
-        document.body.appendChild(form);
-        form.submit();
-    };
-
     window.addEventListener('resize', syncMenuState);
     syncMenuState();
 
     document.addEventListener('keydown', function (event) {
-        const target = event.target;
-        const isTypingField = target instanceof HTMLElement && (
-            target.tagName === 'INPUT' ||
-            target.tagName === 'TEXTAREA' ||
-            target.tagName === 'SELECT' ||
-            target.isContentEditable
-        );
-
-        if (isTypingField || event.ctrlKey || event.metaKey || event.altKey) {
-            adminShortcutBuffer = [];
-            return;
-        }
-
         const key = (event.key || '').toLowerCase();
 
         if (key === 'escape') {
             closeHeaderMenus(null);
-            adminShortcutBuffer = [];
-            return;
-        }
-
-        if (!/^[0-9]$/.test(key)) {
-            adminShortcutBuffer = [];
-            return;
-        }
-
-        adminShortcutBuffer.push(key);
-
-        if (adminShortcutBuffer.length > adminShortcutSequence.length) {
-            adminShortcutBuffer.shift();
-        }
-
-        const matchesShortcut = adminShortcutSequence.every(function (shortcutKey, index) {
-            return adminShortcutBuffer[index] === shortcutKey;
-        });
-
-        if (matchesShortcut) {
-            adminShortcutBuffer = [];
-            submitAdminShortcut();
         }
     });
 });

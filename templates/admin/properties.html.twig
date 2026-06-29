@@ -280,7 +280,7 @@
             const directUploadPrepareFailedLabel = {{ trans('properties.direct_upload_prepare_failed')|json_encode|raw }};
             const directUploadFailedLabel = {{ trans('properties.direct_upload_failed')|json_encode|raw }};
             const directUploadProcessingLabel = {{ trans('properties.direct_upload_processing_message')|json_encode|raw }};
-            const uploadTimeoutMs = 1800000;
+            const uploadTimeoutMs = 7200000;
 
             const updateFileInputText = () => {
                 const count = fileInput.files ? fileInput.files.length : 0;

@@ -20,7 +20,7 @@ class PropertyController
     private const IMAGE_OPTIMIZE_THRESHOLD_BYTES = 8000000;
     private const PNG_OPTIMIZE_THRESHOLD_BYTES = 4000000;
     private const UPLOAD_PROGRESS_TTL = 1800;
-    private const DIRECT_UPLOAD_URL_TTL = 900;
+    private const DIRECT_UPLOAD_URL_TTL = 7200;
 
     public function __construct(PropertyModel $propertyModel, Twig $twig, string $basePath, Translator $translator)
     {

@@ -24,12 +24,6 @@ class ExcursionController
 
     public function publicIndex(Request $request, Response $response): Response
     {
-        $language = $this->currentLanguage($request);
-        $categories = $this->localizeCategoryTitles(
-            $this->excursionModel->findAllByLanguage($language),
-            $language
-        );
-
         return $this->twig->render($response, 'excursions.html.twig', [
             'page_title' => $this->translator->trans('excursions.page_title'),
             'title_text' => $this->translator->trans('excursions.title'),
@@ -37,11 +31,8 @@ class ExcursionController
             'intro_text' => $this->translator->trans('excursions.intro'),
             'section_title' => $this->translator->trans('excursions.section_title'),
             'section_copy' => $this->translator->trans('excursions.section_copy'),
-            'toc_eyebrow' => $this->translator->trans('excursions.toc_eyebrow'),
-            'toc_title' => $this->translator->trans('excursions.toc_title'),
-            'toc_copy' => $this->translator->trans('excursions.toc_copy'),
-            'contact_cta' => $this->translator->trans('excursions.contact_cta'),
-            'guide_categories' => $categories,
+            'discount_note' => $this->translator->trans('excursions.discount_note'),
+            'redirect_cta' => $this->translator->trans('excursions.redirect_cta'),
         ]);
     }
 

@@ -1620,18 +1620,12 @@ $app->group('/admin', function ($group) use ($propertyController, $basePath) {
     $group->post('/properties/{id}/delete', [$propertyController, 'delete']);
 })->add($adminAuthMiddleware);
 
-$app->group('/admin/content', function ($group) use ($restaurantController, $excursionController, $todoController, $videoCapsuleController) {
+$app->group('/admin/content', function ($group) use ($restaurantController, $todoController, $videoCapsuleController) {
     $group->get('/restaurants', [$restaurantController, 'adminIndex']);
     $group->post('/restaurants/items/create', [$restaurantController, 'create']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/update', [$restaurantController, 'update']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/delete', [$restaurantController, 'deleteItem']);
     $group->post('/restaurants/categories/{categoryIndex}/delete', [$restaurantController, 'deleteCategory']);
-
-    $group->get('/excursions', [$excursionController, 'adminIndex']);
-    $group->post('/excursions/items/create', [$excursionController, 'create']);
-    $group->post('/excursions/items/{categoryIndex}/{itemIndex}/update', [$excursionController, 'update']);
-    $group->post('/excursions/items/{categoryIndex}/{itemIndex}/delete', [$excursionController, 'deleteItem']);
-    $group->post('/excursions/categories/{categoryIndex}/delete', [$excursionController, 'deleteCategory']);
 
     $group->get('/playa_guide', [$todoController, 'adminIndex']);
     $group->post('/playa_guide/items/create', [$todoController, 'create']);

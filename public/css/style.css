@@ -73,9 +73,8 @@ body.startup-screen-body .page-content {
     justify-content: center;
     padding: 24px;
     overflow: hidden;
-    background:
-        linear-gradient(135deg, rgba(4, 25, 45, 0.42), rgba(4, 25, 45, 0.12)),
-        url("../Images/startup.jpg") center center / cover no-repeat;
+    isolation: isolate;
+    background: #061a2e;
 }
 
 .startup-screen::before,
@@ -87,26 +86,28 @@ body.startup-screen-body .page-content {
 }
 
 .startup-screen::before {
+    z-index: 0;
     background:
-        radial-gradient(circle at 18% 78%, rgba(255, 136, 48, 0.34) 0%, rgba(255, 136, 48, 0.16) 18%, rgba(255, 136, 48, 0) 42%),
-        radial-gradient(circle at 78% 18%, rgba(50, 180, 255, 0.28) 0%, rgba(50, 180, 255, 0.12) 24%, rgba(50, 180, 255, 0) 48%),
-        linear-gradient(120deg, rgba(5, 34, 63, 0.48) 10%, rgba(11, 53, 88, 0.18) 42%, rgba(214, 69, 31, 0.18) 100%);
-    mix-blend-mode: screen;
+        url("../Images/startup.jpg") center center / cover no-repeat;
+    filter: contrast(1.18) saturate(1.22) brightness(1.05);
+    transform: scale(1.01);
 }
 
 .startup-screen::after {
+    z-index: 1;
     background:
-        linear-gradient(180deg, rgba(2, 16, 31, 0.46) 0%, rgba(2, 16, 31, 0.18) 30%, rgba(2, 16, 31, 0.36) 100%),
-        radial-gradient(circle at 50% 14%, rgba(255, 190, 96, 0.18) 0%, rgba(255, 190, 96, 0.06) 18%, rgba(255, 190, 96, 0) 34%);
+        radial-gradient(circle at 18% 78%, rgba(255, 156, 56, 0.2) 0%, rgba(255, 156, 56, 0.08) 20%, rgba(255, 156, 56, 0) 42%),
+        radial-gradient(circle at 78% 18%, rgba(58, 188, 255, 0.16) 0%, rgba(58, 188, 255, 0.06) 24%, rgba(58, 188, 255, 0) 46%),
+        linear-gradient(180deg, rgba(2, 16, 31, 0.2) 0%, rgba(2, 16, 31, 0.04) 28%, rgba(2, 16, 31, 0.22) 100%);
 }
 
 .startup-screen-backdrop {
     position: absolute;
     inset: 0;
+    z-index: 2;
     background:
-        radial-gradient(circle at 22% 74%, rgba(255, 173, 70, 0.28) 0%, rgba(255, 173, 70, 0.08) 24%, rgba(255, 173, 70, 0) 46%),
-        radial-gradient(circle at 82% 16%, rgba(67, 177, 255, 0.26) 0%, rgba(67, 177, 255, 0.1) 24%, rgba(67, 177, 255, 0) 46%),
-        linear-gradient(135deg, rgba(7, 39, 70, 0.58) 0%, rgba(8, 45, 78, 0.2) 42%, rgba(140, 38, 18, 0.32) 100%);
+        radial-gradient(circle at center, rgba(255, 241, 210, 0.08), transparent 34%),
+        linear-gradient(135deg, rgba(10, 33, 58, 0.16) 0%, rgba(10, 33, 58, 0.04) 48%, rgba(210, 78, 38, 0.08) 100%);
 }
 
 .startup-screen-sunburst {

@@ -536,7 +536,7 @@ return array(
     'residency.intro' => 'Aqui tienes un resumen simple de pasos, costos y ventajas.',
     'residency.note_item_1' => 'Necesitas el RFC, el numero fiscal mexicano.',
     'residency.note_item_2' => 'Tarjeta perdida o reemplazo.',
-    'residency.note_item_3' => '* Precio indicativo solamente.',
+    'residency.note_item_3' => 'Precio a título indicativo solamente.',
     'residency.note_title' => 'Nota',
     'residency.page_title' => 'Residencia e inmigracion',
     'residency.step1_copy' => 'Completa el formulario de la embajada de Mexico en Montreal y verifica si eres elegible.',

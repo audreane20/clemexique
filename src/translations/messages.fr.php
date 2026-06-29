@@ -391,7 +391,7 @@ return [
     'residency.note_title' => 'Note',
     'residency.note_item_1' => 'Besoin du numéro RFC, qui est le numéro fiscal du Mexique : 3 500 MX pesos.',
     'residency.note_item_2' => 'Carte perdue ou à remplacer : 1 780 MX pesos.',
-    'residency.note_item_3' => '* Prix indicatif seulement.',
+    'residency.note_item_3' => 'Prix à titre d\'indicatif seulement.',
     'residency.advantages_title' => 'Avantages',
     'residency.advantages_item_1' => 'Possibilité d\'acheter un véhicule.',
     'residency.advantages_item_2' => 'Ouverture de compte bancaire.',

@@ -3029,6 +3029,10 @@ body.home-transition-sun-active .home-hero-orb-sun {
     margin-top: 10px !important;
 }
 
+.residency-note-disclaimer-asterisk {
+    color: #d62839;
+}
+
 .residency-actions {
     margin-top: 28px;
 }

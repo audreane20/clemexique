@@ -238,7 +238,7 @@ return [
     'info_request_rent.title' => 'Location de propriété',
     'info_request_rent.hero' => 'Une page simple pour accéder à notre formulaire de location tiers de confiance.',
     'info_request_rent.copy' => 'Vous serez redirigé vers un tiers de confiance pour remplir le formulaire de location.',
-    'info_request_rent.note_text' => 'Si vous voulez un cadeau gratuit, sélectionnez CLeMexique à cette question.',
+    'info_request_rent.note_text' => 'Si vous mentionnez CLeMexique, vous recevrez un CADEAU GRATUIT à votre arrivée. Sélectionnez : "CLeMexique.ca" à la question "Comment avez-vous eu notre contact ?" pour le cadeau gratuit.',
     'info_request_rent.cta' => 'Ouvrir le formulaire de location',
     'info_request.secondary_title' => 'Étapes de résidence et d\'immigration',
     'info_request.secondary_copy' => 'Consultez ce guide pour voir les étapes, les frais et quelques avantages liés à la résidence au Mexique.',

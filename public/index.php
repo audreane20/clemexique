@@ -727,13 +727,7 @@ $app->get('/gestion-immobiliere/formulaire', function ($request, $response) use 
 });
 
 $app->get('/location-automobiles/formulaire', function ($request, $response) use ($renderAutoRentalForm, $consumeAutoRentalFlash) {
-    $flash = $consumeAutoRentalFlash();
-
-    return $renderAutoRentalForm($response, [
-        'success' => (bool) ($flash['success'] ?? false),
-        'error' => $flash['error'] ?? null,
-        'form_data' => is_array($flash['form_data'] ?? null) ? $flash['form_data'] : [],
-    ]);
+    return redirectTo($response, 'https://forms.gle/6GihRBXZvSJukMUX8');
 });
 
 $app->get('/demande-information/formulaire', function ($request, $response) use ($renderInquiryForm, $consumeInquiryFlash) {

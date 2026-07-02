@@ -498,12 +498,12 @@ $pdo->exec("
 setSiteContentPdo($pdo);
 
 $propertyModel = new PropertyModel($pdo);
-$restaurantModel = new RestaurantModel($pdo);
-$excursionModel = new ExcursionModel($pdo);
-$todoModel = new TodoModel($pdo);
-$videoCapsuleModel = new VideoCapsuleModel($pdo);
-$userModel = new UserModel($pdo);
 $googleTranslateService = new GoogleTranslateService((string) ($_ENV['GOOGLE_TRANSLATE_API_KEY'] ?? ''));
+$restaurantModel = new RestaurantModel($pdo, $googleTranslateService);
+$excursionModel = new ExcursionModel($pdo, $googleTranslateService);
+$todoModel = new TodoModel($pdo, $googleTranslateService);
+$videoCapsuleModel = new VideoCapsuleModel($pdo, $googleTranslateService);
+$userModel = new UserModel($pdo);
 $propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator, $googleTranslateService);
 $restaurantController = new RestaurantController($restaurantModel, $twig, $basePath, $translator);
 $excursionController = new ExcursionController($excursionModel, $twig, $basePath, $translator);

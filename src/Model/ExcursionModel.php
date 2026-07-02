@@ -3,12 +3,15 @@
 namespace App\Model;
 
 use App\Helper\Locale;
+use App\Service\GoogleTranslateService;
 use InvalidArgumentException;
 use PDO;
 
 class ExcursionModel
 {
-    public function __construct(private PDO $pdo)
+    private const MANAGED_LANGUAGES = ['fr', 'en', 'es'];
+
+    public function __construct(private PDO $pdo, private ?GoogleTranslateService $googleTranslateService = null)
     {
     }
 
@@ -48,51 +51,78 @@ class ExcursionModel
 
     public function createItem(string $language, array $data): void
     {
-        $this->saveItem($language, $data, null, null);
+        $language = $this->normalizeLanguage($language);
+        $this->pdo->beginTransaction();
+
+        try {
+            $this->saveItem($language, $data, null, null);
+            $this->syncTranslatedItem($language, $data, null, null);
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $exception;
+        }
     }
 
     public function updateItem(string $language, int $sourceCategoryIndex, int $sourceItemIndex, array $data): void
     {
-        $this->saveItem($language, $data, $sourceCategoryIndex, $sourceItemIndex);
+        $language = $this->normalizeLanguage($language);
+        $this->pdo->beginTransaction();
+
+        try {
+            $this->saveItem($language, $data, $sourceCategoryIndex, $sourceItemIndex);
+            $this->syncTranslatedItem($language, $data, $sourceCategoryIndex, $sourceItemIndex);
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $exception;
+        }
     }
 
     public function deleteItemByIndexes(string $language, int $categoryIndex, int $itemIndex): void
     {
-        $categoryRow = $this->fetchCategoryRowByIndex($this->normalizeLanguage($language), $categoryIndex);
+        $language = $this->normalizeLanguage($language);
+        $this->pdo->beginTransaction();
 
-        if ($categoryRow === null) {
-            throw new InvalidArgumentException($this->localizedMessage('category_not_found', $language));
+        try {
+            foreach (self::MANAGED_LANGUAGES as $managedLanguage) {
+                $this->deleteItemInLanguage($managedLanguage, $categoryIndex, $itemIndex, $managedLanguage === $language);
+            }
+
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $exception;
         }
-
-        $itemRow = $this->fetchItemRowByIndex((int) $categoryRow['id'], $itemIndex);
-
-        if ($itemRow === null) {
-            throw new InvalidArgumentException($this->localizedMessage('item_not_found', $language));
-        }
-
-        $stmt = $this->pdo->prepare('DELETE FROM excursions WHERE id = :id');
-        $stmt->execute([
-            'id' => (int) $itemRow['id'],
-        ]);
-
-        $this->resequenceItems((int) $categoryRow['id']);
     }
 
     public function deleteCategoryByIndex(string $language, int $categoryIndex): void
     {
         $language = $this->normalizeLanguage($language);
-        $categoryRow = $this->fetchCategoryRowByIndex($language, $categoryIndex);
+        $this->pdo->beginTransaction();
 
-        if ($categoryRow === null) {
-            throw new InvalidArgumentException($this->localizedMessage('category_not_found', $language));
+        try {
+            foreach (self::MANAGED_LANGUAGES as $managedLanguage) {
+                $this->deleteCategoryInLanguage($managedLanguage, $categoryIndex, $managedLanguage === $language);
+            }
+
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $exception;
         }
-
-        $stmt = $this->pdo->prepare('DELETE FROM excursion_categories WHERE id = :id');
-        $stmt->execute([
-            'id' => (int) $categoryRow['id'],
-        ]);
-
-        $this->resequenceCategories($language);
     }
 
     private function saveItem(string $language, array $data, ?int $sourceCategoryIndex, ?int $sourceItemIndex): void
@@ -228,6 +258,159 @@ class ExcursionModel
                 'id' => $itemId,
             ]
         ));
+    }
+
+    private function syncTranslatedItem(string $sourceLanguage, array $data, ?int $sourceCategoryIndex, ?int $sourceItemIndex): void
+    {
+        if ($sourceLanguage !== 'fr') {
+            return;
+        }
+
+        foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
+            if ($targetLanguage === $sourceLanguage) {
+                continue;
+            }
+
+            $translatedData = $this->buildTranslatedData($data, $sourceLanguage, $targetLanguage);
+            $this->saveItem($targetLanguage, $translatedData, $sourceCategoryIndex, $sourceItemIndex);
+        }
+    }
+
+    private function buildTranslatedData(array $data, string $sourceLanguage, string $targetLanguage): array
+    {
+        $translatedData = $data;
+        $translatedData['note'] = $this->translateText((string) ($data['note'] ?? ''), $sourceLanguage, $targetLanguage);
+
+        $sourceCategoryIndex = $this->resolvePostedCategoryIndexAfterSourceSave($sourceLanguage, $data);
+
+        if ($sourceCategoryIndex !== null) {
+            $this->ensureMirroredCategoryExists($sourceLanguage, $targetLanguage, $sourceCategoryIndex);
+            $translatedData['category_choice'] = (string) $sourceCategoryIndex;
+        }
+
+        return $translatedData;
+    }
+
+    private function resolvePostedCategoryIndexAfterSourceSave(string $sourceLanguage, array $data): ?int
+    {
+        $categoryChoice = trim((string) ($data['category_choice'] ?? ''));
+
+        if ($categoryChoice === '__new__') {
+            $categories = $this->fetchCategoryRowsByLanguage($sourceLanguage);
+
+            return $categories === [] ? null : count($categories) - 1;
+        }
+
+        if ($categoryChoice === '' || !is_numeric($categoryChoice)) {
+            return null;
+        }
+
+        return (int) $categoryChoice;
+    }
+
+    private function ensureMirroredCategoryExists(string $sourceLanguage, string $targetLanguage, int $categoryIndex): void
+    {
+        if ($this->fetchCategoryRowByIndex($targetLanguage, $categoryIndex) !== null) {
+            return;
+        }
+
+        $sourceCategoryRow = $this->fetchCategoryRowByIndex($sourceLanguage, $categoryIndex);
+
+        if ($sourceCategoryRow === null) {
+            throw new InvalidArgumentException($this->localizedMessage('category_not_found', $sourceLanguage));
+        }
+
+        $this->insertCategory(
+            $targetLanguage,
+            $this->translateText((string) ($sourceCategoryRow['title'] ?? ''), $sourceLanguage, $targetLanguage),
+            $sourceCategoryRow['icon_code'] ?? null,
+            $categoryIndex
+        );
+    }
+
+    private function insertCategory(string $language, string $title, ?string $iconCode, int $sortOrder): int
+    {
+        $stmt = $this->pdo->prepare(
+            'INSERT INTO excursion_categories (language_code, title, icon_code, sort_order)
+             VALUES (:language_code, :title, :icon_code, :sort_order)'
+        );
+        $stmt->execute([
+            'language_code' => $language,
+            'title' => trim($title),
+            'icon_code' => $iconCode !== null && trim((string) $iconCode) !== '' ? trim((string) $iconCode) : null,
+            'sort_order' => $sortOrder,
+        ]);
+
+        return (int) $this->pdo->lastInsertId();
+    }
+
+    private function translateText(string $text, string $sourceLanguage, string $targetLanguage): string
+    {
+        $text = trim($text);
+
+        if ($text === '' || $sourceLanguage === $targetLanguage) {
+            return $text;
+        }
+
+        if ($this->googleTranslateService === null || !$this->googleTranslateService->isConfigured()) {
+            return $text;
+        }
+
+        try {
+            return $this->googleTranslateService->translate($text, $sourceLanguage, $targetLanguage);
+        } catch (\RuntimeException) {
+            return $text;
+        }
+    }
+
+    private function deleteItemInLanguage(string $language, int $categoryIndex, int $itemIndex, bool $strict): void
+    {
+        $categoryRow = $this->fetchCategoryRowByIndex($language, $categoryIndex);
+
+        if ($categoryRow === null) {
+            if ($strict) {
+                throw new InvalidArgumentException($this->localizedMessage('category_not_found', $language));
+            }
+
+            return;
+        }
+
+        $itemRow = $this->fetchItemRowByIndex((int) $categoryRow['id'], $itemIndex);
+
+        if ($itemRow === null) {
+            if ($strict) {
+                throw new InvalidArgumentException($this->localizedMessage('item_not_found', $language));
+            }
+
+            return;
+        }
+
+        $stmt = $this->pdo->prepare('DELETE FROM excursions WHERE id = :id');
+        $stmt->execute([
+            'id' => (int) $itemRow['id'],
+        ]);
+
+        $this->resequenceItems((int) $categoryRow['id']);
+    }
+
+    private function deleteCategoryInLanguage(string $language, int $categoryIndex, bool $strict): void
+    {
+        $categoryRow = $this->fetchCategoryRowByIndex($language, $categoryIndex);
+
+        if ($categoryRow === null) {
+            if ($strict) {
+                throw new InvalidArgumentException($this->localizedMessage('category_not_found', $language));
+            }
+
+            return;
+        }
+
+        $stmt = $this->pdo->prepare('DELETE FROM excursion_categories WHERE id = :id');
+        $stmt->execute([
+            'id' => (int) $categoryRow['id'],
+        ]);
+
+        $this->resequenceCategories($language);
     }
 
     private function fetchCategoryRowsByLanguage(string $language): array

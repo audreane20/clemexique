@@ -107,18 +107,8 @@
                 </label>
 
                 <label>
-                    {{ trans('properties.description_fr') }}
+                    {{ trans('properties.description') }}
                     <textarea name="description_fr" rows="8" placeholder="{{ trans('properties.description_placeholder_fr') }}" required>{{ form_data.description_fr ?? editing_property.description_fr ?? '' }}</textarea>
-                </label>
-
-                <label>
-                    {{ trans('properties.description_en') }}
-                    <textarea name="description_en" rows="8" placeholder="{{ trans('properties.description_placeholder_en') }}">{{ form_data.description_en ?? editing_property.description_en ?? '' }}</textarea>
-                </label>
-
-                <label>
-                    {{ trans('properties.description_es') }}
-                    <textarea name="description_es" rows="8" placeholder="{{ trans('properties.description_placeholder_es') }}">{{ form_data.description_es ?? editing_property.description_es ?? '' }}</textarea>
                     <small class="property-field-help">{{ trans('properties.description_translation_help') }}</small>
                 </label>
 

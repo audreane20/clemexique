@@ -5,11 +5,12 @@ namespace App\Helper;
 class Translator
 {
     private array $messages = [];
+    private string $language;
 
     public function __construct(string $lang)
     {
-        $language = Locale::normalize($lang);
-        $file = __DIR__ . '/../translations/messages.' . $language . '.php';
+        $this->language = Locale::normalize($lang);
+        $file = __DIR__ . '/../translations/messages.' . $this->language . '.php';
 
         if (!file_exists($file)) {
             $file = __DIR__ . '/../translations/messages.' . Locale::DEFAULT . '.php';
@@ -29,5 +30,10 @@ class Translator
         }
 
         return strtr($message, $replacements);
+    }
+
+    public function getLanguage(): string
+    {
+        return $this->language;
     }
 }

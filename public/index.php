@@ -13,6 +13,7 @@ use App\Model\RestaurantModel;
 use App\Model\TodoModel;
 use App\Model\UserModel;
 use App\Model\VideoCapsuleModel;
+use App\Service\GoogleTranslateService;
 use PHPMailer\PHPMailer\Exception;
 use PHPMailer\PHPMailer\PHPMailer;
 use Slim\Factory\AppFactory;
@@ -413,6 +414,9 @@ $pdo->exec("
         name VARCHAR(255) NOT NULL,
         city VARCHAR(255) NOT NULL,
         description TEXT NULL,
+        description_fr TEXT NULL,
+        description_en TEXT NULL,
+        description_es TEXT NULL,
         listing_mode VARCHAR(20) NOT NULL DEFAULT 'achat',
         price_amount DECIMAL(12,2) NOT NULL,
         price_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
@@ -449,6 +453,48 @@ if (!columnExists($pdo, $databaseName, 'property_cards', 'description')) {
     ");
 }
 
+if (!columnExists($pdo, $databaseName, 'property_cards', 'description_fr')) {
+    $pdo->exec("
+        ALTER TABLE property_cards
+        ADD COLUMN description_fr TEXT NULL
+        AFTER description
+    ");
+}
+
+if (!columnExists($pdo, $databaseName, 'property_cards', 'description_en')) {
+    $pdo->exec("
+        ALTER TABLE property_cards
+        ADD COLUMN description_en TEXT NULL
+        AFTER description_fr
+    ");
+}
+
+if (!columnExists($pdo, $databaseName, 'property_cards', 'description_es')) {
+    $pdo->exec("
+        ALTER TABLE property_cards
+        ADD COLUMN description_es TEXT NULL
+        AFTER description_en
+    ");
+}
+
+$pdo->exec("
+    UPDATE property_cards
+    SET description_fr = COALESCE(NULLIF(description_fr, ''), description)
+    WHERE description IS NOT NULL AND description <> ''
+");
+
+$pdo->exec("
+    UPDATE property_cards
+    SET description_en = COALESCE(NULLIF(description_en, ''), description_fr, description)
+    WHERE COALESCE(description_fr, description) IS NOT NULL
+");
+
+$pdo->exec("
+    UPDATE property_cards
+    SET description_es = COALESCE(NULLIF(description_es, ''), description_fr, description)
+    WHERE COALESCE(description_fr, description) IS NOT NULL
+");
+
 setSiteContentPdo($pdo);
 
 $propertyModel = new PropertyModel($pdo);
@@ -457,7 +503,8 @@ $excursionModel = new ExcursionModel($pdo);
 $todoModel = new TodoModel($pdo);
 $videoCapsuleModel = new VideoCapsuleModel($pdo);
 $userModel = new UserModel($pdo);
-$propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator);
+$googleTranslateService = new GoogleTranslateService((string) ($_ENV['GOOGLE_TRANSLATE_API_KEY'] ?? ''));
+$propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator, $googleTranslateService);
 $restaurantController = new RestaurantController($restaurantModel, $twig, $basePath, $translator);
 $excursionController = new ExcursionController($excursionModel, $twig, $basePath, $translator);
 $todoController = new TodoController($todoModel, $twig, $basePath, $translator);

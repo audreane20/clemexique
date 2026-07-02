@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Helper\Translator;
 use App\Model\PropertyModel;
+use App\Service\GoogleTranslateService;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use Psr\Http\Message\UploadedFileInterface;
@@ -15,6 +16,7 @@ class PropertyController
     private Twig $twig;
     private string $basePath;
     private Translator $translator;
+    private ?GoogleTranslateService $googleTranslateService;
 
     private const MAX_SKIPPED_NAMES_IN_MESSAGE = 12;
     private const IMAGE_OPTIMIZE_THRESHOLD_BYTES = 8000000;
@@ -24,12 +26,19 @@ class PropertyController
     private const DIRECT_UPLOAD_MULTIPART_THRESHOLD_BYTES = 20971520;
     private const DIRECT_UPLOAD_MULTIPART_PART_SIZE = 10485760;
 
-    public function __construct(PropertyModel $propertyModel, Twig $twig, string $basePath, Translator $translator)
+    public function __construct(
+        PropertyModel $propertyModel,
+        Twig $twig,
+        string $basePath,
+        Translator $translator,
+        ?GoogleTranslateService $googleTranslateService = null
+    )
     {
         $this->propertyModel = $propertyModel;
         $this->twig = $twig;
         $this->basePath = $basePath;
         $this->translator = $translator;
+        $this->googleTranslateService = $googleTranslateService;
     }
 
     public function index(Request $request, Response $response): Response
@@ -57,6 +66,8 @@ class PropertyController
                 'property' => null,
             ]);
         }
+
+        $property = $this->localizeProperty($property);
 
         return $this->twig->render($response, 'property-detail.html.twig', [
             'page_title' => $property['name'],
@@ -111,6 +122,7 @@ class PropertyController
                 throw new \RuntimeException($this->translator->trans('properties.error_upload_required'));
             }
 
+            $data = $this->prepareTranslatedPropertyData($data);
             $propertyId = $this->propertyModel->create($data);
             $this->propertyModel->replaceImages($propertyId, $imageUrls);
 
@@ -200,6 +212,7 @@ class PropertyController
                 $this->propertyModel->addImages($id, $newImageUrls);
             }
 
+            $data = $this->prepareTranslatedPropertyData($data);
             $this->propertyModel->update($id, $data);
 
             $this->completeUploadProgress($progressToken, $this->translator->trans('properties.upload_progress_complete_message'));
@@ -1403,7 +1416,7 @@ class PropertyController
         return $this->twig->render($response, 'admin/properties.html.twig', [
             'page_title_key' => 'properties.page_title',
             'properties' => $this->propertyModel->findAll(),
-            'editing_property' => $editingProperty,
+            'editing_property' => $editingProperty !== null ? $this->hydratePropertyDescriptions($editingProperty) : null,
             'form_error' => $error,
             'form_notice_groups' => $noticeGroups,
             'form_data' => $formData,
@@ -1450,6 +1463,7 @@ class PropertyController
 
                 $data = $this->normalizePropertyFormData($formData);
                 $data['image_url'] = $property['image_url'];
+                $data = $this->prepareTranslatedPropertyData($data);
 
                 $uploadOutcome = $this->storeDirectUploadedMedia($directUploadManifest, false, $property['images'] ?? [], $progressToken);
                 $newImageUrls = $uploadOutcome['stored'];
@@ -1477,6 +1491,7 @@ class PropertyController
                     throw new \RuntimeException($this->translator->trans('properties.error_upload_required'));
                 }
 
+                $data = $this->prepareTranslatedPropertyData($data);
                 $createdPropertyId = $this->propertyModel->create($data);
                 $this->propertyModel->replaceImages($createdPropertyId, $imageUrls);
                 $propertyId = $createdPropertyId;
@@ -3741,11 +3756,92 @@ class PropertyController
         return [
             'name' => trim((string) ($data['name'] ?? '')),
             'city' => trim((string) ($data['city'] ?? '')),
-            'description' => trim((string) ($data['description'] ?? '')),
+            'description' => trim((string) ($data['description_fr'] ?? ($data['description'] ?? ''))),
+            'description_fr' => trim((string) ($data['description_fr'] ?? ($data['description'] ?? ''))),
+            'description_en' => trim((string) ($data['description_en'] ?? '')),
+            'description_es' => trim((string) ($data['description_es'] ?? '')),
             'listing_mode' => $listingMode,
             'price_amount' => trim((string) ($data['price_amount'] ?? '')),
             'price_currency' => trim((string) ($data['price_currency'] ?? 'CAD')),
         ];
+    }
+
+    private function prepareTranslatedPropertyData(array $data): array
+    {
+        $descriptionFr = trim((string) ($data['description_fr'] ?? ''));
+        $descriptionEn = trim((string) ($data['description_en'] ?? ''));
+        $descriptionEs = trim((string) ($data['description_es'] ?? ''));
+
+        if ($descriptionFr === '') {
+            return $data;
+        }
+
+        $data['description'] = $descriptionFr;
+        $data['description_fr'] = $descriptionFr;
+        $data['description_en'] = $this->resolveTranslatedDescription($descriptionFr, $descriptionEn, 'en');
+        $data['description_es'] = $this->resolveTranslatedDescription($descriptionFr, $descriptionEs, 'es');
+
+        return $data;
+    }
+
+    private function resolveTranslatedDescription(string $sourceText, string $currentValue, string $targetLanguage): string
+    {
+        $currentValue = trim($currentValue);
+
+        if ($currentValue !== '') {
+            return $currentValue;
+        }
+
+        if ($this->googleTranslateService === null || !$this->googleTranslateService->isConfigured()) {
+            return $sourceText;
+        }
+
+        try {
+            return $this->googleTranslateService->translate($sourceText, 'fr', $targetLanguage);
+        } catch (\RuntimeException $exception) {
+            $this->logPropertyConversionDebug('Property translation fallback for ' . $targetLanguage . ': ' . $exception->getMessage());
+
+            return $sourceText;
+        }
+    }
+
+    private function hydratePropertyDescriptions(array $property): array
+    {
+        $legacyDescription = trim((string) ($property['description'] ?? ''));
+
+        $property['description_fr'] = trim((string) ($property['description_fr'] ?? ''));
+        $property['description_en'] = trim((string) ($property['description_en'] ?? ''));
+        $property['description_es'] = trim((string) ($property['description_es'] ?? ''));
+
+        if ($property['description_fr'] === '' && $legacyDescription !== '') {
+            $property['description_fr'] = $legacyDescription;
+        }
+
+        if ($property['description_en'] === '') {
+            $property['description_en'] = $property['description_fr'];
+        }
+
+        if ($property['description_es'] === '') {
+            $property['description_es'] = $property['description_fr'];
+        }
+
+        return $property;
+    }
+
+    private function localizeProperty(array $property): array
+    {
+        $property = $this->hydratePropertyDescriptions($property);
+        $language = $this->translator->getLanguage();
+        $localizedKey = 'description_' . $language;
+        $localizedDescription = trim((string) ($property[$localizedKey] ?? ''));
+
+        if ($localizedDescription === '') {
+            $localizedDescription = $property['description_fr'];
+        }
+
+        $property['description'] = $localizedDescription;
+
+        return $property;
     }
 
     private function requestExceedsPostLimit(Request $request): bool

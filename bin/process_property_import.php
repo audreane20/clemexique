@@ -4,6 +4,7 @@ use App\Controller\PropertyController;
 use App\Helper\Locale;
 use App\Helper\Translator;
 use App\Model\PropertyModel;
+use App\Service\GoogleTranslateService;
 use Dotenv\Dotenv;
 use Slim\Views\Twig;
 
@@ -46,5 +47,6 @@ $pdo = new PDO(
 $translator = new Translator(Locale::DEFAULT);
 $twig = Twig::create(__DIR__ . '/../templates', ['cache' => false]);
 $propertyModel = new PropertyModel($pdo);
-$controller = new PropertyController($propertyModel, $twig, '', $translator);
+$googleTranslateService = new GoogleTranslateService((string) ($_ENV['GOOGLE_TRANSLATE_API_KEY'] ?? ''));
+$controller = new PropertyController($propertyModel, $twig, '', $translator, $googleTranslateService);
 $controller->processImportJobById($jobId);

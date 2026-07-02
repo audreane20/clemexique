@@ -27,6 +27,9 @@ class PropertyModel
                 name,
                 city,
                 description,
+                description_fr,
+                description_en,
+                description_es,
                 listing_mode,
                 price_amount,
                 price_currency,
@@ -36,6 +39,9 @@ class PropertyModel
                 :name,
                 :city,
                 :description,
+                :description_fr,
+                :description_en,
+                :description_es,
                 :listing_mode,
                 :price_amount,
                 :price_currency,
@@ -194,6 +200,9 @@ class PropertyModel
                 name = :name,
                 city = :city,
                 description = :description,
+                description_fr = :description_fr,
+                description_en = :description_en,
+                description_es = :description_es,
                 listing_mode = :listing_mode,
                 price_amount = :price_amount,
                 price_currency = :price_currency,
@@ -290,12 +299,14 @@ class PropertyModel
         $imageUrl = trim((string) ($data['image_url'] ?? ''));
         $name = $this->capitalizeFirstCharacter(trim((string) ($data['name'] ?? '')));
         $city = $this->capitalizeFirstCharacter(trim((string) ($data['city'] ?? '')));
-        $description = trim((string) ($data['description'] ?? ''));
+        $descriptionFr = trim((string) ($data['description_fr'] ?? ($data['description'] ?? '')));
+        $descriptionEn = trim((string) ($data['description_en'] ?? ''));
+        $descriptionEs = trim((string) ($data['description_es'] ?? ''));
         $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'revente')));
         $priceAmount = trim((string) ($data['price_amount'] ?? ''));
         $priceCurrency = strtoupper(trim((string) ($data['price_currency'] ?? 'USD')));
 
-        if ($imageUrl === '' || $name === '' || $city === '' || $description === '' || $priceAmount === '') {
+        if ($imageUrl === '' || $name === '' || $city === '' || $descriptionFr === '' || $priceAmount === '') {
             throw new InvalidArgumentException('Missing required property fields.');
         }
 
@@ -319,7 +330,10 @@ class PropertyModel
             'image_url' => $imageUrl,
             'name' => $name,
             'city' => $city,
-            'description' => $description,
+            'description' => $descriptionFr,
+            'description_fr' => $descriptionFr,
+            'description_en' => $descriptionEn !== '' ? $descriptionEn : $descriptionFr,
+            'description_es' => $descriptionEs !== '' ? $descriptionEs : $descriptionFr,
             'listing_mode' => $listingMode,
             'price_amount' => (float) $priceAmount,
             'price_currency' => $priceCurrency,
@@ -489,6 +503,15 @@ class PropertyModel
 
     private function decorateProperty(array $property): array
     {
+        $property['description_fr'] = trim((string) ($property['description_fr'] ?? ''));
+        $property['description_en'] = trim((string) ($property['description_en'] ?? ''));
+        $property['description_es'] = trim((string) ($property['description_es'] ?? ''));
+        $property['description'] = trim((string) ($property['description'] ?? ''));
+
+        if ($property['description_fr'] === '' && $property['description'] !== '') {
+            $property['description_fr'] = $property['description'];
+        }
+
         $amount = (float) $property['price_amount'];
         $currency = strtoupper((string) $property['price_currency']);
 

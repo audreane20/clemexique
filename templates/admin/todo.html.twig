@@ -151,8 +151,10 @@
 {% set optional_item_fields = section_config.optional_item_fields is defined
     ? section_config.optional_item_fields
     : (is_restaurants ? ['reference'] : ['note', 'video_url']) %}
-{% set is_editing_item = editing_item is not null %}
+{% set is_editing_category = editing_category is defined and editing_category is not null %}
+{% set is_editing_item = (not is_editing_category) and editing_item is not null %}
 {% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
+{% set category_form_action = is_editing_category ? base_path ~ '/admin/content/' ~ active_section ~ '/categories/' ~ editing_category_index ~ '/update' : '' %}
 {% set selected_category_choice = is_editing_item ? editing_item_category_index : (categories is empty ? '__new__' : '') %}
 <section class="admin-content-shell">
     <div class="admin-properties-header">
@@ -176,28 +178,76 @@
             <div class="admin-content-form-header">
                 <div>
                     <h2>
-                        {% if is_editing_item %}
+                        {% if is_editing_category %}
+                            {{ ui[app_lang].edit ~ ' ' ~ ui[app_lang].category }}
+                        {% elseif is_editing_item %}
                             {{ ui[app_lang].edit ~ ' ' ~ current_item_label }}
                         {% else %}
                             {{ add_title }}
                         {% endif %}
                     </h2>
                     <p>
-                        {% if is_editing_item %}
+                        {% if is_editing_category %}
+                            {{ ui[app_lang].editing_copy|format(ui[app_lang].category|lower) }}
+                        {% elseif is_editing_item %}
                             {{ ui[app_lang].editing_copy|format(current_item_label) }}
                         {% else %}
                             {{ ui[app_lang].create_copy }}
                         {% endif %}
                     </p>
                 </div>
-                {% if is_editing_item %}
+                {% if is_editing_item or is_editing_category %}
                     <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}" class="admin-content-cancel-link">{{ ui[app_lang].cancel }}</a>
                 {% endif %}
             </div>
 
-            <form method="POST" action="{{ item_form_action }}" class="admin-content-form" data-admin-content-form {% if section_config.show_video_upload is defined and section_config.show_video_upload %}data-admin-content-native-submit="true"{% endif %} enctype="multipart/form-data">
+            <form method="POST" action="{{ is_editing_category ? category_form_action : item_form_action }}" class="admin-content-form" data-admin-content-form {% if section_config.show_video_upload is defined and section_config.show_video_upload and not is_editing_category %}data-admin-content-native-submit="true"{% endif %} enctype="multipart/form-data">
                 <input type="hidden" name="editor_language" value="{{ editor_language }}">
 
+                {% if is_editing_category %}
+                    {% for field in section_config.category_fields %}
+                        <label>
+                            <span class="admin-content-label-copy">
+                                {{ field.labels[app_lang] }}
+                                {% if field.name == 'title' %}
+                                    <span class="admin-content-required-marker">*</span>
+                                {% endif %}
+                            </span>
+                            {% if field.name == 'flag' %}
+                                <div class="admin-content-icon-picker" data-category-icon-picker>
+                                    <input type="hidden" name="category_flag" value="{{ editing_category.flag|default('') }}" data-category-icon-value>
+                                    <input type="text" value="{{ editing_category.flag|default('') }}" placeholder="{{ ui[app_lang].search_icon }}" autocomplete="off" data-category-icon-input>
+                                    <div class="admin-content-icon-picker-menu is-hidden" data-category-icon-menu>
+                                        {% for choice in category_icon_choices %}
+                                            <button type="button" class="admin-content-icon-option" data-icon-code="{{ choice.code }}" data-icon-label="{{ choice.name }}">
+                                                <span class="admin-content-icon-option-symbol">{{ render_category_icon(choice.code) }}</span>
+                                                <span class="admin-content-icon-option-copy">
+                                                    <strong>{{ choice.name }}</strong>
+                                                    <span>{{ choice.code }}</span>
+                                                </span>
+                                            </button>
+                                        {% endfor %}
+                                        <div class="admin-content-icon-empty is-hidden" data-category-icon-empty>
+                                            {{ ui[app_lang].no_matching_icons }}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="admin-content-icon-preview" data-category-icon-preview>
+                                    <span class="admin-content-icon-preview-label">{{ ui[app_lang].preview }}</span>
+                                    <span class="admin-content-icon-preview-value">
+                                        {% if editing_category.flag %}
+                                            {{ render_category_icon(editing_category.flag) }}<span>{{ editing_category.flag }}</span>
+                                        {% else %}
+                                            {{ ui[app_lang].no_icon }}
+                                        {% endif %}
+                                    </span>
+                                </div>
+                            {% else %}
+                                <input type="text" name="category_title" value="{{ editing_category.title|default('') }}" placeholder="{{ field.placeholders[app_lang] }}">
+                            {% endif %}
+                        </label>
+                    {% endfor %}
+                {% else %}
                 <label>
                     <span class="admin-content-label-copy">{{ ui[app_lang].category }}<span class="admin-content-required-marker">*</span></span>
                     <select name="category_choice" data-category-choice>
@@ -361,9 +411,12 @@
                         {% endif %}
                     </label>
                 {% endif %}
+                {% endif %}
 
                 <button type="submit" class="contact-btn">
-                    {% if is_editing_item %}
+                    {% if is_editing_category %}
+                        {{ ui[app_lang].save|format(ui[app_lang].category|lower) }}
+                    {% elseif is_editing_item %}
                         {{ submit_save_label }}
                     {% else %}
                         {{ submit_add_label }}
@@ -411,6 +464,8 @@
                                 </div>
 
                                 <div class="admin-content-card-actions">
+                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_category={{ category_index }}#category-section-{{ category_index }}" class="header-auth-link">{{ ui[app_lang].edit }}</a>
+
                                     <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" data-admin-content-action data-confirm-message="{{ ui[app_lang].delete_category_confirm }}">
                                         <input type="hidden" name="editor_language" value="{{ editor_language }}">
                                         <button type="submit" class="account-menu-button property-delete-button">{{ ui[app_lang].delete }}</button>
@@ -522,23 +577,21 @@ document.addEventListener('DOMContentLoaded', function () {
         {% endfor %}
     };
 
-    if (!categoryChoice || !newCategoryFields) {
-        return;
+    if (categoryChoice && newCategoryFields) {
+        const syncNewCategoryFields = function () {
+            const showNewCategory = categoryChoice.value === '__new__';
+            newCategoryFields.classList.toggle('is-hidden', !showNewCategory);
+
+            newCategoryFields.querySelectorAll('input').forEach(function (input) {
+                input.disabled = !showNewCategory;
+            });
+        };
+
+        categoryChoice.addEventListener('change', syncNewCategoryFields);
+        syncNewCategoryFields();
     }
 
-    const syncNewCategoryFields = function () {
-        const showNewCategory = categoryChoice.value === '__new__';
-        newCategoryFields.classList.toggle('is-hidden', !showNewCategory);
-
-        newCategoryFields.querySelectorAll('input').forEach(function (input) {
-            input.disabled = !showNewCategory;
-        });
-    };
-
-    categoryChoice.addEventListener('change', syncNewCategoryFields);
-    syncNewCategoryFields();
-
-    if (!categoryIconInput || !categoryIconPreview) {
+    if (!categoryIconInput || !categoryIconPreview || !categoryIconValue || !categoryIconMenu || !categoryIconEmpty || !categoryIconPicker) {
         return;
     }
 

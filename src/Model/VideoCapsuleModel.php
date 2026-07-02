@@ -49,6 +49,22 @@ class VideoCapsuleModel
         return $itemRow === null ? null : $this->mapItemRowToViewData($itemRow);
     }
 
+    public function findCategoryByIndex(string $language, int $categoryIndex): ?array
+    {
+        $categoryRow = $this->fetchCategoryRowByIndex($this->normalizeLanguage($language), $categoryIndex);
+
+        if ($categoryRow === null) {
+            return null;
+        }
+
+        return [
+            'title' => (string) ($categoryRow['title'] ?? ''),
+            'flag' => $categoryRow['icon_code'] !== null && trim((string) $categoryRow['icon_code']) !== ''
+                ? trim((string) $categoryRow['icon_code'])
+                : '',
+        ];
+    }
+
     public function createItem(string $language, array $data): void
     {
         $language = $this->normalizeLanguage($language);
@@ -113,6 +129,39 @@ class VideoCapsuleModel
         try {
             foreach (self::MANAGED_LANGUAGES as $managedLanguage) {
                 $this->deleteCategoryInLanguage($managedLanguage, $categoryIndex, $managedLanguage === $language);
+            }
+
+            $this->pdo->commit();
+        } catch (\Throwable $exception) {
+            if ($this->pdo->inTransaction()) {
+                $this->pdo->rollBack();
+            }
+
+            throw $exception;
+        }
+    }
+
+    public function updateCategoryByIndex(string $language, int $categoryIndex, array $data): void
+    {
+        $language = $this->normalizeLanguage($language);
+        $this->pdo->beginTransaction();
+
+        try {
+            $this->updateCategoryInLanguage($language, $categoryIndex, $data, true);
+
+            if ($language === 'fr') {
+                foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
+                    if ($targetLanguage === 'fr') {
+                        continue;
+                    }
+
+                    $translatedData = [
+                        'category_title' => $this->translateText((string) ($data['category_title'] ?? ''), 'fr', $targetLanguage),
+                        'category_flag' => (string) ($data['category_flag'] ?? ''),
+                    ];
+
+                    $this->updateCategoryInLanguage($targetLanguage, $categoryIndex, $translatedData, false);
+                }
             }
 
             $this->pdo->commit();
@@ -250,6 +299,45 @@ class VideoCapsuleModel
                 'id' => $itemId,
             ]
         ));
+    }
+
+    private function updateCategoryInLanguage(string $language, int $categoryIndex, array $data, bool $strict): void
+    {
+        $categoryRow = $this->fetchCategoryRowByIndex($language, $categoryIndex);
+
+        if ($categoryRow === null) {
+            if ($strict) {
+                throw new InvalidArgumentException($this->localizedMessage('category_not_found', $language));
+            }
+
+            $sourceCategory = $this->fetchCategoryRowByIndex('fr', $categoryIndex);
+
+            if ($sourceCategory === null) {
+                return;
+            }
+
+            $this->insertCategory($language, (string) ($data['category_title'] ?? ''), (string) ($data['category_flag'] ?? ''), $categoryIndex);
+            return;
+        }
+
+        $title = trim((string) ($data['category_title'] ?? ''));
+
+        if ($title === '') {
+            throw new InvalidArgumentException($this->localizedMessage('new_category_title_required', $language));
+        }
+
+        $flag = trim((string) ($data['category_flag'] ?? ''));
+        $stmt = $this->pdo->prepare(
+            'UPDATE video_capsule_categories
+             SET title = :title,
+                 icon_code = :icon_code
+             WHERE id = :id'
+        );
+        $stmt->execute([
+            'title' => $title,
+            'icon_code' => $flag !== '' ? $flag : null,
+            'id' => (int) $categoryRow['id'],
+        ]);
     }
 
     private function syncTranslatedItem(string $sourceLanguage, array $data, ?int $sourceCategoryIndex, ?int $sourceItemIndex): void

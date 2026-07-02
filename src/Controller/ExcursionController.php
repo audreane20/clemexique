@@ -40,6 +40,7 @@ class ExcursionController
     {
         $language = $this->currentLanguage($request);
         $query = $request->getQueryParams();
+        $editingCategoryOnlyIndex = isset($query['edit_category']) ? (int) $query['edit_category'] : null;
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
@@ -54,6 +55,10 @@ class ExcursionController
             'active_section' => 'excursions',
             'categories' => $categories,
             'editor_language' => $language,
+            'editing_category' => $editingCategoryOnlyIndex !== null
+                ? $this->excursionModel->findCategoryByIndex($language, $editingCategoryOnlyIndex)
+                : null,
+            'editing_category_index' => $editingCategoryOnlyIndex,
             'editing_item' => $editingCategoryIndex !== null && $editingItemIndex !== null
                 ? $this->excursionModel->findItemByIndexes($language, $editingCategoryIndex, $editingItemIndex)
                 : null,
@@ -118,6 +123,21 @@ class ExcursionController
         try {
             $this->excursionModel->deleteCategoryByIndex($language, (int) $args['categoryIndex']);
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_deleted', $language)];
+        } catch (\InvalidArgumentException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
+        }
+
+        return $this->redirect($response, $this->buildAdminUrl($language));
+    }
+
+    public function updateCategory(Request $request, Response $response, array $args): Response
+    {
+        $data = (array) $request->getParsedBody();
+        $language = $this->postedLanguage($data);
+
+        try {
+            $this->excursionModel->updateCategoryByIndex($language, (int) $args['categoryIndex'], $data);
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_saved', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -261,6 +281,11 @@ class ExcursionController
                 'en' => 'Category deleted.',
                 'fr' => 'Categorie supprimee.',
                 'es' => 'Categoria eliminada.',
+            ],
+            'category_saved' => [
+                'en' => 'Category saved.',
+                'fr' => 'Categorie enregistree.',
+                'es' => 'Categoria guardada.',
             ],
         ];
 

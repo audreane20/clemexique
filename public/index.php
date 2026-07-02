@@ -1671,18 +1671,21 @@ $app->group('/admin/content', function ($group) use ($restaurantController, $tod
     $group->post('/restaurants/items/create', [$restaurantController, 'create']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/update', [$restaurantController, 'update']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/delete', [$restaurantController, 'deleteItem']);
+    $group->post('/restaurants/categories/{categoryIndex}/update', [$restaurantController, 'updateCategory']);
     $group->post('/restaurants/categories/{categoryIndex}/delete', [$restaurantController, 'deleteCategory']);
 
     $group->get('/playa_guide', [$todoController, 'adminIndex']);
     $group->post('/playa_guide/items/create', [$todoController, 'create']);
     $group->post('/playa_guide/items/{categoryIndex}/{itemIndex}/update', [$todoController, 'update']);
     $group->post('/playa_guide/items/{categoryIndex}/{itemIndex}/delete', [$todoController, 'deleteItem']);
+    $group->post('/playa_guide/categories/{categoryIndex}/update', [$todoController, 'updateCategory']);
     $group->post('/playa_guide/categories/{categoryIndex}/delete', [$todoController, 'deleteCategory']);
 
     $group->get('/video_capsules', [$videoCapsuleController, 'adminIndex']);
     $group->post('/video_capsules/items/create', [$videoCapsuleController, 'create']);
     $group->post('/video_capsules/items/{categoryIndex}/{itemIndex}/update', [$videoCapsuleController, 'update']);
     $group->post('/video_capsules/items/{categoryIndex}/{itemIndex}/delete', [$videoCapsuleController, 'deleteItem']);
+    $group->post('/video_capsules/categories/{categoryIndex}/update', [$videoCapsuleController, 'updateCategory']);
     $group->post('/video_capsules/categories/{categoryIndex}/delete', [$videoCapsuleController, 'deleteCategory']);
 })->add($adminAuthMiddleware);
 

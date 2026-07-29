@@ -38,10 +38,12 @@
                     <div class="property-public-row property-public-row-{{ property_row|length }}">
                         {% for property in property_row %}
                             <article class="property-public-card">
-                                {% if property.is_sold %}
-                                    <div class="property-status-ribbon property-status-ribbon-public">{{ trans('properties.sale_status_sold_badge') }}</div>
-                                {% endif %}
-                                <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}" class="property-public-image">
+                                <div class="property-card-media property-card-media-public">
+                                    {% if property.is_sold %}
+                                        <div class="property-status-ribbon property-status-ribbon-public">{{ trans('properties.sale_status_sold_badge') }}</div>
+                                    {% endif %}
+                                    <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}" class="property-public-image">
+                                </div>
                                 <p class="property-public-type">
                                     {{ property.listing_mode == 'future_projet'
                                         ? trans('properties.mode_future_project')

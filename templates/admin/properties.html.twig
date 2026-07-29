@@ -171,10 +171,12 @@
                 <div class="property-admin-grid">
                     {% for property in properties %}
                         <article class="property-admin-card">
-                            {% if property.is_sold %}
-                                <div class="property-status-ribbon property-status-ribbon-admin">{{ trans('properties.sale_status_sold_badge') }}</div>
-                            {% endif %}
-                            <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}">
+                            <div class="property-card-media property-card-media-admin">
+                                {% if property.is_sold %}
+                                    <div class="property-status-ribbon property-status-ribbon-admin">{{ trans('properties.sale_status_sold_badge') }}</div>
+                                {% endif %}
+                                <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}">
+                            </div>
 
                             <div class="property-admin-card-body">
                                 <h3>{{ property.name }}</h3>

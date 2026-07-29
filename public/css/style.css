@@ -4994,7 +4994,7 @@ body.admin-confirm-open {
         align-items: center;
         column-gap: 12px;
         row-gap: 10px;
-        padding: 4px 16px 4px;
+        padding: 4px 8px 4px 16px;
     }
 
     .header-left {
@@ -5055,6 +5055,7 @@ body.admin-confirm-open {
         height: 48px;
         position: relative;
         z-index: 301;
+        margin-left: auto;
         margin-right: 0;
     }
 
@@ -5125,6 +5126,12 @@ body.admin-confirm-open {
         order: 3;
     }
 
+    .header-right-drawer {
+        margin-top: auto;
+        padding-top: 16px;
+        border-top: 1px solid rgba(11, 53, 88, 0.08);
+    }
+
     .header-menu-panel > .header-quick-links {
         order: 1;
         margin-top: 0;
@@ -5133,8 +5140,14 @@ body.admin-confirm-open {
         margin-bottom: 0;
     }
 
-    .header-lang-group,
+    .header-right-desktop .header-lang-group,
     .account-menu {
+        width: 100%;
+        display: flex;
+        justify-content: stretch;
+    }
+
+    .header-right-drawer .header-lang-group {
         width: 100%;
         display: flex;
         justify-content: stretch;

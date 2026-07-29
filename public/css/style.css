@@ -5106,7 +5106,7 @@ body.admin-confirm-open {
     }
 
     .header-nav-desktop,
-    .header-right-desktop {
+    .header-right.header-right-desktop {
         display: none;
     }
 
@@ -5116,7 +5116,7 @@ body.admin-confirm-open {
         justify-content: stretch;
     }
 
-    .header-right {
+    .header-right.header-right-drawer {
         width: 100%;
         display: flex;
         flex-direction: column;

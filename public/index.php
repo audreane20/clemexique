@@ -418,6 +418,7 @@ $pdo->exec("
         description_en TEXT NULL,
         description_es TEXT NULL,
         listing_mode VARCHAR(20) NOT NULL DEFAULT 'achat',
+        sale_status VARCHAR(20) NOT NULL DEFAULT 'for_sale',
         price_amount DECIMAL(12,2) NOT NULL,
         price_currency VARCHAR(3) NOT NULL DEFAULT 'USD',
         external_url TEXT NOT NULL,
@@ -474,6 +475,14 @@ if (!columnExists($pdo, $databaseName, 'property_cards', 'description_es')) {
         ALTER TABLE property_cards
         ADD COLUMN description_es TEXT NULL
         AFTER description_en
+    ");
+}
+
+if (!columnExists($pdo, $databaseName, 'property_cards', 'sale_status')) {
+    $pdo->exec("
+        ALTER TABLE property_cards
+        ADD COLUMN sale_status VARCHAR(20) NOT NULL DEFAULT 'for_sale'
+        AFTER listing_mode
     ");
 }
 

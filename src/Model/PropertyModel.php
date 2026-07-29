@@ -31,6 +31,7 @@ class PropertyModel
                 description_en,
                 description_es,
                 listing_mode,
+                sale_status,
                 price_amount,
                 price_currency,
                 external_url
@@ -43,6 +44,7 @@ class PropertyModel
                 :description_en,
                 :description_es,
                 :listing_mode,
+                :sale_status,
                 :price_amount,
                 :price_currency,
                 :external_url
@@ -204,6 +206,7 @@ class PropertyModel
                 description_en = :description_en,
                 description_es = :description_es,
                 listing_mode = :listing_mode,
+                sale_status = :sale_status,
                 price_amount = :price_amount,
                 price_currency = :price_currency,
                 external_url = :external_url
@@ -303,6 +306,7 @@ class PropertyModel
         $descriptionEn = trim((string) ($data['description_en'] ?? ''));
         $descriptionEs = trim((string) ($data['description_es'] ?? ''));
         $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'revente')));
+        $saleStatus = strtolower(trim((string) ($data['sale_status'] ?? 'for_sale')));
         $priceAmount = trim((string) ($data['price_amount'] ?? ''));
         $priceCurrency = strtoupper(trim((string) ($data['price_currency'] ?? 'USD')));
 
@@ -326,6 +330,10 @@ class PropertyModel
             throw new InvalidArgumentException('Invalid listing mode.');
         }
 
+        if (!in_array($saleStatus, ['for_sale', 'sold'], true)) {
+            throw new InvalidArgumentException('Invalid property sale status.');
+        }
+
         return [
             'image_url' => $imageUrl,
             'name' => $name,
@@ -335,6 +343,7 @@ class PropertyModel
             'description_en' => $descriptionEn !== '' ? $descriptionEn : $descriptionFr,
             'description_es' => $descriptionEs !== '' ? $descriptionEs : $descriptionFr,
             'listing_mode' => $listingMode,
+            'sale_status' => $saleStatus,
             'price_amount' => (float) $priceAmount,
             'price_currency' => $priceCurrency,
             'external_url' => '',
@@ -507,6 +516,7 @@ class PropertyModel
         $property['description_en'] = trim((string) ($property['description_en'] ?? ''));
         $property['description_es'] = trim((string) ($property['description_es'] ?? ''));
         $property['description'] = trim((string) ($property['description'] ?? ''));
+        $property['sale_status'] = strtolower(trim((string) ($property['sale_status'] ?? 'for_sale')));
 
         if ($property['description_fr'] === '' && $property['description'] !== '') {
             $property['description_fr'] = $property['description'];
@@ -537,6 +547,7 @@ class PropertyModel
             'revente', 'achat' => 'Revente',
             default => 'Revente',
         };
+        $property['is_sold'] = $property['sale_status'] === 'sold';
 
         return $property;
     }

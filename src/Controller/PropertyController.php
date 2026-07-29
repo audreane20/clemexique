@@ -3748,9 +3748,14 @@ class PropertyController
     private function normalizePropertyFormData(array $data): array
     {
         $listingMode = strtolower(trim((string) ($data['listing_mode'] ?? 'revente')));
+        $saleStatus = strtolower(trim((string) ($data['sale_status'] ?? 'for_sale')));
 
         if ($listingMode === 'achat') {
             $listingMode = 'revente';
+        }
+
+        if (!in_array($saleStatus, ['for_sale', 'sold'], true)) {
+            $saleStatus = 'for_sale';
         }
 
         return [
@@ -3761,6 +3766,7 @@ class PropertyController
             'description_en' => trim((string) ($data['description_en'] ?? '')),
             'description_es' => trim((string) ($data['description_es'] ?? '')),
             'listing_mode' => $listingMode,
+            'sale_status' => $saleStatus,
             'price_amount' => trim((string) ($data['price_amount'] ?? '')),
             'price_currency' => trim((string) ($data['price_currency'] ?? 'CAD')),
         ];

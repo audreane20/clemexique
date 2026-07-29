@@ -122,6 +122,15 @@
                     </select>
                 </label>
 
+                <label>
+                    {{ trans('properties.sale_status') }}
+                    {% set sale_status_value = form_data.sale_status ?? editing_property.sale_status ?? 'for_sale' %}
+                    <select name="sale_status" required>
+                        <option value="for_sale" {{ sale_status_value == 'for_sale' ? 'selected' : '' }}>{{ trans('properties.sale_status_for_sale') }}</option>
+                        <option value="sold" {{ sale_status_value == 'sold' ? 'selected' : '' }}>{{ trans('properties.sale_status_sold') }}</option>
+                    </select>
+                </label>
+
                 <div class="property-form-row">
                     <label>
                         {{ trans('properties.price') }}
@@ -162,6 +171,9 @@
                 <div class="property-admin-grid">
                     {% for property in properties %}
                         <article class="property-admin-card">
+                            {% if property.is_sold %}
+                                <div class="property-status-ribbon property-status-ribbon-admin">{{ trans('properties.sale_status_sold_badge') }}</div>
+                            {% endif %}
                             <img src="{{ property.image_url starts with '/uploads/' ? base_path ~ property.image_url : property.image_url }}" alt="{{ property.name }}">
 
                             <div class="property-admin-card-body">

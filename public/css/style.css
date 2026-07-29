@@ -2011,6 +2011,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .property-admin-card {
+    position: relative;
     overflow: hidden;
     border-radius: 24px;
     background: #ffffff;
@@ -2249,6 +2250,7 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .property-public-card {
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -2263,6 +2265,35 @@ body.home-transition-sun-active .home-hero-orb-sun {
     border-radius: 22px;
     background: rgba(255, 255, 255, 0.92);
     box-shadow: 0 12px 28px rgba(11, 53, 88, 0.08);
+}
+
+.property-status-ribbon {
+    position: absolute;
+    left: -62px;
+    bottom: 34px;
+    z-index: 3;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 230px;
+    padding: 10px 18px;
+    background: linear-gradient(135deg, #d11f45, #8f1231);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    transform: rotate(-45deg);
+    box-shadow: 0 14px 28px rgba(143, 18, 49, 0.28);
+    pointer-events: none;
+}
+
+.property-status-ribbon-public {
+    bottom: 58px;
+}
+
+.property-status-ribbon-admin {
+    bottom: 42px;
 }
 
 .property-public-image {

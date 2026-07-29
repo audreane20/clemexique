@@ -186,6 +186,15 @@ function sendAdminVerificationCodeToRecipient(string $toEmail, string $code): bo
 
         return true;
     } catch (\PHPMailer\PHPMailer\Exception $exception) {
+        error_log(sprintf(
+            '[admin-2fa-mail] send failed host=%s port=%s username=%s from=%s to=%s message=%s',
+            (string) ($_ENV['MAIL_HOST'] ?? ''),
+            (string) ($_ENV['MAIL_PORT'] ?? 587),
+            (string) ($_ENV['MAIL_USERNAME'] ?? ''),
+            $fromEmail,
+            $toEmail,
+            $exception->getMessage()
+        ));
         return false;
     }
 }

@@ -194,7 +194,7 @@ return array(
     'info_request.country_placeholder' => 'Selecciona tu pais',
     'info_request.country_united_states' => 'Estados Unidos',
     'info_request.cta' => 'Haz clic aqui para mas informacion',
-    'info_request.form_cta' => 'Abrir formulario',
+    'info_request.form_cta' => 'Recibir sugerencias según sus preferencias',
     'info_request_rent.title' => 'Renta de propiedad',
     'info_request_rent.hero' => 'Una página simple para acceder a nuestro formulario de renta de un tercero de confianza.',
     'info_request_rent.copy' => 'Serás redirigido a un tercero de confianza para completar el formulario de renta.',

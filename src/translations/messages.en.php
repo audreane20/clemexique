@@ -255,7 +255,7 @@ return [
     'info_request.title' => 'What you need to know before buying',
     'info_request.copy' => 'Here is an overview of the annual fixed costs related to buying a property.',
     'info_request.cta' => 'Click here for more information',
-    'info_request.form_cta' => 'Open the form',
+    'info_request.form_cta' => 'Receive suggestions based on your preferences',
     'info_request_rent.title' => 'Property rental',
     'info_request_rent.hero' => 'A simple page to access our trusted third-party rental form.',
     'info_request_rent.copy' => 'You will be redirected to a trusted third party to fill out the rental form.',

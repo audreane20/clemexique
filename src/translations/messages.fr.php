@@ -245,7 +245,7 @@ return [
     'info_request.title' => 'Ce qu\'il faut savoir avant d\'acheter',
     'info_request.copy' => 'Voici un aperçu des frais fixes annuels relatifs à l\'achat d\'une propriété.',
     'info_request.cta' => 'Cliquez ici pour plus d\'information',
-    'info_request.form_cta' => 'Ouvrir le formulaire',
+    'info_request.form_cta' => 'Recevoir des suggestions selon vos préférences',
     'info_request_rent.title' => 'Location de propriété',
     'info_request_rent.hero' => 'Une page simple pour accéder à notre formulaire de location tiers de confiance.',
     'info_request_rent.copy' => 'Vous serez redirigé vers un tiers de confiance pour remplir le formulaire de location.',

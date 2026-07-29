@@ -611,4 +611,7 @@ return [
     'video_capsules.intro' => 'We are preparing a page to gather short videos and helpful snapshots of Mexico.',
     'video_capsules.coming_title' => 'Coming soon',
     'video_capsules.coming_copy' => 'This page will soon include our video capsules, useful links, and content to discover about Mexico.',
+    'transportation.title' => 'Transportation',
+    'transportation.copy' => 'Open this section for helpful information about transportation in Mexico.',
+    'transportation.home_cta' => 'Click here for more information',
 ];

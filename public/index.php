@@ -252,6 +252,11 @@ $headerMenuLinks = [
         'fragment' => 'home-video-capsules',
     ],
     [
+        'path' => '/location-automobiles',
+        'label' => $translator->trans('transportation.title'),
+        'fragment' => 'home-transportation',
+    ],
+    [
         'path' => '/',
         'label' => $translator->trans('home.menu_map_title'),
         'fragment' => 'home-map-guide',

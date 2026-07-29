@@ -596,4 +596,7 @@ return array(
     'video_capsules.intro' => 'Estamos preparando una página para reunir videos cortos y vistas útiles de México.',
     'video_capsules.coming_title' => 'Página próximamente',
     'video_capsules.coming_copy' => 'Esta página pronto incluirá nuestras cápsulas de video, enlaces útiles y contenido para descubrir sobre México.',
+    'transportation.title' => 'Transporte',
+    'transportation.copy' => 'Abre esta sección para obtener información útil sobre el transporte en México.',
+    'transportation.home_cta' => 'Haz clic aquí para más información',
 );

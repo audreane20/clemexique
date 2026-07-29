@@ -613,4 +613,7 @@ return [
     'video_capsules.intro' => 'Nous préparons une page pour regrouper de courtes vidéos et des aperçus utiles du Mexique.',
     'video_capsules.coming_title' => 'Page à venir',
     'video_capsules.coming_copy' => 'Cette page sera bientôt complétée avec nos capsules vidéo, liens utiles et contenus à découvrir sur le Mexique.',
+    'transportation.title' => 'Transport',
+    'transportation.copy' => 'Consultez cette section pour obtenir de l’information utile sur le transport au Mexique.',
+    'transportation.home_cta' => 'Cliquez ici pour plus d’information',
   ];

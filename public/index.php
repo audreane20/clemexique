@@ -661,13 +661,13 @@ $app->get('/sitemap.xml', function ($request, $response) use ($basePath) {
 
 $app->get('/', function ($request, $response) use ($twig, $translator, $propertyModel) {
     $queryParams = $request->getQueryParams();
-    $mode = strtolower((string) ($queryParams['mode'] ?? 'sale_all'));
+    $mode = strtolower((string) ($queryParams['mode'] ?? 'future_projet'));
     $isEnteredView = ($queryParams['enter'] ?? '') === '1';
     $today = date('Y-m-d');
     $hasSeenStartupToday = (string) ($_SESSION['startup_seen_date'] ?? '') === $today;
 
     if (!in_array($mode, ['sale_all', 'revente', 'future_projet'], true)) {
-        $mode = 'sale_all';
+        $mode = 'future_projet';
     }
 
     if (!$isEnteredView && !$hasSeenStartupToday) {

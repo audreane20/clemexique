@@ -20,7 +20,6 @@
             <h2>{{ trans('home.properties_title') }}</h2>
             <p>{{ trans('home.properties_subtitle') }}</p>
             <div class="property-filter-bar property-filter-bar-home">
-                <a href="{{ entered_home_url }}&mode=sale_all#home-properties" class="property-filter-link {{ selected_mode == 'sale_all' ? 'active' : '' }}">{{ trans('properties.filter_all_sale') }}</a>
                 <a href="{{ entered_home_url }}&mode=future_projet#home-properties" class="property-filter-link {{ selected_mode == 'future_projet' ? 'active' : '' }}">{{ trans('properties.filter_future_project') }}</a>
                 <a href="{{ entered_home_url }}&mode=revente#home-properties" class="property-filter-link {{ selected_mode == 'revente' ? 'active' : '' }}">{{ trans('properties.filter_resale') }}</a>
                 <a href="{{ base_path }}/demande-information/formulaire?lang={{ app_lang }}" class="property-filter-link property-filter-link-cta">{{ trans('info_request.form_cta') }}</a>

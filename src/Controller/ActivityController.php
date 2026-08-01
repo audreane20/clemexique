@@ -181,8 +181,8 @@ class ActivityController
                 ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
             ],
             'required_item_fields' => ['name'],
-            'optional_item_fields' => ['area', 'description', 'url', 'media_files'],
-            'show_media_upload' => true,
+            'optional_item_fields' => ['area', 'description', 'url'],
+            'show_media_upload' => false,
             'native_submit' => true,
         ];
     }

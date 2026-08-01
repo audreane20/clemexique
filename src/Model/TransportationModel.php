@@ -44,7 +44,7 @@ class TransportationModel
                 'title' => (string) $categoryRow['title'],
                 'flag' => null,
                 'items' => array_map(
-                    fn (array $itemRow): array => $this->mapItemRowToViewData($itemRow),
+                    fn (array $itemRow): array => $this->mapItemRowToViewData($itemRow, $language),
                     $this->fetchItemRowsByCategoryId((int) $categoryRow['id'])
                 ),
             ];
@@ -155,16 +155,21 @@ class TransportationModel
         }
     }
 
-    public function deleteItemByIndexes(string $language, int $categoryIndex, int $itemIndex): void
+    public function deleteItemByIndexes(string $language, int $categoryIndex, int $itemIndex, string $scope = 'all'): void
     {
         $language = $this->normalizeLanguage($language);
         $groupKey = $this->resolveGroupKeyFromIndexes($language, $categoryIndex, $itemIndex);
+        $scope = $scope === 'single_category' ? 'single_category' : 'all';
 
         $this->pdo->beginTransaction();
 
         try {
-            foreach (self::MANAGED_LANGUAGES as $managedLanguage) {
-                $this->deleteGroupedItemInLanguage($groupKey, $managedLanguage);
+            if ($scope === 'single_category') {
+                $this->deleteGroupedItemFromCategoryAcrossLanguages($groupKey, $categoryIndex);
+            } else {
+                foreach (self::MANAGED_LANGUAGES as $managedLanguage) {
+                    $this->deleteGroupedItemInLanguage($groupKey, $managedLanguage);
+                }
             }
 
             $this->pruneEmptyCustomCategories();
@@ -424,6 +429,28 @@ class TransportationModel
         ]);
     }
 
+    private function deleteGroupedItemFromCategoryAcrossLanguages(string $groupKey, int $categoryIndex): void
+    {
+        $stmt = $this->pdo->prepare(
+            'DELETE FROM transportation_items
+             WHERE group_key = :group_key
+               AND category_id = :category_id'
+        );
+
+        foreach (self::MANAGED_LANGUAGES as $language) {
+            $categoryRow = $this->fetchCategoryRowByIndex($language, $categoryIndex);
+
+            if ($categoryRow === null) {
+                continue;
+            }
+
+            $stmt->execute([
+                'group_key' => $groupKey,
+                'category_id' => (int) $categoryRow['id'],
+            ]);
+        }
+    }
+
     private function fetchCategoryRowsByLanguage(string $language): array
     {
         $language = $this->normalizeLanguage($language);
@@ -528,9 +555,10 @@ class TransportationModel
         }
     }
 
-    private function mapItemRowToViewData(array $itemRow): array
+    private function mapItemRowToViewData(array $itemRow, string $language): array
     {
         $url = $this->normalizeExternalUrl((string) ($itemRow['website_url'] ?? ''));
+        $categoryCount = $this->countGroupedItemCategories((string) ($itemRow['group_key'] ?? ''), $language);
 
         return [
             'name' => $itemRow['name'] ?? null,
@@ -538,7 +566,17 @@ class TransportationModel
             'note' => ($itemRow['note'] ?? '') !== '' ? (string) $itemRow['note'] : null,
             'url' => $url !== '' ? $url : null,
             'url_label' => $itemRow['website_label'] ?? null,
+            'category_count' => $categoryCount,
         ];
+    }
+
+    private function countGroupedItemCategories(string $groupKey, string $language): int
+    {
+        if ($groupKey === '') {
+            return 1;
+        }
+
+        return count($this->fetchItemRowsByGroupKey($groupKey, $language));
     }
 
     private function normalizeLanguage(string $language): string

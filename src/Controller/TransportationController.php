@@ -119,9 +119,10 @@ class TransportationController
     {
         $data = (array) $request->getParsedBody();
         $language = $this->postedLanguage($data);
+        $deleteScope = (string) ($data['delete_scope'] ?? 'all');
 
         try {
-            $this->transportationModel->deleteItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
+            $this->transportationModel->deleteItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex'], $deleteScope);
             $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_deleted', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];

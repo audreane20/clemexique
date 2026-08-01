@@ -74,6 +74,17 @@
 {% set native_submit_enabled = (section_config.native_submit is defined and section_config.native_submit)
     or (section_config.show_video_upload is defined and section_config.show_video_upload)
     or (section_config.show_media_upload is defined and section_config.show_media_upload) %}
+{% set transport_delete_choice_copy = editor_language == 'fr'
+    ? 'Cette compagnie apparaît dans plusieurs catégories. Voulez-vous la supprimer partout ou seulement de cette catégorie ?'
+    : (editor_language == 'es'
+        ? 'Esta empresa aparece en varias categorías. ¿Quieres eliminarla de todas las categorías o solo de esta?'
+        : 'This company appears in multiple categories. Do you want to delete it from every category or only this one?') %}
+{% set transport_delete_all_label = editor_language == 'fr'
+    ? 'Supprimer partout'
+    : (editor_language == 'es' ? 'Eliminar de todas' : 'Delete everywhere') %}
+{% set transport_delete_single_label = editor_language == 'fr'
+    ? 'Seulement cette catégorie'
+    : (editor_language == 'es' ? 'Solo esta categoría' : 'Only this category') %}
 <section class="admin-content-shell">
     <div class="admin-properties-header">
         <div>
@@ -472,8 +483,9 @@
                                                 <div class="admin-content-card-actions">
                                                     <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_item_category={{ category_index }}&edit_item={{ item_index }}" class="header-auth-link">{{ ui.edit }}</a>
 
-                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" data-admin-content-action data-confirm-message="{{ ui.delete_item_confirm }}">
+                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" data-admin-content-action data-confirm-message="{{ ui.delete_item_confirm }}"{% if is_transportation and item.category_count|default(1) > 1 %} data-multi-category-delete="true" data-multi-category-message="{{ transport_delete_choice_copy }}" data-delete-all-label="{{ transport_delete_all_label }}" data-delete-single-label="{{ transport_delete_single_label }}"{% endif %}>
                                                         <input type="hidden" name="editor_language" value="{{ editor_language }}">
+                                                        <input type="hidden" name="delete_scope" value="all" data-delete-scope>
                                                         <button type="submit" class="account-menu-button property-delete-button">{{ ui.delete }}</button>
                                                     </form>
                                                 </div>
@@ -546,6 +558,7 @@
         <p data-admin-confirm-message></p>
         <div class="admin-confirm-actions">
             <button type="button" class="admin-content-cancel-link" data-admin-confirm-cancel>{{ ui.cancel }}</button>
+            <button type="button" class="account-menu-button" data-admin-confirm-submit-single hidden>{{ transport_delete_single_label }}</button>
             <button type="button" class="account-menu-button property-delete-button" data-admin-confirm-submit>{{ ui.delete }}</button>
         </div>
     </div>
@@ -724,6 +737,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmModal = document.querySelector('[data-admin-confirm-modal]');
     const confirmMessage = document.querySelector('[data-admin-confirm-message]');
     const confirmSubmitButton = document.querySelector('[data-admin-confirm-submit]');
+    const confirmSubmitSingleButton = document.querySelector('[data-admin-confirm-submit-single]');
     const confirmCancelButtons = document.querySelectorAll('[data-admin-confirm-cancel]');
     const quickLinks = document.querySelectorAll('.admin-content-quick-link');
     let pendingActionForm = null;
@@ -785,6 +799,13 @@ document.addEventListener('DOMContentLoaded', function () {
 
         confirmModal.hidden = true;
         document.body.classList.remove('admin-confirm-open');
+        if (confirmSubmitButton) {
+            confirmSubmitButton.textContent = '{{ ui.delete }}';
+        }
+        if (confirmSubmitSingleButton) {
+            confirmSubmitSingleButton.hidden = true;
+            confirmSubmitSingleButton.textContent = '';
+        }
         pendingActionForm = null;
     };
 
@@ -794,7 +815,21 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         pendingActionForm = form;
-        confirmMessage.textContent = form.dataset.confirmMessage || '';
+        const isMultiCategoryDelete = form.dataset.multiCategoryDelete === 'true';
+        confirmMessage.textContent = isMultiCategoryDelete
+            ? (form.dataset.multiCategoryMessage || form.dataset.confirmMessage || '')
+            : (form.dataset.confirmMessage || '');
+        if (confirmSubmitButton) {
+            confirmSubmitButton.textContent = isMultiCategoryDelete
+                ? (form.dataset.deleteAllLabel || '{{ ui.delete }}')
+                : '{{ ui.delete }}';
+        }
+        if (confirmSubmitSingleButton) {
+            confirmSubmitSingleButton.hidden = !isMultiCategoryDelete;
+            confirmSubmitSingleButton.textContent = isMultiCategoryDelete
+                ? (form.dataset.deleteSingleLabel || '')
+                : '';
+        }
         confirmModal.hidden = false;
         document.body.classList.add('admin-confirm-open');
         return true;
@@ -808,6 +843,27 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             const formToSubmit = pendingActionForm;
+            const deleteScopeInput = formToSubmit.querySelector('[data-delete-scope]');
+            if (deleteScopeInput) {
+                deleteScopeInput.value = 'all';
+            }
+            closeConfirmModal();
+            submitAdminContentAction(formToSubmit, '{{ ui.deleting }}');
+        });
+    }
+
+    if (confirmSubmitSingleButton) {
+        confirmSubmitSingleButton.addEventListener('click', function () {
+            if (!pendingActionForm) {
+                closeConfirmModal();
+                return;
+            }
+
+            const formToSubmit = pendingActionForm;
+            const deleteScopeInput = formToSubmit.querySelector('[data-delete-scope]');
+            if (deleteScopeInput) {
+                deleteScopeInput.value = 'single_category';
+            }
             closeConfirmModal();
             submitAdminContentAction(formToSubmit, '{{ ui.deleting }}');
         });

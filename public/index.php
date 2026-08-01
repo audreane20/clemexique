@@ -768,11 +768,7 @@ $app->get('/gestion-immobiliere', function ($request, $response) use ($twig, $tr
     ]);
 });
 
-$app->get('/activites-sportives', function ($request, $response) use ($twig, $translator) {
-    return $twig->render($response, 'sports-activities.html.twig', [
-        'page_title' => $translator->trans('sports_activities.page_title'),
-    ]);
-});
+$app->get('/activites-sportives', [$activityController, 'publicIndex']);
 
 $app->get('/capsules-video-mexique', function ($request, $response) use ($videoCapsuleController) {
     return $videoCapsuleController->publicIndex($request, $response);

@@ -56,6 +56,19 @@ class ActivityController
         ]);
     }
 
+    public function publicIndex(Request $request, Response $response): Response
+    {
+        $language = $this->currentLanguage($request);
+
+        return $this->twig->render($response, 'sports-activities.html.twig', [
+            'page_title' => $this->translator->trans('sports_activities.page_title'),
+            'title_text' => $this->translator->trans('sports_activities.title'),
+            'hero_text' => $this->translator->trans('sports_activities.hero'),
+            'intro_text' => $this->translator->trans('sports_activities.intro'),
+            'activity_categories' => $this->activityModel->findAllByLanguage($language),
+        ]);
+    }
+
     public function create(Request $request, Response $response): Response
     {
         $data = (array) $request->getParsedBody();

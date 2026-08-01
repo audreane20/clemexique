@@ -2,20 +2,191 @@
 
 {% block content %}
 <section class="about-hero">
-    <p>{{ trans('sports_activities.hero') }}</p>
+    <p>{{ hero_text }}</p>
 </section>
 
-<section class="residency-container">
-    <h1>{{ trans('sports_activities.title') }}</h1>
-    <p>{{ trans('sports_activities.intro') }}</p>
+<section class="residency-container restaurant-page-shell">
+    <h1>{{ title_text }}</h1>
+    <p>{{ intro_text }}</p>
 
-    <div class="residency-note">
-        <h2>{{ trans('sports_activities.coming_title') }}</h2>
-        <p>{{ trans('sports_activities.coming_copy') }}</p>
-    </div>
+    {% if activity_categories is empty %}
+        <div class="residency-note">
+            <h2>{{ trans('sports_activities.coming_title') }}</h2>
+            <p>{{ trans('sports_activities.coming_copy') }}</p>
+        </div>
+    {% else %}
+        <section class="home-toc-shell restaurant-toc-shell">
+            <div class="home-toc-card">
+                <div class="home-toc-grid">
+                    {% for category in activity_categories %}
+                        <a href="#activity-category-{{ loop.index }}" class="home-toc-link" data-activity-toc-target="activity-category-{{ loop.index }}">
+                            <span class="home-toc-link-title">{{ category.title }}</span>
+                            <span class="home-toc-link-copy">
+                                {{ category.items|length }}
+                                {{ app_lang == 'fr'
+                                    ? (category.items|length == 1 ? 'activité' : 'activités')
+                                    : (app_lang == 'es'
+                                        ? (category.items|length == 1 ? 'actividad' : 'actividades')
+                                        : (category.items|length == 1 ? 'activity' : 'activities')) }}
+                            </span>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        <div class="restaurant-category-list">
+            {% for category in activity_categories %}
+                <section class="restaurant-category" id="activity-category-{{ loop.index }}">
+                    <div class="restaurant-category-header">
+                        <h2>{{ category.title }}</h2>
+                        <span>
+                            {{ category.items|length }}
+                            {{ app_lang == 'fr'
+                                ? (category.items|length == 1 ? 'activité' : 'activités')
+                                : (app_lang == 'es'
+                                    ? (category.items|length == 1 ? 'actividad' : 'actividades')
+                                    : (category.items|length == 1 ? 'activity' : 'activities')) }}
+                        </span>
+                    </div>
+
+                    <div class="restaurant-grid">
+                        {% for item in category.items %}
+                            {% set primary_media = item.media|first %}
+                            <article class="restaurant-card">
+                                {% if primary_media %}
+                                    <div class="property-card-media property-card-media-public">
+                                        {% if primary_media.type == 'video' %}
+                                            <video class="property-public-image" controls preload="metadata" playsinline>
+                                                <source src="{{ primary_media.url starts with '/uploads/' ? base_path ~ primary_media.url : primary_media.url }}">
+                                            </video>
+                                        {% else %}
+                                            <img
+                                                src="{{ primary_media.url starts with '/uploads/' ? base_path ~ primary_media.url : primary_media.url }}"
+                                                alt="{{ item.name }}"
+                                                class="property-public-image"
+                                                loading="lazy"
+                                            >
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+
+                                <div class="restaurant-card-top">
+                                    <h3>{{ item.name }}</h3>
+                                </div>
+
+                                {% if item.area %}
+                                    <p class="restaurant-area">
+                                        <a
+                                            href="https://www.google.com/maps/search/?api=1&query={{ (item.name ~ ' ' ~ item.area ~ ' Playa del Carmen')|url_encode }}"
+                                            class="restaurant-area-link"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            {{ app_lang == 'fr'
+                                                ? 'Pour l''adresse, cliquez ici'
+                                                : (app_lang == 'es'
+                                                    ? 'Para la dirección, haz clic aquí'
+                                                    : 'For the address, click here') }}
+                                        </a>
+                                    </p>
+                                {% endif %}
+
+                                {% if item.description %}
+                                    <p class="guide-note">{{ item.description }}</p>
+                                {% endif %}
+
+                                {% if item.url %}
+                                    <a href="{{ item.url starts with '/' ? base_path ~ item.url : item.url }}" class="guide-link" target="_blank" rel="noopener noreferrer">
+                                        {{ item.url_label ?: item.url }}
+                                    </a>
+                                {% endif %}
+                            </article>
+                        {% endfor %}
+                    </div>
+                </section>
+            {% endfor %}
+        </div>
+    {% endif %}
 
     <div class="page-home-actions">
         <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tocLinks = document.querySelectorAll('[data-activity-toc-target]');
+    let highlightTimer = null;
+    let highlightedElement = null;
+    let scrollStopTimer = null;
+
+    const highlightTarget = function (target) {
+        if (!target) {
+            return;
+        }
+
+        if (highlightedElement && highlightedElement !== target) {
+            highlightedElement.classList.remove('quick-scroll-highlight');
+        }
+
+        target.classList.remove('quick-scroll-highlight');
+        void target.offsetWidth;
+        target.classList.add('quick-scroll-highlight');
+        highlightedElement = target;
+
+        if (highlightTimer) {
+            window.clearTimeout(highlightTimer);
+        }
+
+        highlightTimer = window.setTimeout(function () {
+            target.classList.remove('quick-scroll-highlight');
+            if (highlightedElement === target) {
+                highlightedElement = null;
+            }
+        }, 1100);
+    };
+
+    const highlightAfterArrival = function (target) {
+        const finish = function () {
+            window.removeEventListener('scrollend', finish);
+            window.removeEventListener('scroll', onScroll);
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+                scrollStopTimer = null;
+            }
+            highlightTarget(target);
+        };
+
+        const onScroll = function () {
+            if (scrollStopTimer) {
+                window.clearTimeout(scrollStopTimer);
+            }
+
+            scrollStopTimer = window.setTimeout(finish, 120);
+        };
+
+        window.addEventListener('scrollend', finish, { once: true });
+        window.addEventListener('scroll', onScroll);
+        onScroll();
+    };
+
+    tocLinks.forEach(function (link) {
+        link.addEventListener('click', function (event) {
+            const targetId = link.getAttribute('data-activity-toc-target');
+            const target = targetId ? document.getElementById(targetId) : null;
+
+            if (!target) {
+                return;
+            }
+
+            event.preventDefault();
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            highlightAfterArrival(target);
+        });
+    });
+});
+</script>
 {% endblock %}

@@ -149,19 +149,17 @@ class RestaurantModel
         try {
             $this->updateCategoryInLanguage($language, $categoryIndex, $data, true);
 
-            if ($language === 'fr') {
-                foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
-                    if ($targetLanguage === 'fr') {
-                        continue;
-                    }
-
-                    $translatedData = [
-                        'category_title' => $this->translateText((string) ($data['category_title'] ?? ''), 'fr', $targetLanguage),
-                        'category_flag' => (string) ($data['category_flag'] ?? ''),
-                    ];
-
-                    $this->updateCategoryInLanguage($targetLanguage, $categoryIndex, $translatedData, false);
+            foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
+                if ($targetLanguage === $language) {
+                    continue;
                 }
+
+                $translatedData = [
+                    'category_title' => $this->translateText((string) ($data['category_title'] ?? ''), $language, $targetLanguage),
+                    'category_flag' => (string) ($data['category_flag'] ?? ''),
+                ];
+
+                $this->updateCategoryInLanguage($targetLanguage, $categoryIndex, $translatedData, false);
             }
 
             $this->pdo->commit();
@@ -350,10 +348,6 @@ class RestaurantModel
 
     private function syncTranslatedItem(string $sourceLanguage, array $data, ?int $sourceCategoryIndex, ?int $sourceItemIndex): void
     {
-        if ($sourceLanguage !== 'fr') {
-            return;
-        }
-
         foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
             if ($targetLanguage === $sourceLanguage) {
                 continue;
@@ -367,6 +361,9 @@ class RestaurantModel
     private function buildTranslatedData(array $data, string $sourceLanguage, string $targetLanguage): array
     {
         $translatedData = $data;
+        $translatedData['name'] = $this->translateText((string) ($data['name'] ?? ''), $sourceLanguage, $targetLanguage);
+        $translatedData['area'] = $this->translateText((string) ($data['area'] ?? ''), $sourceLanguage, $targetLanguage);
+        $translatedData['reference'] = $this->translateReference((string) ($data['reference'] ?? ''), $sourceLanguage, $targetLanguage);
         $sourceCategoryIndex = $this->resolvePostedCategoryIndexAfterSourceSave($sourceLanguage, $data);
 
         if ($sourceCategoryIndex !== null) {
@@ -375,6 +372,33 @@ class RestaurantModel
         }
 
         return $translatedData;
+    }
+
+    private function translateReference(string $reference, string $sourceLanguage, string $targetLanguage): string
+    {
+        $reference = trim($reference);
+
+        if ($reference === '' || $sourceLanguage === $targetLanguage) {
+            return $reference;
+        }
+
+        $favoriteByLanguage = [
+            'en' => 'Favorite pick',
+            'fr' => 'Coup de coeur',
+            'es' => 'Favorito',
+        ];
+
+        foreach ($favoriteByLanguage as $language => $label) {
+            if (mb_strtolower($reference) === mb_strtolower($label)) {
+                return $favoriteByLanguage[$targetLanguage] ?? $reference;
+            }
+        }
+
+        if (stripos($reference, 'tripadvisor') !== false) {
+            return $reference;
+        }
+
+        return $this->translateText($reference, $sourceLanguage, $targetLanguage);
     }
 
     private function resolvePostedCategoryIndexAfterSourceSave(string $sourceLanguage, array $data): ?int

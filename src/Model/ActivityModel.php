@@ -149,19 +149,17 @@ class ActivityModel
         try {
             $this->updateCategoryInLanguage($language, $categoryIndex, $data, true);
 
-            if ($language === 'fr') {
-                foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
-                    if ($targetLanguage === 'fr') {
-                        continue;
-                    }
-
-                    $translatedData = [
-                        'category_title' => $this->translateText((string) ($data['category_title'] ?? ''), 'fr', $targetLanguage),
-                        'category_flag' => (string) ($data['category_flag'] ?? ''),
-                    ];
-
-                    $this->updateCategoryInLanguage($targetLanguage, $categoryIndex, $translatedData, false);
+            foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
+                if ($targetLanguage === $language) {
+                    continue;
                 }
+
+                $translatedData = [
+                    'category_title' => $this->translateText((string) ($data['category_title'] ?? ''), $language, $targetLanguage),
+                    'category_flag' => (string) ($data['category_flag'] ?? ''),
+                ];
+
+                $this->updateCategoryInLanguage($targetLanguage, $categoryIndex, $translatedData, false);
             }
 
             $this->pdo->commit();
@@ -380,10 +378,6 @@ class ActivityModel
 
     private function syncTranslatedItem(string $sourceLanguage, array $data, ?int $sourceCategoryIndex, ?int $sourceItemIndex): void
     {
-        if ($sourceLanguage !== 'fr') {
-            return;
-        }
-
         foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
             if ($targetLanguage === $sourceLanguage) {
                 continue;
@@ -397,6 +391,8 @@ class ActivityModel
     private function buildTranslatedData(array $data, string $sourceLanguage, string $targetLanguage): array
     {
         $translatedData = $data;
+        $translatedData['name'] = $this->translateText((string) ($data['name'] ?? ''), $sourceLanguage, $targetLanguage);
+        $translatedData['area'] = $this->translateText((string) ($data['area'] ?? ''), $sourceLanguage, $targetLanguage);
         $translatedData['description'] = $this->translateText((string) ($data['description'] ?? ''), $sourceLanguage, $targetLanguage);
 
         $sourceCategoryIndex = $this->resolvePostedCategoryIndexAfterSourceSave($sourceLanguage, $data);

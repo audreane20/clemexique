@@ -4016,8 +4016,10 @@ body.home-transition-sun-active .home-hero-orb-sun {
 
 .admin-content-form input:not([type="hidden"]),
 .admin-content-form select,
+.admin-content-form textarea,
 .admin-content-item-card input:not([type="hidden"]),
-.admin-content-item-card select {
+.admin-content-item-card select,
+.admin-content-item-card textarea {
     width: 100%;
     min-height: 54px;
     padding: 14px 18px;
@@ -4031,9 +4033,37 @@ body.home-transition-sun-active .home-hero-orb-sun {
     transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
 }
 
+.admin-content-form textarea,
+.admin-content-item-card textarea {
+    min-height: 120px;
+    resize: vertical;
+    line-height: 1.5;
+}
+
 .admin-content-form input[type="file"] {
-    min-height: auto;
-    padding: 12px 14px;
+    min-height: 64px;
+    padding: 10px 12px;
+    cursor: pointer;
+}
+
+.admin-content-form input[type="file"]::file-selector-button,
+.admin-content-item-card input[type="file"]::file-selector-button {
+    margin-right: 12px;
+    padding: 10px 16px;
+    border: 1px solid rgba(11, 53, 88, 0.14);
+    border-radius: 14px;
+    background: linear-gradient(180deg, #ffffff 0%, #eef8fc 100%);
+    color: var(--navy);
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.admin-content-form input[type="file"]::file-selector-button:hover,
+.admin-content-item-card input[type="file"]::file-selector-button:hover {
+    background: linear-gradient(180deg, #ffffff 0%, #e3f5fb 100%);
+    border-color: rgba(18, 163, 197, 0.3);
 }
 
 .admin-content-field-help {
@@ -4060,14 +4090,17 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .admin-content-form input:not([type="hidden"])::placeholder,
+.admin-content-form textarea::placeholder,
 .admin-content-item-card input:not([type="hidden"])::placeholder {
     color: #7a8ba0;
 }
 
 .admin-content-form input:not([type="hidden"]):focus,
 .admin-content-form select:focus,
+.admin-content-form textarea:focus,
 .admin-content-item-card input:not([type="hidden"]):focus,
-.admin-content-item-card select:focus {
+.admin-content-item-card select:focus,
+.admin-content-item-card textarea:focus {
     outline: none;
     border-color: var(--turquoise);
     background: #ffffff;

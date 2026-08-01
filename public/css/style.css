@@ -4016,6 +4016,47 @@ body.home-transition-sun-active .home-hero-orb-sun {
     font-weight: 700;
 }
 
+.admin-content-checkbox-group {
+    margin: 0;
+    padding: 14px 16px;
+    border: 2px solid rgba(198, 220, 234, 0.9);
+    border-radius: 18px;
+    background: linear-gradient(180deg, #ffffff 0%, #f7fcff 100%);
+}
+
+.admin-content-checkbox-group legend {
+    padding: 0 2px;
+}
+
+.admin-content-checkbox-list {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-content-checkbox-option {
+    display: flex !important;
+    align-items: center;
+    gap: 12px !important;
+    font-size: 16px !important;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.admin-content-checkbox-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+    margin: 0;
+    padding: 0;
+    flex: 0 0 auto;
+    accent-color: var(--turquoise);
+    box-shadow: none;
+}
+
+.admin-content-checkbox-option span {
+    line-height: 1.35;
+}
+
 .admin-content-form > label:has([data-category-choice]) {
     font-size: 0;
 }
@@ -4047,10 +4088,10 @@ body.home-transition-sun-active .home-hero-orb-sun {
     font-size: 15px;
 }
 
-.admin-content-form input:not([type="hidden"]),
+.admin-content-form input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
 .admin-content-form select,
 .admin-content-form textarea,
-.admin-content-item-card input:not([type="hidden"]),
+.admin-content-item-card input:not([type="hidden"]):not([type="checkbox"]):not([type="radio"]),
 .admin-content-item-card select,
 .admin-content-item-card textarea {
     width: 100%;

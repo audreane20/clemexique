@@ -11,6 +11,8 @@
         ? {'en': 'excursion', 'fr': 'excursion', 'es': 'excursion'}
         : active_section == 'video_capsules'
             ? {'en': 'video capsule', 'fr': 'capsule video', 'es': 'capsula de video'}
+        : active_section == 'activities'
+            ? {'en': 'sports activity', 'fr': 'activites sportive', 'es': 'actividad deportiva'}
         : {'en': 'activity', 'fr': 'activite', 'es': 'actividad'} %}
 {% set ui = {
     'en': {
@@ -20,6 +22,7 @@
         'add_excursion': 'Add an excursion',
         'add_video': 'Add a video capsule',
         'add_activity': 'Add an activity',
+        'add_sports_activity': 'Add a sports activity',
         'editing_copy': 'The selected %s is loaded here for editing.',
         'create_copy': 'Choose an existing category or create a new one directly from this form.',
         'cancel': 'Cancel',
@@ -58,6 +61,7 @@
         'add_excursion': 'Ajouter une excursion',
         'add_video': 'Ajouter une capsule video',
         'add_activity': 'Ajouter une activite',
+        'add_sports_activity': 'Ajouter une activites sportive',
         'editing_copy': 'L element selectionne est charge ici pour modification.',
         'create_copy': 'Choisissez une categorie existante ou creez-en une nouvelle directement depuis ce formulaire.',
         'cancel': 'Annuler',
@@ -96,6 +100,7 @@
         'add_excursion': 'Agregar una excursion',
         'add_video': 'Agregar una capsula de video',
         'add_activity': 'Agregar una actividad',
+        'add_sports_activity': 'Agregar una actividad deportiva',
         'editing_copy': 'El elemento seleccionado esta cargado aqui para editarlo.',
         'create_copy': 'Elige una categoria existente o crea una nueva directamente desde este formulario.',
         'cancel': 'Cancelar',
@@ -133,9 +138,11 @@
     ? ui[app_lang].add_restaurant
     : (is_video_capsules
         ? ui[app_lang].add_video
+        : (is_activities
+            ? ui[app_lang].add_sports_activity
         : (active_section == 'excursions'
         ? ui[app_lang].add_excursion
-        : ui[app_lang].add_activity)) %}
+        : ui[app_lang].add_activity))) %}
 {% set submit_add_label = app_lang == 'es'
     ? (active_section == 'playa_guide' ? 'Agregar actividad' : add_title)
     : (app_lang == 'fr'

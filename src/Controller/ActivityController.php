@@ -152,14 +152,14 @@ class ActivityController
     {
         return [
             'page_title' => [
-                'en' => 'Activities management',
-                'fr' => 'Gestion des activites',
-                'es' => 'Gestion de actividades',
+                'en' => 'Sports activities management',
+                'fr' => 'Gestion des activites sportive',
+                'es' => 'Gestion de actividades deportivas',
             ],
             'page_copy' => [
-                'en' => 'Add, edit, or remove activity categories and activities.',
-                'fr' => 'Ajoutez, modifiez ou supprimez des categories d activites et des activites.',
-                'es' => 'Agrega, edita o elimina categorias de actividades y actividades.',
+                'en' => 'Add, edit, or remove sports activity categories and activities.',
+                'fr' => 'Ajoutez, modifiez ou supprimez des categories d activites sportive et des activites.',
+                'es' => 'Agrega, edita o elimina categorias de actividades deportivas y actividades.',
             ],
             'category_fields' => [
                 [

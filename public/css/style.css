@@ -5077,8 +5077,8 @@ body.admin-confirm-open {
         width: min(220px, 58vw);
         display: flex;
         flex-direction: column;
-        gap: 20px;
-        padding: 88px 20px 24px;
+        gap: 16px;
+        padding: 64px 20px 16px;
         border-left: 1px solid rgba(11, 53, 88, 0.08);
         border-radius: 24px 0 0 24px;
         background: #ffffff;
@@ -5131,13 +5131,13 @@ body.admin-confirm-open {
         flex-direction: column;
         justify-content: flex-start;
         gap: 10px;
-        margin-top: 12px;
+        margin-top: 8px;
         order: 3;
     }
 
     .header-right-drawer {
-        margin-top: 12px;
-        padding-top: 16px;
+        margin-top: 8px;
+        padding-top: 12px;
         border-top: 1px solid rgba(11, 53, 88, 0.08);
     }
 

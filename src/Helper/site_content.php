@@ -11,7 +11,7 @@ function siteContentEmptyState(): array
 {
     $empty = [];
 
-    foreach (['restaurants', 'excursions', 'playa_guide', 'activities', 'video_capsules'] as $section) {
+    foreach (['restaurants', 'excursions', 'playa_guide', 'activities', 'video_capsules', 'transportation'] as $section) {
         $empty[$section] = [];
 
         foreach (Locale::all() as $language) {
@@ -90,6 +90,19 @@ function siteContentTableMap(): array
                 'name' => 'name',
                 'note' => 'note',
                 'video_url' => 'video_url',
+            ],
+        ],
+        'transportation' => [
+            'categories_table' => 'transportation_categories',
+            'items_table' => 'transportation_items',
+            'category_title_column' => 'title',
+            'category_icon_column' => 'icon_code',
+            'item_column_map' => [
+                'name' => 'name',
+                'area' => 'address',
+                'note' => 'note',
+                'url' => 'website_url',
+                'url_label' => 'website_label',
             ],
         ],
     ];
@@ -268,6 +281,38 @@ function ensureSiteContentTables(PDO $pdo): void
             INDEX idx_video_capsules_category_sort (category_id, sort_order),
             CONSTRAINT fk_video_capsules_category
                 FOREIGN KEY (category_id) REFERENCES video_capsule_categories(id)
+                ON DELETE CASCADE
+        )
+    ");
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS transportation_categories (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            language_code CHAR(2) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            icon_code VARCHAR(50) NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_transportation_categories_language_sort (language_code, sort_order)
+        )
+    ");
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS transportation_items (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            category_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            address VARCHAR(255) NULL,
+            note TEXT NULL,
+            website_url TEXT NULL,
+            website_label VARCHAR(255) NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_transportation_items_category_sort (category_id, sort_order),
+            CONSTRAINT fk_transportation_items_category
+                FOREIGN KEY (category_id) REFERENCES transportation_categories(id)
                 ON DELETE CASCADE
         )
     ");

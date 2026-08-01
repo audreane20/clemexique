@@ -1,0 +1,224 @@
+<?php
+
+namespace App\Controller;
+
+use App\Helper\Locale;
+use App\Helper\Translator;
+use App\Model\TransportationModel;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Views\Twig;
+
+class TransportationController
+{
+    private const FLASH_KEY = 'admin_content_flash';
+
+    public function __construct(
+        private TransportationModel $transportationModel,
+        private Twig $twig,
+        private string $basePath,
+        private Translator $translator
+    ) {
+    }
+
+    public function publicIndex(Request $request, Response $response): Response
+    {
+        $language = $this->currentLanguage($request);
+
+        return $this->twig->render($response, 'transportation.html.twig', [
+            'page_title' => $this->translator->trans('transportation.page_title'),
+            'title_text' => $this->translator->trans('transportation.title'),
+            'hero_text' => $this->translator->trans('transportation.hero'),
+            'intro_text' => $this->translator->trans('transportation.intro'),
+            'section_title' => $this->translator->trans('transportation.section_title'),
+            'section_copy' => $this->translator->trans('transportation.section_copy'),
+            'transport_categories' => $this->transportationModel->findAllByLanguage($language),
+        ]);
+    }
+
+    public function adminIndex(Request $request, Response $response): Response
+    {
+        $language = $this->currentLanguage($request);
+        $query = $request->getQueryParams();
+        $editingCategoryOnlyIndex = isset($query['edit_category']) ? (int) $query['edit_category'] : null;
+        $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
+        $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
+        $flash = $this->consumeFlash();
+        $sectionConfig = $this->sectionConfig();
+
+        return $this->twig->render($response, 'admin/todo.html.twig', [
+            'page_title_key' => $sectionConfig['page_title'],
+            'section_config' => $sectionConfig,
+            'active_section' => 'transportation',
+            'categories' => $this->transportationModel->findAllByLanguage($language),
+            'editor_language' => $language,
+            'editing_category' => $editingCategoryOnlyIndex !== null
+                ? $this->transportationModel->findCategoryByIndex($language, $editingCategoryOnlyIndex)
+                : null,
+            'editing_category_index' => $editingCategoryOnlyIndex,
+            'editing_item' => $editingCategoryIndex !== null && $editingItemIndex !== null
+                ? $this->transportationModel->findItemByIndexes($language, $editingCategoryIndex, $editingItemIndex)
+                : null,
+            'editing_item_category_index' => $editingCategoryIndex,
+            'editing_item_index' => $editingItemIndex,
+            'category_icon_choices' => $this->categoryIconChoices(),
+            'flash_success' => $flash['success'] ?? null,
+            'flash_error' => $flash['error'] ?? null,
+        ]);
+    }
+
+    public function create(Request $request, Response $response): Response
+    {
+        $data = (array) $request->getParsedBody();
+        $language = $this->postedLanguage($data);
+
+        try {
+            $this->transportationModel->createItem($language, $data);
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
+        } catch (\InvalidArgumentException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
+        }
+
+        return $this->redirect($response, $this->buildAdminUrl($language));
+    }
+
+    public function update(Request $request, Response $response, array $args): Response
+    {
+        $data = (array) $request->getParsedBody();
+        $language = $this->postedLanguage($data);
+
+        try {
+            $this->transportationModel->updateItem($language, (int) $args['categoryIndex'], (int) $args['itemIndex'], $data);
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_saved', $language)];
+        } catch (\InvalidArgumentException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
+        }
+
+        return $this->redirect($response, $this->buildAdminUrl($language));
+    }
+
+    public function deleteItem(Request $request, Response $response, array $args): Response
+    {
+        $data = (array) $request->getParsedBody();
+        $language = $this->postedLanguage($data);
+
+        try {
+            $this->transportationModel->deleteItemByIndexes($language, (int) $args['categoryIndex'], (int) $args['itemIndex']);
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('item_deleted', $language)];
+        } catch (\InvalidArgumentException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
+        }
+
+        return $this->redirect($response, $this->buildAdminUrl($language));
+    }
+
+    public function deleteCategory(Request $request, Response $response, array $args): Response
+    {
+        $data = (array) $request->getParsedBody();
+        $language = $this->postedLanguage($data);
+
+        try {
+            $this->transportationModel->deleteCategoryByIndex($language, (int) $args['categoryIndex']);
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_deleted', $language)];
+        } catch (\InvalidArgumentException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
+        }
+
+        return $this->redirect($response, $this->buildAdminUrl($language));
+    }
+
+    public function updateCategory(Request $request, Response $response, array $args): Response
+    {
+        $data = (array) $request->getParsedBody();
+        $language = $this->postedLanguage($data);
+
+        try {
+            $this->transportationModel->updateCategoryByIndex($language, (int) $args['categoryIndex'], $data);
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_saved', $language)];
+        } catch (\InvalidArgumentException $exception) {
+            $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
+        }
+
+        return $this->redirect($response, $this->buildAdminUrl($language));
+    }
+
+    private function sectionConfig(): array
+    {
+        return [
+            'page_title' => 'admin_content.sections.transportation.page_title',
+            'page_copy' => 'admin_content.sections.transportation.page_copy',
+            'category_fields' => [
+                [
+                    'name' => 'title',
+                    'label_key' => 'admin_content.fields.category_title',
+                    'placeholder_key' => 'admin_content.sections.transportation.category_title_placeholder',
+                ],
+                [
+                    'name' => 'flag',
+                    'label_key' => 'admin_content.fields.flag_code',
+                    'placeholder_key' => 'admin_content.ui.optional',
+                ],
+            ],
+            'item_fields' => [
+                ['name' => 'name', 'label_key' => 'admin_content.fields.name', 'placeholder_key' => 'admin_content.fields.name'],
+                ['name' => 'area', 'label_key' => 'admin_content.fields.location', 'placeholder_key' => 'admin_content.sections.common.playa_placeholder'],
+                ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
+                ['name' => 'note', 'label_key' => 'admin_content.fields.note', 'placeholder_key' => 'admin_content.fields.short_note_placeholder'],
+            ],
+            'required_item_fields' => ['name'],
+            'optional_item_fields' => ['area', 'url', 'note'],
+        ];
+    }
+
+    private function categoryIconChoices(): array
+    {
+        return [
+            ['code' => 'BUS', 'name' => 'Bus'],
+            ['code' => 'TAXI', 'name' => 'Taxi'],
+            ['code' => 'SHUTTLE', 'name' => 'Shuttle'],
+            ['code' => 'VAN', 'name' => 'Van'],
+            ['code' => 'PRIVATE', 'name' => 'Private transfer'],
+            ['code' => 'FERRY', 'name' => 'Ferry'],
+            ['code' => 'CAR', 'name' => 'Car service'],
+            ['code' => 'MX', 'name' => 'Mexique'],
+        ];
+    }
+
+    private function currentLanguage(Request $request): string
+    {
+        $query = $request->getQueryParams();
+
+        return Locale::normalize($query['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
+    }
+
+    private function postedLanguage(array $data): string
+    {
+        return Locale::normalize($data['editor_language'] ?? Locale::DEFAULT);
+    }
+
+    private function buildAdminUrl(string $language, array $query = []): string
+    {
+        $language = Locale::normalize($language);
+        $query = array_filter(array_merge(['lang' => $language], $query), static fn ($value) => $value !== null && $value !== '');
+
+        return $this->basePath . '/admin/content/transportation?' . http_build_query($query);
+    }
+
+    private function redirect(Response $response, string $url): Response
+    {
+        return $response->withHeader('Location', $url)->withStatus(302);
+    }
+
+    private function consumeFlash(): array
+    {
+        $flash = $_SESSION[self::FLASH_KEY] ?? [];
+        unset($_SESSION[self::FLASH_KEY]);
+
+        return is_array($flash) ? $flash : [];
+    }
+
+    private function successMessage(string $key, string $language): string
+    {
+        return (new Translator($language))->trans('admin_content.flash.' . $key);
+    }
+}

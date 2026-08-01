@@ -5,6 +5,7 @@ use App\Controller\ExcursionController;
 use App\Controller\PropertyController;
 use App\Controller\RestaurantController;
 use App\Controller\TodoController;
+use App\Controller\TransportationController;
 use App\Controller\VideoCapsuleController;
 use App\Helper\Locale;
 use App\Helper\Translator;
@@ -13,6 +14,7 @@ use App\Model\ExcursionModel;
 use App\Model\PropertyModel;
 use App\Model\RestaurantModel;
 use App\Model\TodoModel;
+use App\Model\TransportationModel;
 use App\Model\UserModel;
 use App\Model\VideoCapsuleModel;
 use App\Service\GoogleTranslateService;
@@ -254,7 +256,7 @@ $headerMenuLinks = [
         'fragment' => 'home-video-capsules',
     ],
     [
-        'path' => '/location-automobiles',
+        'path' => '/transport',
         'label' => $translator->trans('transportation.title'),
         'fragment' => 'home-transportation',
     ],
@@ -324,6 +326,13 @@ $twig->getEnvironment()->addFunction(
             'SPICE' => '&#127798;',
             'ROOFTOP' => '&#127749;',
             'BEACH' => '&#127958;',
+            'BUS' => '&#128652;',
+            'TAXI' => '&#128661;',
+            'SHUTTLE' => '&#128656;',
+            'VAN' => '&#128666;',
+            'PRIVATE' => '&#128663;',
+            'FERRY' => '&#9973;',
+            'CAR' => '&#128664;',
         ];
 
         if (isset($imageMap[$code])) {
@@ -519,6 +528,7 @@ $restaurantModel = new RestaurantModel($pdo, $googleTranslateService);
 $activityModel = new ActivityModel($pdo, $googleTranslateService);
 $excursionModel = new ExcursionModel($pdo, $googleTranslateService);
 $todoModel = new TodoModel($pdo, $googleTranslateService);
+$transportationModel = new TransportationModel($pdo, $googleTranslateService);
 $videoCapsuleModel = new VideoCapsuleModel($pdo, $googleTranslateService);
 $userModel = new UserModel($pdo);
 $propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator, $googleTranslateService);
@@ -526,6 +536,7 @@ $restaurantController = new RestaurantController($restaurantModel, $twig, $baseP
 $activityController = new ActivityController($activityModel, $twig, $basePath, $translator);
 $excursionController = new ExcursionController($excursionModel, $twig, $basePath, $translator);
 $todoController = new TodoController($todoModel, $twig, $basePath, $translator);
+$transportationController = new TransportationController($transportationModel, $twig, $basePath, $translator);
 $videoCapsuleController = new VideoCapsuleController($videoCapsuleModel, $twig, $basePath, $translator);
 $adminAuthMiddleware = requireAdminAuth($basePath);
 $userAuthMiddleware = requireUserAuth($basePath);
@@ -773,6 +784,8 @@ $app->get('/activites-sportives', [$activityController, 'publicIndex']);
 $app->get('/capsules-video-mexique', function ($request, $response) use ($videoCapsuleController) {
     return $videoCapsuleController->publicIndex($request, $response);
 });
+
+$app->get('/transport', [$transportationController, 'publicIndex']);
 
 $app->get('/excursions', [$excursionController, 'publicIndex']);
 $app->get('/quoi-faire-a-playa', [$todoController, 'publicIndex']);
@@ -1694,6 +1707,13 @@ $app->group('/admin/content', function ($group) use ($restaurantController, $act
     $group->post('/activities/items/{categoryIndex}/{itemIndex}/delete', [$activityController, 'deleteItem']);
     $group->post('/activities/categories/{categoryIndex}/update', [$activityController, 'updateCategory']);
     $group->post('/activities/categories/{categoryIndex}/delete', [$activityController, 'deleteCategory']);
+
+    $group->get('/transportation', [$transportationController, 'adminIndex']);
+    $group->post('/transportation/items/create', [$transportationController, 'create']);
+    $group->post('/transportation/items/{categoryIndex}/{itemIndex}/update', [$transportationController, 'update']);
+    $group->post('/transportation/items/{categoryIndex}/{itemIndex}/delete', [$transportationController, 'deleteItem']);
+    $group->post('/transportation/categories/{categoryIndex}/update', [$transportationController, 'updateCategory']);
+    $group->post('/transportation/categories/{categoryIndex}/delete', [$transportationController, 'deleteCategory']);
 
     $group->get('/playa_guide', [$todoController, 'adminIndex']);
     $group->post('/playa_guide/items/create', [$todoController, 'create']);

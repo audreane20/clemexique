@@ -4479,6 +4479,10 @@ body.admin-confirm-open {
     text-align: center;
 }
 
+.admin-confirm-choice-button[hidden] {
+    display: none !important;
+}
+
 .admin-confirm-button {
     min-height: 52px;
     padding: 12px 18px;

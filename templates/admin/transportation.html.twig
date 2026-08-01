@@ -14,9 +14,7 @@
 }
 
 .transport-admin-confirm-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+    display: block;
     width: 100%;
     min-height: 56px;
     padding: 12px 18px;
@@ -611,9 +609,9 @@
         <h3>{{ ui.delete }}</h3>
         <p data-admin-confirm-message></p>
         <div class="transport-admin-confirm-actions">
-            <button type="button" class="transport-admin-confirm-btn transport-admin-confirm-btn-single" data-admin-confirm-submit-single hidden>{{ transport_delete_single_label }}</button>
-            <button type="button" class="transport-admin-confirm-btn transport-admin-confirm-btn-all" data-admin-confirm-submit>{{ ui.delete }}</button>
-            <button type="button" class="transport-admin-confirm-btn transport-admin-confirm-btn-cancel" data-admin-confirm-cancel>{{ ui.cancel }}</button>
+            <input type="button" class="transport-admin-confirm-btn transport-admin-confirm-btn-single" data-admin-confirm-submit-single hidden value="{{ transport_delete_single_label }}">
+            <input type="button" class="transport-admin-confirm-btn transport-admin-confirm-btn-all" data-admin-confirm-submit value="{{ ui.delete }}">
+            <input type="button" class="transport-admin-confirm-btn transport-admin-confirm-btn-cancel" data-admin-confirm-cancel value="{{ ui.cancel }}">
         </div>
     </div>
 </div>
@@ -854,11 +852,11 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmModal.hidden = true;
         document.body.classList.remove('admin-confirm-open');
         if (confirmSubmitButton) {
-            confirmSubmitButton.textContent = '{{ ui.delete }}';
+            confirmSubmitButton.value = '{{ ui.delete }}';
         }
         if (confirmSubmitSingleButton) {
             confirmSubmitSingleButton.hidden = true;
-            confirmSubmitSingleButton.textContent = '{{ transport_delete_single_label }}';
+            confirmSubmitSingleButton.value = '{{ transport_delete_single_label }}';
         }
         pendingActionForm = null;
     };
@@ -874,13 +872,13 @@ document.addEventListener('DOMContentLoaded', function () {
             ? (form.dataset.multiCategoryMessage || form.dataset.confirmMessage || '')
             : (form.dataset.confirmMessage || '');
         if (confirmSubmitButton) {
-            confirmSubmitButton.textContent = isMultiCategoryDelete
+            confirmSubmitButton.value = isMultiCategoryDelete
                 ? (form.dataset.deleteAllLabel || '{{ ui.delete }}')
                 : '{{ ui.delete }}';
         }
         if (confirmSubmitSingleButton) {
             confirmSubmitSingleButton.hidden = !isMultiCategoryDelete;
-            confirmSubmitSingleButton.textContent = isMultiCategoryDelete
+            confirmSubmitSingleButton.value = isMultiCategoryDelete
                 ? (form.dataset.deleteSingleLabel || '')
                 : '{{ transport_delete_single_label }}';
         }

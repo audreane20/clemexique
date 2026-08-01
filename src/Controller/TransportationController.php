@@ -24,6 +24,13 @@ class TransportationController
     public function publicIndex(Request $request, Response $response): Response
     {
         $language = $this->currentLanguage($request);
+        $categories = [];
+
+        try {
+            $categories = $this->transportationModel->findAllByLanguage($language);
+        } catch (\Throwable) {
+            $categories = [];
+        }
 
         return $this->twig->render($response, 'transportation.html.twig', [
             'page_title' => $this->translator->trans('transportation.page_title'),
@@ -32,7 +39,7 @@ class TransportationController
             'intro_text' => $this->translator->trans('transportation.intro'),
             'section_title' => $this->translator->trans('transportation.section_title'),
             'section_copy' => $this->translator->trans('transportation.section_copy'),
-            'transport_categories' => $this->transportationModel->findAllByLanguage($language),
+            'transport_categories' => $categories,
         ]);
     }
 
@@ -45,20 +52,31 @@ class TransportationController
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
         $sectionConfig = $this->sectionConfig();
+        $categories = [];
+        $editingCategory = null;
+        $editingItem = null;
+
+        try {
+            $categories = $this->transportationModel->findAllByLanguage($language);
+            $editingCategory = $editingCategoryOnlyIndex !== null
+                ? $this->transportationModel->findCategoryByIndex($language, $editingCategoryOnlyIndex)
+                : null;
+            $editingItem = $editingCategoryIndex !== null && $editingItemIndex !== null
+                ? $this->transportationModel->findItemByIndexes($language, $editingCategoryIndex, $editingItemIndex)
+                : null;
+        } catch (\Throwable $exception) {
+            $flash['error'] = $flash['error'] ?? $exception->getMessage();
+        }
 
         return $this->twig->render($response, 'admin/todo.html.twig', [
             'page_title_key' => $sectionConfig['page_title'],
             'section_config' => $sectionConfig,
             'active_section' => 'transportation',
-            'categories' => $this->transportationModel->findAllByLanguage($language),
+            'categories' => $categories,
             'editor_language' => $language,
-            'editing_category' => $editingCategoryOnlyIndex !== null
-                ? $this->transportationModel->findCategoryByIndex($language, $editingCategoryOnlyIndex)
-                : null,
+            'editing_category' => $editingCategory,
             'editing_category_index' => $editingCategoryOnlyIndex,
-            'editing_item' => $editingCategoryIndex !== null && $editingItemIndex !== null
-                ? $this->transportationModel->findItemByIndexes($language, $editingCategoryIndex, $editingItemIndex)
-                : null,
+            'editing_item' => $editingItem,
             'editing_item_category_index' => $editingCategoryIndex,
             'editing_item_index' => $editingItemIndex,
             'category_icon_choices' => $this->categoryIconChoices(),

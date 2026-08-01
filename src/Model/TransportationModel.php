@@ -13,6 +13,7 @@ class TransportationModel
 
     public function __construct(private PDO $pdo, private ?GoogleTranslateService $googleTranslateService = null)
     {
+        $this->ensureTables();
     }
 
     public function findAllByLanguage(string $language): array
@@ -493,6 +494,8 @@ class TransportationModel
 
     private function fetchCategoryRowsByLanguage(string $language): array
     {
+        $this->ensureTables();
+
         $stmt = $this->pdo->prepare(
             'SELECT id, language_code, title, icon_code, sort_order
              FROM transportation_categories
@@ -560,6 +563,8 @@ class TransportationModel
 
     private function countItemsInCategory(int $categoryId): int
     {
+        $this->ensureTables();
+
         $stmt = $this->pdo->prepare('SELECT COUNT(*) FROM transportation_items WHERE category_id = :category_id');
         $stmt->execute([
             'category_id' => $categoryId,
@@ -666,5 +671,45 @@ class TransportationModel
         $language = $this->normalizeLanguage($language);
 
         return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+    }
+
+    private function ensureTables(): void
+    {
+        if (function_exists('ensureSiteContentTables')) {
+            \ensureSiteContentTables($this->pdo);
+            return;
+        }
+
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS transportation_categories (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                language_code CHAR(2) NOT NULL,
+                title VARCHAR(255) NOT NULL,
+                icon_code VARCHAR(50) NULL,
+                sort_order INT NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_transportation_categories_language_sort (language_code, sort_order)
+            )
+        ");
+
+        $this->pdo->exec("
+            CREATE TABLE IF NOT EXISTS transportation_items (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                category_id INT NOT NULL,
+                name VARCHAR(255) NOT NULL,
+                address VARCHAR(255) NULL,
+                note TEXT NULL,
+                website_url TEXT NULL,
+                website_label VARCHAR(255) NULL,
+                sort_order INT NOT NULL DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                INDEX idx_transportation_items_category_sort (category_id, sort_order),
+                CONSTRAINT fk_transportation_items_category
+                    FOREIGN KEY (category_id) REFERENCES transportation_categories(id)
+                    ON DELETE CASCADE
+            )
+        ");
     }
 }

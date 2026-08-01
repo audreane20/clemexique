@@ -528,7 +528,6 @@ $restaurantModel = new RestaurantModel($pdo, $googleTranslateService);
 $activityModel = new ActivityModel($pdo, $googleTranslateService);
 $excursionModel = new ExcursionModel($pdo, $googleTranslateService);
 $todoModel = new TodoModel($pdo, $googleTranslateService);
-$transportationModel = new TransportationModel($pdo, $googleTranslateService);
 $videoCapsuleModel = new VideoCapsuleModel($pdo, $googleTranslateService);
 $userModel = new UserModel($pdo);
 $propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator, $googleTranslateService);
@@ -536,8 +535,81 @@ $restaurantController = new RestaurantController($restaurantModel, $twig, $baseP
 $activityController = new ActivityController($activityModel, $twig, $basePath, $translator);
 $excursionController = new ExcursionController($excursionModel, $twig, $basePath, $translator);
 $todoController = new TodoController($todoModel, $twig, $basePath, $translator);
-$transportationController = new TransportationController($transportationModel, $twig, $basePath, $translator);
 $videoCapsuleController = new VideoCapsuleController($videoCapsuleModel, $twig, $basePath, $translator);
+$transportationController = null;
+$transportationBootstrapError = null;
+
+try {
+    $transportationModel = new TransportationModel($pdo, $googleTranslateService);
+    $transportationController = new TransportationController($transportationModel, $twig, $basePath, $translator);
+} catch (\Throwable $throwable) {
+    $transportationBootstrapError = $throwable->getMessage();
+}
+
+$renderTransportationFallback = function ($response, string $language, bool $isAdmin = false, ?string $errorMessage = null) use ($twig, $translator) {
+    $message = $errorMessage ?? $translator->trans('transportation.section_copy');
+
+    if ($isAdmin) {
+        return $twig->render($response, 'admin/todo.html.twig', [
+            'page_title_key' => 'admin_content.sections.transportation.page_title',
+            'section_config' => [
+                'page_title' => 'admin_content.sections.transportation.page_title',
+                'page_copy' => 'admin_content.sections.transportation.page_copy',
+                'category_fields' => [
+                    [
+                        'name' => 'title',
+                        'label_key' => 'admin_content.fields.category_title',
+                        'placeholder_key' => 'admin_content.sections.transportation.category_title_placeholder',
+                    ],
+                    [
+                        'name' => 'flag',
+                        'label_key' => 'admin_content.fields.flag_code',
+                        'placeholder_key' => 'admin_content.ui.optional',
+                    ],
+                ],
+                'item_fields' => [
+                    ['name' => 'name', 'label_key' => 'admin_content.fields.name', 'placeholder_key' => 'admin_content.fields.name'],
+                    ['name' => 'area', 'label_key' => 'admin_content.fields.location', 'placeholder_key' => 'admin_content.sections.common.playa_placeholder'],
+                    ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
+                    ['name' => 'note', 'label_key' => 'admin_content.fields.note', 'placeholder_key' => 'admin_content.fields.short_note_placeholder'],
+                ],
+                'required_item_fields' => ['name'],
+                'optional_item_fields' => ['area', 'url', 'note'],
+            ],
+            'active_section' => 'transportation',
+            'categories' => [],
+            'editor_language' => $language,
+            'editing_category' => null,
+            'editing_category_index' => null,
+            'editing_item' => null,
+            'editing_item_category_index' => null,
+            'editing_item_index' => null,
+            'category_icon_choices' => [
+                ['code' => 'BUS', 'name' => 'Bus'],
+                ['code' => 'TAXI', 'name' => 'Taxi'],
+                ['code' => 'SHUTTLE', 'name' => 'Shuttle'],
+                ['code' => 'VAN', 'name' => 'Van'],
+                ['code' => 'PRIVATE', 'name' => 'Private transfer'],
+                ['code' => 'FERRY', 'name' => 'Ferry'],
+                ['code' => 'CAR', 'name' => 'Car service'],
+                ['code' => 'MX', 'name' => 'Mexique'],
+            ],
+            'flash_success' => null,
+            'flash_error' => $message,
+        ]);
+    }
+
+    return $twig->render($response, 'transportation.html.twig', [
+        'page_title' => $translator->trans('transportation.page_title'),
+        'title_text' => $translator->trans('transportation.title'),
+        'hero_text' => $translator->trans('transportation.hero'),
+        'intro_text' => $translator->trans('transportation.intro'),
+        'section_title' => $translator->trans('transportation.section_title'),
+        'section_copy' => $message,
+        'transport_categories' => [],
+    ]);
+};
+
 $adminAuthMiddleware = requireAdminAuth($basePath);
 $userAuthMiddleware = requireUserAuth($basePath);
 
@@ -785,7 +857,15 @@ $app->get('/capsules-video-mexique', function ($request, $response) use ($videoC
     return $videoCapsuleController->publicIndex($request, $response);
 });
 
-$app->get('/transport', [$transportationController, 'publicIndex']);
+$app->get('/transport', function ($request, $response) use ($transportationController, $renderTransportationFallback, $transportationBootstrapError) {
+    if ($transportationController instanceof TransportationController) {
+        return $transportationController->publicIndex($request, $response);
+    }
+
+    $language = Locale::normalize($request->getQueryParams()['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
+
+    return $renderTransportationFallback($response, $language, false, $transportationBootstrapError);
+});
 
 $app->get('/excursions', [$excursionController, 'publicIndex']);
 $app->get('/quoi-faire-a-playa', [$todoController, 'publicIndex']);
@@ -1708,12 +1788,55 @@ $app->group('/admin/content', function ($group) use ($restaurantController, $act
     $group->post('/activities/categories/{categoryIndex}/update', [$activityController, 'updateCategory']);
     $group->post('/activities/categories/{categoryIndex}/delete', [$activityController, 'deleteCategory']);
 
-    $group->get('/transportation', [$transportationController, 'adminIndex']);
-    $group->post('/transportation/items/create', [$transportationController, 'create']);
-    $group->post('/transportation/items/{categoryIndex}/{itemIndex}/update', [$transportationController, 'update']);
-    $group->post('/transportation/items/{categoryIndex}/{itemIndex}/delete', [$transportationController, 'deleteItem']);
-    $group->post('/transportation/categories/{categoryIndex}/update', [$transportationController, 'updateCategory']);
-    $group->post('/transportation/categories/{categoryIndex}/delete', [$transportationController, 'deleteCategory']);
+    $group->get('/transportation', function ($request, $response) use ($transportationController, $renderTransportationFallback, $transportationBootstrapError) {
+        if ($transportationController instanceof TransportationController) {
+            return $transportationController->adminIndex($request, $response);
+        }
+
+        $language = Locale::normalize($request->getQueryParams()['lang'] ?? $_SESSION['lang'] ?? Locale::DEFAULT);
+
+        return $renderTransportationFallback($response, $language, true, $transportationBootstrapError);
+    });
+    $group->post('/transportation/items/create', function ($request, $response) use ($transportationController, $basePath) {
+        if ($transportationController instanceof TransportationController) {
+            return $transportationController->create($request, $response);
+        }
+
+        $language = Locale::normalize(((array) $request->getParsedBody())['editor_language'] ?? Locale::DEFAULT);
+        return $response->withHeader('Location', $basePath . '/admin/content/transportation?lang=' . $language)->withStatus(302);
+    });
+    $group->post('/transportation/items/{categoryIndex}/{itemIndex}/update', function ($request, $response, $args) use ($transportationController, $basePath) {
+        if ($transportationController instanceof TransportationController) {
+            return $transportationController->update($request, $response, $args);
+        }
+
+        $language = Locale::normalize(((array) $request->getParsedBody())['editor_language'] ?? Locale::DEFAULT);
+        return $response->withHeader('Location', $basePath . '/admin/content/transportation?lang=' . $language)->withStatus(302);
+    });
+    $group->post('/transportation/items/{categoryIndex}/{itemIndex}/delete', function ($request, $response, $args) use ($transportationController, $basePath) {
+        if ($transportationController instanceof TransportationController) {
+            return $transportationController->deleteItem($request, $response, $args);
+        }
+
+        $language = Locale::normalize(((array) $request->getParsedBody())['editor_language'] ?? Locale::DEFAULT);
+        return $response->withHeader('Location', $basePath . '/admin/content/transportation?lang=' . $language)->withStatus(302);
+    });
+    $group->post('/transportation/categories/{categoryIndex}/update', function ($request, $response, $args) use ($transportationController, $basePath) {
+        if ($transportationController instanceof TransportationController) {
+            return $transportationController->updateCategory($request, $response, $args);
+        }
+
+        $language = Locale::normalize(((array) $request->getParsedBody())['editor_language'] ?? Locale::DEFAULT);
+        return $response->withHeader('Location', $basePath . '/admin/content/transportation?lang=' . $language)->withStatus(302);
+    });
+    $group->post('/transportation/categories/{categoryIndex}/delete', function ($request, $response, $args) use ($transportationController, $basePath) {
+        if ($transportationController instanceof TransportationController) {
+            return $transportationController->deleteCategory($request, $response, $args);
+        }
+
+        $language = Locale::normalize(((array) $request->getParsedBody())['editor_language'] ?? Locale::DEFAULT);
+        return $response->withHeader('Location', $basePath . '/admin/content/transportation?lang=' . $language)->withStatus(302);
+    });
 
     $group->get('/playa_guide', [$todoController, 'adminIndex']);
     $group->post('/playa_guide/items/create', [$todoController, 'create']);

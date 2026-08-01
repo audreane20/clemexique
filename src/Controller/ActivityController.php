@@ -176,9 +176,9 @@ class ActivityController
             ],
             'item_fields' => [
                 ['name' => 'name', 'label_key' => 'admin_content.fields.activity_name', 'placeholder_key' => 'admin_content.fields.activity_name'],
+                ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
                 ['name' => 'area', 'label_key' => 'admin_content.fields.location', 'placeholder_key' => 'admin_content.sections.common.playa_placeholder'],
                 ['name' => 'description', 'type' => 'textarea', 'label_key' => 'admin_content.fields.description', 'placeholder_key' => 'admin_content.fields.optional_description_placeholder'],
-                ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
             ],
             'required_item_fields' => ['name'],
             'optional_item_fields' => ['area', 'description', 'url'],

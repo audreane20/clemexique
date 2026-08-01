@@ -662,6 +662,7 @@ return [
     'admin_content.item_label.excursion' => 'excursion',
     'admin_content.item_label.activity' => 'activité',
     'admin_content.item_label.sports_activity' => 'activité sportive',
+    'admin_content.item_label.transportation' => 'service de transport',
     'admin_content.item_label.video_capsule' => 'capsule vidéo',
     'admin_content.fields.category_title' => 'Titre de la catégorie',
     'admin_content.fields.flag_code' => 'Code du drapeau / icône',

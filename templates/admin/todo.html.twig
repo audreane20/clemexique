@@ -13,6 +13,8 @@
             ? 'admin_content.item_label.video_capsule'
         : active_section == 'activities'
             ? 'admin_content.item_label.sports_activity'
+        : active_section == 'transportation'
+            ? 'admin_content.item_label.transportation'
         : 'admin_content.item_label.activity' %}
 {% set current_item_label = trans(item_label_key) %}
 {% set add_title = trans('admin_content.sections.' ~ active_section ~ '.add_title') %}

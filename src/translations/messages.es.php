@@ -645,6 +645,7 @@ return array(
     'admin_content.item_label.excursion' => 'excursión',
     'admin_content.item_label.activity' => 'actividad',
     'admin_content.item_label.sports_activity' => 'actividad deportiva',
+    'admin_content.item_label.transportation' => 'servicio de transporte',
     'admin_content.item_label.video_capsule' => 'cápsula de video',
     'admin_content.fields.category_title' => 'Título de la categoría',
     'admin_content.fields.flag_code' => 'Código de bandera / icono',

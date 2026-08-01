@@ -660,6 +660,7 @@ return [
     'admin_content.item_label.excursion' => 'excursion',
     'admin_content.item_label.activity' => 'activity',
     'admin_content.item_label.sports_activity' => 'sports activity',
+    'admin_content.item_label.transportation' => 'transportation service',
     'admin_content.item_label.video_capsule' => 'video capsule',
     'admin_content.fields.category_title' => 'Category title',
     'admin_content.fields.flag_code' => 'Flag / icon code',

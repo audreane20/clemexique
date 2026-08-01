@@ -382,8 +382,8 @@ body.startup-transition-active .startup-screen-sunburst {
     width: min(320px, 100vw);
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding: 32px 24px 28px;
+    gap: 14px;
+    padding: 20px 24px 16px;
     border-left: 1px solid rgba(11, 53, 88, 0.08);
     border-radius: 24px 0 0 24px;
     background: #ffffff;
@@ -474,9 +474,10 @@ body.startup-transition-active .startup-screen-sunburst {
 }
 
 .header-menu-panel > .header-quick-links {
-    margin-top: auto;
-    padding-top: 28px;
-    border-top: 1px solid rgba(11, 53, 88, 0.08);
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+    flex: 1 1 auto;
 }
 
 .header-nav-drawer a {

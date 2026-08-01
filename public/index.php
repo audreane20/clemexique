@@ -1773,7 +1773,16 @@ $app->group('/admin', function ($group) use ($propertyController, $basePath) {
     $group->post('/properties/{id}/delete', [$propertyController, 'delete']);
 })->add($adminAuthMiddleware);
 
-$app->group('/admin/content', function ($group) use ($restaurantController, $activityController, $todoController, $videoCapsuleController) {
+$app->group('/admin/content', function ($group) use (
+    $restaurantController,
+    $activityController,
+    $todoController,
+    $videoCapsuleController,
+    $transportationController,
+    $renderTransportationFallback,
+    $transportationBootstrapError,
+    $basePath
+) {
     $group->get('/restaurants', [$restaurantController, 'adminIndex']);
     $group->post('/restaurants/items/create', [$restaurantController, 'create']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/update', [$restaurantController, 'update']);

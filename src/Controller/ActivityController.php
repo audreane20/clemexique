@@ -153,33 +153,33 @@ class ActivityController
         return [
             'page_title' => [
                 'en' => 'Sports activities management',
-                'fr' => 'Gestion des activites sportive',
+                'fr' => 'Gestion des activit?s sportive',
                 'es' => 'Gestion de actividades deportivas',
             ],
             'page_copy' => [
                 'en' => 'Add, edit, or remove sports activity categories and activities.',
-                'fr' => 'Ajoutez, modifiez ou supprimez des categories d activites sportive et des activites.',
-                'es' => 'Agrega, edita o elimina categorias de actividades deportivas y actividades.',
+                'fr' => 'Ajoutez, modifiez ou supprimez des cat?gories d activit?s sportive et des activit?s.',
+                'es' => 'Agrega, edita o elimina categor?as de actividades deportivas y actividades.',
             ],
             'category_fields' => [
                 [
                     'name' => 'title',
                     'labels' => [
                         'en' => 'Category title',
-                        'fr' => 'Titre de la categorie',
-                        'es' => 'Titulo de la categoria',
+                        'fr' => 'Titre de la cat?gorie',
+                        'es' => 'T?tulo de la categor?a',
                     ],
                     'placeholders' => [
                         'en' => 'Ex. Water sports',
                         'fr' => 'Ex. Sports nautiques',
-                        'es' => 'Ej. Deportes acuaticos',
+                        'es' => 'Ej. Deportes acu?ticos',
                     ],
                 ],
             ],
             'item_fields' => [
-                ['name' => 'name', 'labels' => ['en' => 'Activity name', 'fr' => 'Nom de l activite', 'es' => 'Nombre de la actividad'], 'placeholders' => ['en' => 'Activity name', 'fr' => 'Nom de l activite', 'es' => 'Nombre de la actividad']],
-                ['name' => 'area', 'labels' => ['en' => 'Location', 'fr' => 'Emplacement', 'es' => 'Ubicacion'], 'placeholders' => ['en' => 'Playa del Carmen', 'fr' => 'Playa del Carmen', 'es' => 'Playa del Carmen']],
-                ['name' => 'description', 'type' => 'textarea', 'labels' => ['en' => 'Description', 'fr' => 'Description', 'es' => 'Descripcion'], 'placeholders' => ['en' => 'Optional description', 'fr' => 'Description optionnelle', 'es' => 'Descripcion opcional']],
+                ['name' => 'name', 'labels' => ['en' => 'Activity name', 'fr' => 'Nom de l activit?', 'es' => 'Nombre de la actividad'], 'placeholders' => ['en' => 'Activity name', 'fr' => 'Nom de l activit?', 'es' => 'Nombre de la actividad']],
+                ['name' => 'area', 'labels' => ['en' => 'Location', 'fr' => 'Emplacement', 'es' => 'Ubicaci?n'], 'placeholders' => ['en' => 'Playa del Carmen', 'fr' => 'Playa del Carmen', 'es' => 'Playa del Carmen']],
+                ['name' => 'description', 'type' => 'textarea', 'labels' => ['en' => 'Description', 'fr' => 'Description', 'es' => 'Descripci?n'], 'placeholders' => ['en' => 'Optional description', 'fr' => 'Description optionnelle', 'es' => 'Descripci?n opcional']],
                 ['name' => 'url', 'labels' => ['en' => 'Website', 'fr' => 'Site web', 'es' => 'Sitio web'], 'placeholders' => ['en' => 'https://...', 'fr' => 'https://...', 'es' => 'https://...']],
             ],
             'required_item_fields' => ['name', 'area'],
@@ -241,23 +241,23 @@ class ActivityController
         $messages = [
             'item_saved' => [
                 'en' => 'Activity saved.',
-                'fr' => 'Activite enregistree.',
+                'fr' => 'Activit? enregistr?e.',
                 'es' => 'Actividad guardada.',
             ],
             'item_deleted' => [
                 'en' => 'Activity deleted.',
-                'fr' => 'Activite supprimee.',
+                'fr' => 'Activit? supprim?e.',
                 'es' => 'Actividad eliminada.',
             ],
             'category_deleted' => [
                 'en' => 'Category deleted.',
-                'fr' => 'Categorie supprimee.',
-                'es' => 'Categoria eliminada.',
+                'fr' => 'Cat?gorie supprim?e.',
+                'es' => 'Categor?a eliminada.',
             ],
             'category_saved' => [
                 'en' => 'Category saved.',
-                'fr' => 'Categorie enregistree.',
-                'es' => 'Categoria guardada.',
+                'fr' => 'Cat?gorie enregistr?e.',
+                'es' => 'Categor?a guardada.',
             ],
         ];
 

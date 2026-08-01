@@ -10,10 +10,10 @@
     : active_section == 'excursions'
         ? {'en': 'excursion', 'fr': 'excursion', 'es': 'excursion'}
         : active_section == 'video_capsules'
-            ? {'en': 'video capsule', 'fr': 'capsule video', 'es': 'capsula de video'}
+            ? {'en': 'video capsule', 'fr': 'capsule vid?o', 'es': 'c?psula de video'}
         : active_section == 'activities'
-            ? {'en': 'sports activity', 'fr': 'activites sportive', 'es': 'actividad deportiva'}
-        : {'en': 'activity', 'fr': 'activite', 'es': 'actividad'} %}
+            ? {'en': 'sports activity', 'fr': 'activit? sportive', 'es': 'actividad deportiva'}
+        : {'en': 'activity', 'fr': 'activit?', 'es': 'actividad'} %}
 {% set ui = {
     'en': {
         'eyebrow': 'Admin',
@@ -59,37 +59,37 @@
         'edit': 'Modifier',
         'add_restaurant': 'Ajouter un restaurant',
         'add_excursion': 'Ajouter une excursion',
-        'add_video': 'Ajouter une capsule video',
-        'add_activity': 'Ajouter une activite',
-        'add_sports_activity': 'Ajouter une activites sportive',
-        'editing_copy': 'L element selectionne est charge ici pour modification.',
-        'create_copy': 'Choisissez une categorie existante ou creez-en une nouvelle directement depuis ce formulaire.',
+        'add_video': 'Ajouter une capsule vid?o',
+        'add_activity': 'Ajouter une activit?',
+        'add_sports_activity': 'Ajouter une activit? sportive',
+        'editing_copy': 'L ?l?ment s?lectionn? est charg? ici pour modification.',
+        'create_copy': 'Choisissez une cat?gorie existante ou cr?ez-en une nouvelle directement depuis ce formulaire.',
         'cancel': 'Annuler',
-        'category': 'Categorie',
-        'select_category': 'Selectionnez une categorie',
-        'new_category': 'Nouvelle categorie',
-        'new_category_copy': 'Cette categorie sera creee lorsque vous enregistrerez %s.',
+        'category': 'Cat?gorie',
+        'select_category': 'S?lectionnez une cat?gorie',
+        'new_category': 'Nouvelle cat?gorie',
+        'new_category_copy': 'Cette cat?gorie sera cr??e lorsque vous enregistrerez %s.',
         'search_icon': 'Recherchez par nom ou code',
-        'no_matching_icons': 'Aucune icone correspondante.',
-        'preview': 'Apercu :',
-        'no_icon': 'Aucune icone selectionnee pour le moment',
+        'no_matching_icons': 'Aucune ic?ne correspondante.',
+        'preview': 'Aper?u :',
+        'no_icon': 'Aucune ic?ne s?lectionn?e pour le moment',
         'unknown_code': 'Code inconnu',
         'optional': 'optionnel',
-        'select_price': 'Selectionnez une gamme de prix',
+        'select_price': 'S?lectionnez une gamme de prix',
         'favorite_pick': 'Coup de coeur',
-        'select_reference': 'Selectionnez une reference',
-        'no_reference': 'Aucune reference',
+        'select_reference': 'S?lectionnez une r?f?rence',
+        'no_reference': 'Aucune r?f?rence',
         'save': 'Enregistrer %s',
         'add': 'Ajouter %s',
         'current_sections': 'Sections actuelles',
         'categories': 'categories',
-        'no_categories': 'Aucune categorie pour le moment.',
-        'items': 'elements',
-        'delete_category_confirm': 'Supprimer cette categorie ?',
+        'no_categories': 'Aucune cat?gorie pour le moment.',
+        'items': '?l?ments',
+        'delete_category_confirm': 'Supprimer cette cat?gorie ?',
         'delete': 'Supprimer',
-        'empty_restaurants': 'Aucun restaurant dans cette categorie pour le moment.',
-        'empty_items': 'Aucun element dans cette categorie pour le moment.',
-        'delete_item_confirm': 'Supprimer cet element ?',
+        'empty_restaurants': 'Aucun restaurant dans cette cat?gorie pour le moment.',
+        'empty_items': 'Aucun ?l?ment dans cette cat?gorie pour le moment.',
+        'delete_item_confirm': 'Supprimer cet ?l?ment ?',
         'saving': 'Enregistrement...',
         'deleting': 'Suppression...'
     },
@@ -97,22 +97,22 @@
         'eyebrow': 'Admin',
         'edit': 'Editar',
         'add_restaurant': 'Agregar un restaurante',
-        'add_excursion': 'Agregar una excursion',
-        'add_video': 'Agregar una capsula de video',
+        'add_excursion': 'Agregar una excursi?n',
+        'add_video': 'Agregar una c?psula de video',
         'add_activity': 'Agregar una actividad',
         'add_sports_activity': 'Agregar una actividad deportiva',
-        'editing_copy': 'El elemento seleccionado esta cargado aqui para editarlo.',
-        'create_copy': 'Elige una categoria existente o crea una nueva directamente desde este formulario.',
+        'editing_copy': 'El elemento seleccionado est? cargado aqu? para editarlo.',
+        'create_copy': 'Elige una categor?a existente o crea una nueva directamente desde este formulario.',
         'cancel': 'Cancelar',
-        'category': 'Categoria',
-        'select_category': 'Selecciona una categoria',
-        'new_category': 'Nueva categoria',
-        'new_category_copy': 'Esta categoria se creara cuando guardes %s.',
-        'search_icon': 'Busca por nombre o codigo',
+        'category': 'Categor?a',
+        'select_category': 'Selecciona una categor?a',
+        'new_category': 'Nueva categor?a',
+        'new_category_copy': 'Esta categor?a se crear? cuando guardes %s.',
+        'search_icon': 'Busca por nombre o c?digo',
         'no_matching_icons': 'No hay iconos coincidentes.',
         'preview': 'Vista previa:',
-        'no_icon': 'Todavia no hay icono seleccionado',
-        'unknown_code': 'Codigo desconocido',
+        'no_icon': 'Todav?a no hay icono seleccionado',
+        'unknown_code': 'C?digo desconocido',
         'optional': 'opcional',
         'select_price': 'Selecciona un rango de precio',
         'favorite_pick': 'Favorito',
@@ -121,13 +121,13 @@
         'save': 'Guardar %s',
         'add': 'Agregar %s',
         'current_sections': 'Secciones actuales',
-        'categories': 'categorias',
-        'no_categories': 'Todavia no hay categorias.',
+        'categories': 'categor?as',
+        'no_categories': 'Todav?a no hay categor?as.',
         'items': 'elementos',
         'delete_category_confirm': '¿Eliminar esta categoría?',
         'delete': 'Eliminar',
-        'empty_restaurants': 'Todavia no hay restaurantes en esta categoria.',
-        'empty_items': 'Todavia no hay elementos en esta categoria.',
+        'empty_restaurants': 'Todav?a no hay restaurantes en esta categor?a.',
+        'empty_items': 'Todav?a no hay elementos en esta categor?a.',
         'delete_item_confirm': '¿Eliminar este elemento?',
         'saving': 'Guardando...',
         'deleting': 'Eliminando...'
@@ -146,12 +146,12 @@
 {% set submit_add_label = app_lang == 'es'
     ? (active_section == 'playa_guide' ? 'Agregar actividad' : add_title)
     : (app_lang == 'fr'
-        ? (active_section == 'playa_guide' ? 'Ajouter activite' : ui[app_lang].add|format(current_item_label))
+        ? (active_section == 'playa_guide' ? 'Ajouter activit?' : ui[app_lang].add|format(current_item_label))
         : ui[app_lang].add|format(current_item_label)) %}
 {% set submit_save_label = app_lang == 'es'
     ? (active_section == 'playa_guide' ? 'Guardar actividad' : ui[app_lang].save|format(current_item_label))
     : (app_lang == 'fr'
-        ? (active_section == 'playa_guide' ? 'Enregistrer activite' : ui[app_lang].save|format(current_item_label))
+        ? (active_section == 'playa_guide' ? 'Enregistrer activit?' : ui[app_lang].save|format(current_item_label))
         : ui[app_lang].save|format(current_item_label)) %}
 {% set required_item_fields = section_config.required_item_fields is defined
     ? section_config.required_item_fields
@@ -403,13 +403,13 @@
                 {% if section_config.show_media_upload is defined and section_config.show_media_upload %}
                     <label>
                         <span class="admin-content-label-copy">
-                            {{ app_lang == 'fr' ? 'Photos et videos' : (app_lang == 'es' ? 'Fotos y videos' : 'Pictures and/or videos') }}
+                            {{ app_lang == 'fr' ? 'Photos et vid?os' : (app_lang == 'es' ? 'Fotos y videos' : 'Pictures and/or videos') }}
                             <span class="admin-content-optional-marker">({{ ui[app_lang].optional }})</span>
                         </span>
                         <input type="file" name="media_files[]" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,video/webm,.jpg,.jpeg,.png,.webp,.gif,.avif,.mp4,.mov,.m4v,.webm" multiple>
                         <span class="admin-content-field-help">
                             {{ app_lang == 'fr'
-                                ? 'Ajoutez une ou plusieurs photos ou videos depuis votre appareil.'
+                                ? 'Ajoutez une ou plusieurs photos ou vid?os depuis votre appareil.'
                                 : (app_lang == 'es'
                                     ? 'Agrega una o varias fotos o videos desde tu dispositivo.'
                                     : 'Add one or more photos or videos from your device.') }}
@@ -554,11 +554,11 @@
                                                             <source src="{{ base_path ~ item.video_url }}">
                                                         </video>
                                                         <a href="{{ base_path ~ item.video_url }}" target="_blank" rel="noopener noreferrer" class="guide-link">
-                                                            {{ app_lang == 'fr' ? 'Ouvrir la video' : (app_lang == 'es' ? 'Abrir video' : 'Open video') }}
+                                                            {{ app_lang == 'fr' ? 'Ouvrir la vid?o' : (app_lang == 'es' ? 'Abrir video' : 'Open video') }}
                                                         </a>
                                                     {% else %}
                                                         <a href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer" class="guide-link">
-                                                            {{ app_lang == 'fr' ? 'Ouvrir le lien video' : (app_lang == 'es' ? 'Abrir enlace del video' : 'Open video link') }}
+                                                            {{ app_lang == 'fr' ? 'Ouvrir le lien vid?o' : (app_lang == 'es' ? 'Abrir enlace del video' : 'Open video link') }}
                                                         </a>
                                                     {% endif %}
                                                     {% if item.note %}

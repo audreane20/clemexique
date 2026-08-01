@@ -182,6 +182,13 @@
                                 </label>
                             {% endfor %}
                         </div>
+
+                        <div class="admin-content-inline-title admin-content-inline-title-compact">
+                            <h3>{{ ui.new_category }}</h3>
+                            <p>{{ ui.new_category_copy|format(current_item_label) }}</p>
+                        </div>
+
+                        <input type="text" name="new_category_title" value="" placeholder="{{ trans('admin_content.sections.transportation.category_title_placeholder') }}">
                     </fieldset>
                 {% else %}
                     <label>

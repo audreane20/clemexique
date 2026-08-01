@@ -3781,6 +3781,10 @@ body.home-transition-sun-active .home-hero-orb-sun {
     line-height: 1.45;
 }
 
+.admin-content-inline-title-compact {
+    margin-top: 8px;
+}
+
 .admin-content-icon-preview {
     display: flex;
     align-items: center;

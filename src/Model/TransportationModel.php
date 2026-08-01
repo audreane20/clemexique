@@ -186,7 +186,7 @@ class TransportationModel
     private function saveGroupedItem(string $language, array $data, string $groupKey): void
     {
         $payload = $this->normalizeItemPayload($data, $language);
-        $categoryIndexes = $this->normalizeCategoryIndexes($data, $language);
+        $categoryIndexes = $this->normalizeCategoryIndexes($this->resolveNewCategoryChoice($data, $language), $language);
 
         foreach ($categoryIndexes as $sortOrder => $categoryIndex) {
             $categoryRow = $this->fetchCategoryRowByIndex($language, $categoryIndex);
@@ -264,6 +264,27 @@ class TransportationModel
         return $indexes;
     }
 
+    private function resolveNewCategoryChoice(array $data, string $language): array
+    {
+        $newCategoryTitle = trim((string) ($data['new_category_title'] ?? ''));
+
+        if ($newCategoryTitle === '') {
+            return $data;
+        }
+
+        $categoryIndexes = is_array($data['category_choices'] ?? null) ? $data['category_choices'] : [];
+        $resolvedIndex = $this->findCategoryIndexByTitle($language, $newCategoryTitle);
+
+        if ($resolvedIndex === null) {
+            $resolvedIndex = $this->createCategorySet($language, $newCategoryTitle);
+        }
+
+        $categoryIndexes[] = (string) $resolvedIndex;
+        $data['category_choices'] = $categoryIndexes;
+
+        return $data;
+    }
+
     private function buildTranslatedData(array $data, string $sourceLanguage, string $targetLanguage): array
     {
         return [
@@ -272,6 +293,49 @@ class TransportationModel
             'description' => $this->translateText((string) ($data['description'] ?? ''), $sourceLanguage, $targetLanguage),
             'category_choices' => $data['category_choices'] ?? [],
         ];
+    }
+
+    private function createCategorySet(string $sourceLanguage, string $sourceTitle): int
+    {
+        $sourceLanguage = $this->normalizeLanguage($sourceLanguage);
+        $sourceTitle = trim($sourceTitle);
+
+        if ($sourceTitle === '') {
+            throw new InvalidArgumentException($this->localizedMessage('required_fields', $sourceLanguage));
+        }
+
+        $sortOrder = count($this->fetchCategoryRowsByLanguage($sourceLanguage));
+
+        foreach (self::MANAGED_LANGUAGES as $targetLanguage) {
+            $translatedTitle = $targetLanguage === $sourceLanguage
+                ? $sourceTitle
+                : $this->translateText($sourceTitle, $sourceLanguage, $targetLanguage);
+
+            $stmt = $this->pdo->prepare(
+                'INSERT INTO transportation_categories (language_code, title, icon_code, sort_order)
+                 VALUES (:language_code, :title, NULL, :sort_order)'
+            );
+            $stmt->execute([
+                'language_code' => $targetLanguage,
+                'title' => $translatedTitle !== '' ? $translatedTitle : $sourceTitle,
+                'sort_order' => $sortOrder,
+            ]);
+        }
+
+        return $sortOrder;
+    }
+
+    private function findCategoryIndexByTitle(string $language, string $title): ?int
+    {
+        $normalizedTitle = $this->normalizeComparableTitle($title);
+
+        foreach ($this->fetchCategoryRowsByLanguage($language) as $index => $categoryRow) {
+            if ($this->normalizeComparableTitle((string) ($categoryRow['title'] ?? '')) === $normalizedTitle) {
+                return $index;
+            }
+        }
+
+        return null;
     }
 
     private function resolveGroupKeyFromIndexes(string $language, int $categoryIndex, int $itemIndex): string
@@ -470,6 +534,19 @@ class TransportationModel
         return 'https://' . ltrim($url, '/');
     }
 
+    private function normalizeComparableTitle(string $title): string
+    {
+        $title = trim($title);
+
+        if ($title === '') {
+            return '';
+        }
+
+        return function_exists('mb_strtolower')
+            ? mb_strtolower($title, 'UTF-8')
+            : strtolower($title);
+    }
+
     private function translateText(string $text, string $sourceLanguage, string $targetLanguage): string
     {
         $text = trim($text);
@@ -624,17 +701,6 @@ class TransportationModel
                 ]);
             }
 
-            $existing = $this->fetchCategoryRowsByLanguage($language);
-
-            if (count($existing) > count($defaults)) {
-                $delete = $this->pdo->prepare('DELETE FROM transportation_categories WHERE id = :id');
-
-                foreach (array_slice($existing, count($defaults)) as $extraCategory) {
-                    $delete->execute([
-                        'id' => (int) $extraCategory['id'],
-                    ]);
-                }
-            }
         }
     }
 

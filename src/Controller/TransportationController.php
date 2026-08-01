@@ -193,12 +193,8 @@ class TransportationController
         return [
             ['code' => 'BUS', 'name' => 'Bus'],
             ['code' => 'TAXI', 'name' => 'Taxi'],
-            ['code' => 'SHUTTLE', 'name' => 'Shuttle'],
-            ['code' => 'VAN', 'name' => 'Van'],
-            ['code' => 'PRIVATE', 'name' => 'Private transfer'],
-            ['code' => 'FERRY', 'name' => 'Ferry'],
-            ['code' => 'CAR', 'name' => 'Car service'],
-            ['code' => 'MX', 'name' => 'Mexique'],
+            ['code' => 'CAR', 'name' => 'Car'],
+            ['code' => 'SHUTTLE', 'name' => 'Shuttle bus'],
         ];
     }
 

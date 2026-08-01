@@ -4494,6 +4494,13 @@ body.admin-confirm-open {
     transition: 0.2s ease;
 }
 
+.admin-confirm-button span {
+    display: inline-block;
+    width: 100%;
+    color: inherit;
+    line-height: 1.2;
+}
+
 .admin-confirm-button:hover {
     transform: translateY(-1px);
 }

@@ -141,6 +141,8 @@ class TransportationModel
                 );
             }
 
+            $this->pruneEmptyCustomCategories();
+
             $this->pdo->commit();
         } catch (\Throwable $exception) {
             if ($this->pdo->inTransaction()) {
@@ -162,6 +164,8 @@ class TransportationModel
             foreach (self::MANAGED_LANGUAGES as $managedLanguage) {
                 $this->deleteGroupedItemInLanguage($groupKey, $managedLanguage);
             }
+
+            $this->pruneEmptyCustomCategories();
 
             $this->pdo->commit();
         } catch (\Throwable $exception) {
@@ -467,6 +471,59 @@ class TransportationModel
         ]);
 
         return (int) $stmt->fetchColumn();
+    }
+
+    private function pruneEmptyCustomCategories(): void
+    {
+        $referenceLanguage = self::MANAGED_LANGUAGES[0];
+        $fixedCount = count(self::FIXED_CATEGORIES[$referenceLanguage] ?? []);
+        $referenceCategories = $this->fetchCategoryRowsByLanguage($referenceLanguage);
+        $sortOrdersToDelete = [];
+
+        foreach ($referenceCategories as $index => $categoryRow) {
+            if ($index < $fixedCount) {
+                continue;
+            }
+
+            if ($this->countItemsInCategory((int) $categoryRow['id']) === 0) {
+                $sortOrdersToDelete[] = (int) $categoryRow['sort_order'];
+            }
+        }
+
+        if ($sortOrdersToDelete === []) {
+            return;
+        }
+
+        $delete = $this->pdo->prepare(
+            'DELETE FROM transportation_categories WHERE language_code = :language_code AND sort_order = :sort_order'
+        );
+
+        foreach ($sortOrdersToDelete as $sortOrder) {
+            foreach (self::MANAGED_LANGUAGES as $language) {
+                $delete->execute([
+                    'language_code' => $language,
+                    'sort_order' => $sortOrder,
+                ]);
+            }
+        }
+
+        $this->resequenceCategorySortOrders();
+    }
+
+    private function resequenceCategorySortOrders(): void
+    {
+        $update = $this->pdo->prepare(
+            'UPDATE transportation_categories SET sort_order = :sort_order WHERE id = :id'
+        );
+
+        foreach (self::MANAGED_LANGUAGES as $language) {
+            foreach ($this->fetchCategoryRowsByLanguage($language) as $sortOrder => $categoryRow) {
+                $update->execute([
+                    'sort_order' => $sortOrder,
+                    'id' => (int) $categoryRow['id'],
+                ]);
+            }
+        }
     }
 
     private function mapItemRowToViewData(array $itemRow): array

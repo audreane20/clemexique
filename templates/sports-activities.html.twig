@@ -15,26 +15,6 @@
             <p>{{ trans('sports_activities.coming_copy') }}</p>
         </div>
     {% else %}
-        <section class="home-toc-shell restaurant-toc-shell">
-            <div class="home-toc-card">
-                <div class="home-toc-grid">
-                    {% for category in activity_categories %}
-                        <a href="#activity-category-{{ loop.index }}" class="home-toc-link" data-activity-toc-target="activity-category-{{ loop.index }}">
-                            <span class="home-toc-link-title">{{ category.title }}</span>
-                            <span class="home-toc-link-copy">
-                                {{ category.items|length }}
-                                {{ app_lang == 'fr'
-                                    ? (category.items|length == 1 ? 'activité' : 'activités')
-                                    : (app_lang == 'es'
-                                        ? (category.items|length == 1 ? 'actividad' : 'actividades')
-                                        : (category.items|length == 1 ? 'activity' : 'activities')) }}
-                            </span>
-                        </a>
-                    {% endfor %}
-                </div>
-            </div>
-        </section>
-
         <div class="restaurant-category-list">
             {% for category in activity_categories %}
                 <section class="restaurant-category" id="activity-category-{{ loop.index }}">
@@ -113,80 +93,4 @@
         <a href="{{ base_path }}/?lang={{ app_lang }}" class="info-request-link page-home-link">{{ trans('common.back_home') }}</a>
     </div>
 </section>
-{% endblock %}
-
-{% block scripts %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const tocLinks = document.querySelectorAll('[data-activity-toc-target]');
-    let highlightTimer = null;
-    let highlightedElement = null;
-    let scrollStopTimer = null;
-
-    const highlightTarget = function (target) {
-        if (!target) {
-            return;
-        }
-
-        if (highlightedElement && highlightedElement !== target) {
-            highlightedElement.classList.remove('quick-scroll-highlight');
-        }
-
-        target.classList.remove('quick-scroll-highlight');
-        void target.offsetWidth;
-        target.classList.add('quick-scroll-highlight');
-        highlightedElement = target;
-
-        if (highlightTimer) {
-            window.clearTimeout(highlightTimer);
-        }
-
-        highlightTimer = window.setTimeout(function () {
-            target.classList.remove('quick-scroll-highlight');
-            if (highlightedElement === target) {
-                highlightedElement = null;
-            }
-        }, 1100);
-    };
-
-    const highlightAfterArrival = function (target) {
-        const finish = function () {
-            window.removeEventListener('scrollend', finish);
-            window.removeEventListener('scroll', onScroll);
-            if (scrollStopTimer) {
-                window.clearTimeout(scrollStopTimer);
-                scrollStopTimer = null;
-            }
-            highlightTarget(target);
-        };
-
-        const onScroll = function () {
-            if (scrollStopTimer) {
-                window.clearTimeout(scrollStopTimer);
-            }
-
-            scrollStopTimer = window.setTimeout(finish, 120);
-        };
-
-        window.addEventListener('scrollend', finish, { once: true });
-        window.addEventListener('scroll', onScroll);
-        onScroll();
-    };
-
-    tocLinks.forEach(function (link) {
-        link.addEventListener('click', function (event) {
-            const targetId = link.getAttribute('data-activity-toc-target');
-            const target = targetId ? document.getElementById(targetId) : null;
-
-            if (!target) {
-                return;
-            }
-
-            event.preventDefault();
-            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            highlightAfterArrival(target);
-        });
-    });
-});
-</script>
 {% endblock %}

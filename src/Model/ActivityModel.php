@@ -220,7 +220,7 @@ class ActivityModel
             'media_json' => $media === [] ? null : json_encode($media, JSON_UNESCAPED_SLASHES),
         ];
 
-        foreach (['name', 'address'] as $requiredField) {
+        foreach (['name'] as $requiredField) {
             if (trim((string) ($payload[$requiredField] ?? '')) === '') {
                 throw new InvalidArgumentException($this->localizedMessage('required_fields', $language));
             }
@@ -263,6 +263,21 @@ class ActivityModel
     private function resolveDestinationCategoryId(string $language, array $data): int
     {
         $categoryChoice = trim((string) ($data['category_choice'] ?? ''));
+
+        if ($categoryChoice === '') {
+            $existingCategories = $this->fetchCategoryRowsByLanguage($language);
+
+            if ($existingCategories !== []) {
+                return (int) $existingCategories[0]['id'];
+            }
+
+            return $this->insertCategory(
+                $language,
+                $this->defaultCategoryTitle($language),
+                null,
+                0
+            );
+        }
 
         if ($categoryChoice === '__new__') {
             $newTitle = trim((string) ($data['new_category_title'] ?? ''));
@@ -677,9 +692,9 @@ class ActivityModel
     {
         $messages = [
             'required_fields' => [
-                'en' => 'Please fill in the activity name and location.',
-                'fr' => 'Veuillez remplir le nom de l activite et l emplacement.',
-                'es' => 'Completa el nombre de la actividad y la ubicacion.',
+                'en' => 'Please fill in the activity name.',
+                'fr' => 'Veuillez remplir le nom de l activite.',
+                'es' => 'Completa el nombre de la actividad.',
             ],
             'new_category_title_required' => [
                 'en' => 'Please enter the new category title.',
@@ -704,5 +719,14 @@ class ActivityModel
         ];
 
         return $messages[$key][$this->normalizeLanguage($language)] ?? $messages[$key]['en'] ?? $key;
+    }
+
+    private function defaultCategoryTitle(string $language): string
+    {
+        return match ($this->normalizeLanguage($language)) {
+            'es' => 'Actividades deportivas',
+            'en' => 'Sports activities',
+            default => 'Activités sportives',
+        };
     }
 }

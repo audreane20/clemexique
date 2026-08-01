@@ -35,7 +35,7 @@ class ActivityController
         $flash = $this->consumeFlash();
         $sectionConfig = $this->sectionConfig();
 
-        return $this->twig->render($response, 'admin/todo.html.twig', [
+        return $this->twig->render($response, 'admin/activities.html.twig', [
             'page_title_key' => $sectionConfig['page_title'],
             'section_config' => $sectionConfig,
             'active_section' => 'activities',
@@ -180,8 +180,8 @@ class ActivityController
                 ['name' => 'description', 'type' => 'textarea', 'label_key' => 'admin_content.fields.description', 'placeholder_key' => 'admin_content.fields.optional_description_placeholder'],
                 ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
             ],
-            'required_item_fields' => ['name', 'area'],
-            'optional_item_fields' => ['description', 'url', 'media_files'],
+            'required_item_fields' => ['name'],
+            'optional_item_fields' => ['area', 'description', 'url', 'media_files'],
             'show_media_upload' => true,
             'native_submit' => true,
         ];

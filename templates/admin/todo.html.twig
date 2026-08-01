@@ -557,9 +557,9 @@
         <h3>{{ ui.delete }}</h3>
         <p data-admin-confirm-message></p>
         <div class="admin-confirm-actions">
-            <button type="button" class="admin-confirm-button admin-confirm-button-secondary admin-confirm-choice-button" data-admin-confirm-submit-single hidden><span data-admin-confirm-submit-single-label>{{ transport_delete_single_label }}</span></button>
-            <button type="button" class="admin-confirm-button admin-confirm-button-danger admin-confirm-choice-button" data-admin-confirm-submit><span data-admin-confirm-submit-label>{{ ui.delete }}</span></button>
-            <button type="button" class="admin-confirm-button admin-confirm-button-cancel admin-confirm-choice-button admin-confirm-cancel-button" data-admin-confirm-cancel><span>{{ ui.cancel }}</span></button>
+            <button type="button" class="admin-confirm-button admin-confirm-button-secondary admin-confirm-choice-button" data-admin-confirm-submit-single data-label="{{ transport_delete_single_label }}" hidden><span data-admin-confirm-submit-single-label>{{ transport_delete_single_label }}</span></button>
+            <button type="button" class="admin-confirm-button admin-confirm-button-danger admin-confirm-choice-button" data-admin-confirm-submit data-label="{{ ui.delete }}"><span data-admin-confirm-submit-label>{{ ui.delete }}</span></button>
+            <button type="button" class="admin-confirm-button admin-confirm-button-cancel admin-confirm-choice-button admin-confirm-cancel-button" data-admin-confirm-cancel data-label="{{ ui.cancel }}"><span>{{ ui.cancel }}</span></button>
         </div>
     </div>
 </div>
@@ -804,11 +804,17 @@ document.addEventListener('DOMContentLoaded', function () {
         if (confirmSubmitLabel) {
             confirmSubmitLabel.textContent = '{{ ui.delete }}';
         }
+        if (confirmSubmitButton) {
+            confirmSubmitButton.dataset.label = '{{ ui.delete }}';
+        }
         if (confirmSubmitSingleButton) {
             confirmSubmitSingleButton.hidden = true;
         }
         if (confirmSubmitSingleLabel) {
             confirmSubmitSingleLabel.textContent = '';
+        }
+        if (confirmSubmitSingleButton) {
+            confirmSubmitSingleButton.dataset.label = '';
         }
         pendingActionForm = null;
     };
@@ -828,11 +834,21 @@ document.addEventListener('DOMContentLoaded', function () {
                 ? (form.dataset.deleteAllLabel || '{{ ui.delete }}')
                 : '{{ ui.delete }}';
         }
+        if (confirmSubmitButton) {
+            confirmSubmitButton.dataset.label = isMultiCategoryDelete
+                ? (form.dataset.deleteAllLabel || '{{ ui.delete }}')
+                : '{{ ui.delete }}';
+        }
         if (confirmSubmitSingleButton) {
             confirmSubmitSingleButton.hidden = !isMultiCategoryDelete;
         }
         if (confirmSubmitSingleLabel) {
             confirmSubmitSingleLabel.textContent = isMultiCategoryDelete
+                ? (form.dataset.deleteSingleLabel || '')
+                : '';
+        }
+        if (confirmSubmitSingleButton) {
+            confirmSubmitSingleButton.dataset.label = isMultiCategoryDelete
                 ? (form.dataset.deleteSingleLabel || '')
                 : '';
         }

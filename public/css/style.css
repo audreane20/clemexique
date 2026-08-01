@@ -4484,6 +4484,7 @@ body.admin-confirm-open {
 }
 
 .admin-confirm-button {
+    position: relative;
     min-height: 52px;
     padding: 12px 18px;
     border-radius: 18px;
@@ -4494,11 +4495,16 @@ body.admin-confirm-open {
     transition: 0.2s ease;
 }
 
-.admin-confirm-button span {
-    display: inline-block;
-    width: 100%;
+.admin-confirm-button::before {
+    content: attr(data-label);
     color: inherit;
+    font: inherit;
+    font-weight: inherit;
     line-height: 1.2;
+}
+
+.admin-confirm-button span {
+    display: none;
 }
 
 .admin-confirm-button:hover {
@@ -4516,7 +4522,7 @@ body.admin-confirm-open {
 
 .admin-confirm-button-danger {
     background: #fff3f3;
-    color: #9b1c1c;
+    color: #9b1c1c !important;
     border-color: rgba(155, 28, 28, 0.14);
 }
 

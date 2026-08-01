@@ -204,7 +204,7 @@ class TransportationModel
                 'group_key' => $groupKey,
                 'name' => $payload['name'],
                 'address' => '',
-                'note' => '',
+                'note' => $payload['note'],
                 'website_url' => $payload['website_url'],
                 'website_label' => $payload['website_label'],
                 'sort_order' => $this->countItemsInCategory((int) $categoryRow['id']) + $sortOrder,
@@ -223,6 +223,7 @@ class TransportationModel
 
         return [
             'name' => $name,
+            'note' => trim((string) ($data['description'] ?? '')),
             'website_url' => $websiteUrl,
             'website_label' => $this->labelFromUrl($websiteUrl),
         ];
@@ -268,6 +269,7 @@ class TransportationModel
         return [
             'name' => $this->translateText((string) ($data['name'] ?? ''), $sourceLanguage, $targetLanguage),
             'url' => (string) ($data['url'] ?? ''),
+            'description' => $this->translateText((string) ($data['description'] ?? ''), $sourceLanguage, $targetLanguage),
             'category_choices' => $data['category_choices'] ?? [],
         ];
     }
@@ -314,6 +316,7 @@ class TransportationModel
             'name' => (string) ($first['name'] ?? ''),
             'url' => (string) ($first['website_url'] ?? ''),
             'url_label' => (string) ($first['website_label'] ?? ''),
+            'description' => (string) ($first['note'] ?? ''),
             'category_indexes' => array_values(array_unique($categoryIndexes)),
         ];
     }
@@ -409,7 +412,7 @@ class TransportationModel
         return [
             'name' => $itemRow['name'] ?? null,
             'area' => null,
-            'note' => null,
+            'note' => ($itemRow['note'] ?? '') !== '' ? (string) $itemRow['note'] : null,
             'url' => $url !== '' ? $url : null,
             'url_label' => $itemRow['website_label'] ?? null,
         ];

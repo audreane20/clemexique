@@ -175,9 +175,10 @@ class TransportationController
             'item_fields' => [
                 ['name' => 'name', 'label_key' => 'admin_content.fields.name', 'placeholder_key' => 'admin_content.fields.name'],
                 ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
+                ['name' => 'description', 'label_key' => 'admin_content.fields.description', 'placeholder_key' => 'admin_content.fields.optional_description_placeholder', 'type' => 'textarea'],
             ],
             'required_item_fields' => ['name', 'url'],
-            'optional_item_fields' => [],
+            'optional_item_fields' => ['description'],
         ];
     }
 

@@ -4484,27 +4484,32 @@ body.admin-confirm-open {
 }
 
 .admin-confirm-button {
-    position: relative;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
     min-height: 52px;
     padding: 12px 18px;
     border-radius: 18px;
     border: 1px solid rgba(11, 53, 88, 0.14);
     font: inherit;
     font-weight: 800;
+    font-size: 1rem;
     cursor: pointer;
     transition: 0.2s ease;
-}
-
-.admin-confirm-button::before {
-    content: attr(data-label);
-    color: inherit;
-    font: inherit;
-    font-weight: inherit;
-    line-height: 1.2;
+    box-sizing: border-box;
 }
 
 .admin-confirm-button span {
-    display: none;
+    display: inline !important;
+    width: auto;
+    color: inherit !important;
+    font: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+    line-height: 1.2;
+    opacity: 1 !important;
+    visibility: visible !important;
+    text-indent: 0;
 }
 
 .admin-confirm-button:hover {

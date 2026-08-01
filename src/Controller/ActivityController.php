@@ -175,19 +175,6 @@ class ActivityController
                         'es' => 'Ej. Deportes acuaticos',
                     ],
                 ],
-                [
-                    'name' => 'flag',
-                    'labels' => [
-                        'en' => 'Flag / icon code',
-                        'fr' => 'Code du drapeau / icone',
-                        'es' => 'Codigo de bandera / icono',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Optional',
-                        'fr' => 'Optionnel',
-                        'es' => 'Opcional',
-                    ],
-                ],
             ],
             'item_fields' => [
                 ['name' => 'name', 'labels' => ['en' => 'Activity name', 'fr' => 'Nom de l activite', 'es' => 'Nombre de la actividad'], 'placeholders' => ['en' => 'Activity name', 'fr' => 'Nom de l activite', 'es' => 'Nombre de la actividad']],

@@ -87,6 +87,7 @@ class TransportationModel
     public function createItem(string $language, array $data): void
     {
         $language = $this->normalizeLanguage($language);
+        $data = $this->resolveNewCategoryChoice($data, $language);
         $groupKey = bin2hex(random_bytes(16));
         $this->pdo->beginTransaction();
 
@@ -118,6 +119,7 @@ class TransportationModel
     public function updateItem(string $language, int $categoryIndex, int $itemIndex, array $data): void
     {
         $language = $this->normalizeLanguage($language);
+        $data = $this->resolveNewCategoryChoice($data, $language);
         $groupKey = $this->resolveGroupKeyFromIndexes($language, $categoryIndex, $itemIndex);
 
         $this->pdo->beginTransaction();

@@ -1742,7 +1742,15 @@ body.home-transition-sun-active .home-hero-orb-sun {
 }
 
 .property-filter-actions-admin {
+    display: flex;
+    flex-wrap: nowrap;
     justify-content: flex-end;
+    gap: 8px;
+}
+
+.property-filter-actions-admin .property-filter-link {
+    padding: 10px 14px;
+    white-space: nowrap;
 }
 
 .property-form {

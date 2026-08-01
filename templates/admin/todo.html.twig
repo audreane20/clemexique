@@ -5,6 +5,7 @@
 {% set is_restaurants = active_section == 'restaurants' %}
 {% set is_video_capsules = active_section == 'video_capsules' %}
 {% set is_activities = active_section == 'activities' %}
+{% set is_transportation = active_section == 'transportation' %}
 {% set item_label_key = active_section == 'restaurants'
     ? 'admin_content.item_label.restaurant'
     : active_section == 'excursions'
@@ -69,6 +70,7 @@
 {% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
 {% set category_form_action = is_editing_category ? base_path ~ '/admin/content/' ~ active_section ~ '/categories/' ~ editing_category_index ~ '/update' : '' %}
 {% set selected_category_choice = is_editing_item ? editing_item_category_index : (categories is empty ? '__new__' : '') %}
+{% set selected_transport_categories = is_editing_item and editing_item.category_indexes is defined ? editing_item.category_indexes : [] %}
 {% set native_submit_enabled = (section_config.native_submit is defined and section_config.native_submit)
     or (section_config.show_video_upload is defined and section_config.show_video_upload)
     or (section_config.show_media_upload is defined and section_config.show_media_upload) %}
@@ -164,59 +166,78 @@
                         </label>
                     {% endfor %}
                 {% else %}
-                <label>
-                    <span class="admin-content-label-copy">{{ ui.category }}<span class="admin-content-required-marker">*</span></span>
-                    <select name="category_choice" data-category-choice>
-                        {% if categories is not empty %}
-                            <option value="">{{ ui.select_category }}</option>
+                {% if is_transportation %}
+                    <fieldset class="admin-content-checkbox-group">
+                        <legend class="admin-content-label-copy">{{ ui.category }}<span class="admin-content-required-marker">*</span></legend>
+                        <div class="admin-content-checkbox-list">
                             {% for category in categories %}
-                                <option value="{{ loop.index0 }}" {{ selected_category_choice == loop.index0 ? 'selected' : '' }}>
-                                    {{ category.title }}
-                                </option>
+                                <label class="admin-content-checkbox-option">
+                                    <input
+                                        type="checkbox"
+                                        name="category_choices[]"
+                                        value="{{ loop.index0 }}"
+                                        {{ loop.index0 in selected_transport_categories ? 'checked' : '' }}
+                                    >
+                                    <span>{{ category.title }}</span>
+                                </label>
                             {% endfor %}
-                        {% endif %}
-                        <option value="__new__" {{ selected_category_choice == '__new__' ? 'selected' : '' }}>{{ ui.new_category }}</option>
-                    </select>
-                </label>
+                        </div>
+                    </fieldset>
+                {% else %}
+                    <label>
+                        <span class="admin-content-label-copy">{{ ui.category }}<span class="admin-content-required-marker">*</span></span>
+                        <select name="category_choice" data-category-choice>
+                            {% if categories is not empty %}
+                                <option value="">{{ ui.select_category }}</option>
+                                {% for category in categories %}
+                                    <option value="{{ loop.index0 }}" {{ selected_category_choice == loop.index0 ? 'selected' : '' }}>
+                                        {{ category.title }}
+                                    </option>
+                                {% endfor %}
+                            {% endif %}
+                            <option value="__new__" {{ selected_category_choice == '__new__' ? 'selected' : '' }}>{{ ui.new_category }}</option>
+                        </select>
+                    </label>
 
-                <div class="admin-content-new-category-fields is-hidden" data-new-category-fields>
-                    <div class="admin-content-inline-title">
-                        <h3>{{ ui.new_category }}</h3>
-                        <p>{{ ui.new_category_copy|format(current_item_label) }}</p>
-                    </div>
+                    <div class="admin-content-new-category-fields is-hidden" data-new-category-fields>
+                        <div class="admin-content-inline-title">
+                            <h3>{{ ui.new_category }}</h3>
+                            <p>{{ ui.new_category_copy|format(current_item_label) }}</p>
+                        </div>
 
-                    {% for field in section_config.category_fields %}
-                        <label>
-                            {{ trans(field.label_key) }}
-                            {% if field.name == 'flag' %}
-                                <div class="admin-content-icon-picker" data-category-icon-picker>
-                                    <input type="hidden" name="new_category_{{ field.name }}" value="" data-category-icon-value>
-                                    <input type="text" value="" placeholder="{{ ui.search_icon }}" autocomplete="off" data-category-icon-input>
-                                    <div class="admin-content-icon-picker-menu is-hidden" data-category-icon-menu>
-                                        {% for choice in category_icon_choices %}
-                                            <button type="button" class="admin-content-icon-option" data-icon-code="{{ choice.code }}" data-icon-label="{{ choice.name }}">
-                                                <span class="admin-content-icon-option-symbol">{{ render_category_icon(choice.code) }}</span>
-                                                <span class="admin-content-icon-option-copy">
-                                                    <strong>{{ choice.name }}</strong>
-                                                    <span>{{ choice.code }}</span>
-                                                </span>
-                                            </button>
-                                        {% endfor %}
-                                        <div class="admin-content-icon-empty is-hidden" data-category-icon-empty>
-                                            {{ ui.no_matching_icons }}
+                        {% for field in section_config.category_fields %}
+                            <label>
+                                {{ trans(field.label_key) }}
+                                {% if field.name == 'flag' %}
+                                    <div class="admin-content-icon-picker" data-category-icon-picker>
+                                        <input type="hidden" name="new_category_{{ field.name }}" value="" data-category-icon-value>
+                                        <input type="text" value="" placeholder="{{ ui.search_icon }}" autocomplete="off" data-category-icon-input>
+                                        <div class="admin-content-icon-picker-menu is-hidden" data-category-icon-menu>
+                                            {% for choice in category_icon_choices %}
+                                                <button type="button" class="admin-content-icon-option" data-icon-code="{{ choice.code }}" data-icon-label="{{ choice.name }}">
+                                                    <span class="admin-content-icon-option-symbol">{{ render_category_icon(choice.code) }}</span>
+                                                    <span class="admin-content-icon-option-copy">
+                                                        <strong>{{ choice.name }}</strong>
+                                                        <span>{{ choice.code }}</span>
+                                                    </span>
+                                                </button>
+                                            {% endfor %}
+                                            <div class="admin-content-icon-empty is-hidden" data-category-icon-empty>
+                                                {{ ui.no_matching_icons }}
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
-                                <div class="admin-content-icon-preview" data-category-icon-preview>
-                                    <span class="admin-content-icon-preview-label">{{ ui.preview }}</span>
-                                    <span class="admin-content-icon-preview-value">{{ ui.no_icon }}</span>
-                                </div>
-                            {% else %}
-                                <input type="text" name="new_category_{{ field.name }}" value="" placeholder="{{ trans(field.placeholder_key) }}">
-                            {% endif %}
-                        </label>
-                    {% endfor %}
-                </div>
+                                    <div class="admin-content-icon-preview" data-category-icon-preview>
+                                        <span class="admin-content-icon-preview-label">{{ ui.preview }}</span>
+                                        <span class="admin-content-icon-preview-value">{{ ui.no_icon }}</span>
+                                    </div>
+                                {% else %}
+                                    <input type="text" name="new_category_{{ field.name }}" value="" placeholder="{{ trans(field.placeholder_key) }}">
+                                {% endif %}
+                            </label>
+                        {% endfor %}
+                    </div>
+                {% endif %}
 
                 {% for field in section_config.item_fields %}
                     {% if field.name != 'url_label' %}
@@ -403,14 +424,16 @@
                                     <p>{{ category.items|length }} {{ ui.items }}</p>
                                 </div>
 
-                                <div class="admin-content-card-actions">
-                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_category={{ category_index }}#category-section-{{ category_index }}" class="header-auth-link">{{ ui.edit }}</a>
+                                {% if not is_transportation %}
+                                    <div class="admin-content-card-actions">
+                                        <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_category={{ category_index }}#category-section-{{ category_index }}" class="header-auth-link">{{ ui.edit }}</a>
 
-                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" data-admin-content-action data-confirm-message="{{ ui.delete_category_confirm }}">
-                                        <input type="hidden" name="editor_language" value="{{ editor_language }}">
-                                        <button type="submit" class="account-menu-button property-delete-button">{{ ui.delete }}</button>
-                                    </form>
-                                </div>
+                                        <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" data-admin-content-action data-confirm-message="{{ ui.delete_category_confirm }}">
+                                            <input type="hidden" name="editor_language" value="{{ editor_language }}">
+                                            <button type="submit" class="account-menu-button property-delete-button">{{ ui.delete }}</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
                             </div>
 
                             <div class="admin-content-item-list">
@@ -429,6 +452,7 @@
                                                         {% if item.area %}<span>{{ item.area }}</span>{% endif %}
                                                         {% if item.price %}<span>{{ item.price }}</span>{% endif %}
                                                         {% if item.reference %}<span>{{ item.reference }}</span>{% endif %}
+                                                        {% if is_transportation and item.url_label %}<span>{{ item.url_label }}</span>{% endif %}
                                                     </p>
                                                 </div>
 

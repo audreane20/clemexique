@@ -171,31 +171,19 @@ class TransportationController
                     'label_key' => 'admin_content.fields.category_title',
                     'placeholder_key' => 'admin_content.sections.transportation.category_title_placeholder',
                 ],
-                [
-                    'name' => 'flag',
-                    'label_key' => 'admin_content.fields.flag_code',
-                    'placeholder_key' => 'admin_content.ui.optional',
-                ],
             ],
             'item_fields' => [
                 ['name' => 'name', 'label_key' => 'admin_content.fields.name', 'placeholder_key' => 'admin_content.fields.name'],
-                ['name' => 'area', 'label_key' => 'admin_content.fields.location', 'placeholder_key' => 'admin_content.sections.common.playa_placeholder'],
                 ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
-                ['name' => 'note', 'label_key' => 'admin_content.fields.note', 'placeholder_key' => 'admin_content.fields.short_note_placeholder'],
             ],
-            'required_item_fields' => ['name'],
-            'optional_item_fields' => ['area', 'url', 'note'],
+            'required_item_fields' => ['name', 'url'],
+            'optional_item_fields' => [],
         ];
     }
 
     private function categoryIconChoices(): array
     {
-        return [
-            ['code' => 'BUS', 'name' => 'Bus'],
-            ['code' => 'TAXI', 'name' => 'Taxi'],
-            ['code' => 'CAR', 'name' => 'Car'],
-            ['code' => 'SHUTTLE', 'name' => 'Shuttle bus'],
-        ];
+        return [];
     }
 
     private function currentLanguage(Request $request): string

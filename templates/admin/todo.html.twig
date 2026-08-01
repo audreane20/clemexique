@@ -737,7 +737,9 @@ document.addEventListener('DOMContentLoaded', function () {
     const confirmModal = document.querySelector('[data-admin-confirm-modal]');
     const confirmMessage = document.querySelector('[data-admin-confirm-message]');
     const confirmSubmitButton = document.querySelector('[data-admin-confirm-submit]');
+    const confirmSubmitLabel = document.querySelector('[data-admin-confirm-submit-label]');
     const confirmSubmitSingleButton = document.querySelector('[data-admin-confirm-submit-single]');
+    const confirmSubmitSingleLabel = document.querySelector('[data-admin-confirm-submit-single-label]');
     const confirmCancelButtons = document.querySelectorAll('[data-admin-confirm-cancel]');
     const quickLinks = document.querySelectorAll('.admin-content-quick-link');
     let pendingActionForm = null;
@@ -799,12 +801,14 @@ document.addEventListener('DOMContentLoaded', function () {
 
         confirmModal.hidden = true;
         document.body.classList.remove('admin-confirm-open');
-        if (confirmSubmitButton) {
-            confirmSubmitButton.textContent = '{{ ui.delete }}';
+        if (confirmSubmitLabel) {
+            confirmSubmitLabel.textContent = '{{ ui.delete }}';
         }
         if (confirmSubmitSingleButton) {
             confirmSubmitSingleButton.hidden = true;
-            confirmSubmitSingleButton.textContent = '';
+        }
+        if (confirmSubmitSingleLabel) {
+            confirmSubmitSingleLabel.textContent = '';
         }
         pendingActionForm = null;
     };
@@ -819,14 +823,16 @@ document.addEventListener('DOMContentLoaded', function () {
         confirmMessage.textContent = isMultiCategoryDelete
             ? (form.dataset.multiCategoryMessage || form.dataset.confirmMessage || '')
             : (form.dataset.confirmMessage || '');
-        if (confirmSubmitButton) {
-            confirmSubmitButton.textContent = isMultiCategoryDelete
+        if (confirmSubmitLabel) {
+            confirmSubmitLabel.textContent = isMultiCategoryDelete
                 ? (form.dataset.deleteAllLabel || '{{ ui.delete }}')
                 : '{{ ui.delete }}';
         }
         if (confirmSubmitSingleButton) {
             confirmSubmitSingleButton.hidden = !isMultiCategoryDelete;
-            confirmSubmitSingleButton.textContent = isMultiCategoryDelete
+        }
+        if (confirmSubmitSingleLabel) {
+            confirmSubmitSingleLabel.textContent = isMultiCategoryDelete
                 ? (form.dataset.deleteSingleLabel || '')
                 : '';
         }

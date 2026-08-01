@@ -556,10 +556,16 @@
         <p class="admin-confirm-eyebrow" id="admin-confirm-title">{{ ui.eyebrow }}</p>
         <h3>{{ ui.delete }}</h3>
         <p data-admin-confirm-message></p>
-        <div class="admin-confirm-actions">
-            <button type="button" class="admin-confirm-button admin-confirm-button-secondary admin-confirm-choice-button" data-admin-confirm-submit-single hidden><span data-admin-confirm-submit-single-label>{{ transport_delete_single_label }}</span></button>
-            <button type="button" class="admin-confirm-button admin-confirm-button-danger admin-confirm-choice-button" data-admin-confirm-submit><span data-admin-confirm-submit-label>{{ ui.delete }}</span></button>
-            <button type="button" class="admin-confirm-button admin-confirm-button-cancel admin-confirm-choice-button admin-confirm-cancel-button" data-admin-confirm-cancel><span>{{ ui.cancel }}</span></button>
+        <div class="admin-confirm-actions" style="display:grid;grid-template-columns:1fr;gap:12px;margin-top:22px;">
+            <button type="button" data-admin-confirm-submit-single hidden style="display:none;width:100%;min-height:52px;padding:12px 18px;border-radius:18px;border:1px solid rgba(11,53,88,0.14);background:rgba(31,163,179,0.1);color:#0b3558;font:inherit;font-size:1rem;font-weight:800;text-align:center;cursor:pointer;box-sizing:border-box;">
+                <span data-admin-confirm-submit-single-label style="display:inline !important;color:inherit !important;font:inherit;font-size:inherit;font-weight:inherit;line-height:1.2;">{{ transport_delete_single_label }}</span>
+            </button>
+            <button type="button" data-admin-confirm-submit style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:12px 18px;border-radius:18px;border:1px solid rgba(155,28,28,0.14);background:#fff3f3;color:#9b1c1c;font:inherit;font-size:1rem;font-weight:800;text-align:center;cursor:pointer;box-sizing:border-box;">
+                <span data-admin-confirm-submit-label style="display:inline !important;color:inherit !important;font:inherit;font-size:inherit;font-weight:inherit;line-height:1.2;">{{ ui.delete }}</span>
+            </button>
+            <button type="button" data-admin-confirm-cancel style="display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:52px;padding:12px 18px;border-radius:18px;border:2px solid rgba(11,53,88,0.6);background:#ffffff;color:#0b3558;font:inherit;font-size:1rem;font-weight:800;text-align:center;cursor:pointer;box-sizing:border-box;">
+                <span style="display:inline !important;color:inherit !important;font:inherit;font-size:inherit;font-weight:inherit;line-height:1.2;">{{ ui.cancel }}</span>
+            </button>
         </div>
     </div>
 </div>

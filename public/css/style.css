@@ -4472,9 +4472,55 @@ body.admin-confirm-open {
 }
 
 .admin-confirm-choice-button {
+    display: inline-flex;
+    align-items: center;
     width: 100%;
     justify-content: center;
     text-align: center;
+}
+
+.admin-confirm-button {
+    min-height: 52px;
+    padding: 12px 18px;
+    border-radius: 18px;
+    border: 1px solid rgba(11, 53, 88, 0.14);
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.admin-confirm-button:hover {
+    transform: translateY(-1px);
+}
+
+.admin-confirm-button-secondary {
+    background: rgba(31, 163, 179, 0.1);
+    color: var(--navy);
+}
+
+.admin-confirm-button-secondary:hover {
+    background: rgba(31, 163, 179, 0.18);
+}
+
+.admin-confirm-button-danger {
+    background: #fff3f3;
+    color: #9b1c1c;
+    border-color: rgba(155, 28, 28, 0.14);
+}
+
+.admin-confirm-button-danger:hover {
+    background: #ffe7e7;
+}
+
+.admin-confirm-button-cancel {
+    background: #ffffff;
+    color: var(--navy);
+    border: 2px solid rgba(11, 53, 88, 0.6);
+}
+
+.admin-confirm-button-cancel:hover {
+    background: rgba(11, 53, 88, 0.04);
 }
 
 .admin-confirm-cancel-button {
@@ -5690,9 +5736,7 @@ body.admin-confirm-open {
         font-size: 1.45rem;
     }
 
-    .admin-confirm-actions .admin-content-cancel-link,
-    .admin-confirm-actions .property-delete-button,
-    .admin-confirm-actions .account-menu-button {
+    .admin-confirm-actions .admin-confirm-button {
         width: 100%;
     }
 

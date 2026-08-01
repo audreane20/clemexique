@@ -4242,6 +4242,15 @@ body.home-transition-sun-active .home-hero-orb-sun {
     max-width: 420px;
 }
 
+.admin-content-media-thumb {
+    width: 120px;
+    max-width: 100%;
+    border-radius: 14px;
+    display: inline-block;
+    object-fit: cover;
+    box-shadow: 0 14px 30px rgba(11, 53, 88, 0.12);
+}
+
 .admin-content-card-actions {
     display: flex;
     justify-content: flex-start;

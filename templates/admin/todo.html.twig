@@ -4,6 +4,7 @@
 {% set price_options = ['$', '$$', '$$$', '$$$$', '$$$$$'] %}
 {% set is_restaurants = active_section == 'restaurants' %}
 {% set is_video_capsules = active_section == 'video_capsules' %}
+{% set is_activities = active_section == 'activities' %}
 {% set item_label = active_section == 'restaurants'
     ? {'en': 'restaurant', 'fr': 'restaurant', 'es': 'restaurante'}
     : active_section == 'excursions'
@@ -156,6 +157,9 @@
 {% set item_form_action = is_editing_item ? base_path ~ '/admin/content/' ~ active_section ~ '/items/' ~ editing_item_category_index ~ '/' ~ editing_item_index ~ '/update' : base_path ~ '/admin/content/' ~ active_section ~ '/items/create' %}
 {% set category_form_action = is_editing_category ? base_path ~ '/admin/content/' ~ active_section ~ '/categories/' ~ editing_category_index ~ '/update' : '' %}
 {% set selected_category_choice = is_editing_item ? editing_item_category_index : (categories is empty ? '__new__' : '') %}
+{% set native_submit_enabled = (section_config.native_submit is defined and section_config.native_submit)
+    or (section_config.show_video_upload is defined and section_config.show_video_upload)
+    or (section_config.show_media_upload is defined and section_config.show_media_upload) %}
 <section class="admin-content-shell">
     <div class="admin-properties-header">
         <div>
@@ -201,7 +205,7 @@
                 {% endif %}
             </div>
 
-            <form method="POST" action="{{ is_editing_category ? category_form_action : item_form_action }}" class="admin-content-form" data-admin-content-form {% if section_config.show_video_upload is defined and section_config.show_video_upload and not is_editing_category %}data-admin-content-native-submit="true"{% endif %} enctype="multipart/form-data">
+            <form method="POST" action="{{ is_editing_category ? category_form_action : item_form_action }}" class="admin-content-form" data-admin-content-form {% if native_submit_enabled and not is_editing_category %}data-admin-content-native-submit="true"{% endif %} enctype="multipart/form-data">
                 <input type="hidden" name="editor_language" value="{{ editor_language }}">
 
                 {% if is_editing_category %}
@@ -380,12 +384,46 @@
                                     </button>
                                 </div>
                             </div>
+                        {% elseif field.type is defined and field.type == 'textarea' %}
+                            <textarea name="{{ field.name }}" rows="4" placeholder="{{ field.placeholders[app_lang] }}">{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}</textarea>
                         {% else %}
                             <input type="text" name="{{ field.name }}" value="{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}" placeholder="{{ field.placeholders[app_lang] }}">
                         {% endif %}
                     </label>
                     {% endif %}
                 {% endfor %}
+
+                {% if section_config.show_media_upload is defined and section_config.show_media_upload %}
+                    <label>
+                        <span class="admin-content-label-copy">
+                            {{ app_lang == 'fr' ? 'Photos et videos' : (app_lang == 'es' ? 'Fotos y videos' : 'Pictures and/or videos') }}
+                            <span class="admin-content-optional-marker">({{ ui[app_lang].optional }})</span>
+                        </span>
+                        <input type="file" name="media_files[]" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,video/webm,.jpg,.jpeg,.png,.webp,.gif,.avif,.mp4,.mov,.m4v,.webm" multiple>
+                        <span class="admin-content-field-help">
+                            {{ app_lang == 'fr'
+                                ? 'Ajoutez une ou plusieurs photos ou videos depuis votre appareil.'
+                                : (app_lang == 'es'
+                                    ? 'Agrega una o varias fotos o videos desde tu dispositivo.'
+                                    : 'Add one or more photos or videos from your device.') }}
+                        </span>
+                        {% if is_editing_item and editing_item.media is defined and editing_item.media %}
+                            <div class="admin-content-item-meta">
+                                {% for media in editing_item.media %}
+                                    {% if media.type == 'image' %}
+                                        <a href="{{ base_path ~ media.url }}" target="_blank" rel="noopener noreferrer">
+                                            <img src="{{ base_path ~ media.url }}" alt="{{ editing_item.name }} media {{ loop.index }}" class="admin-content-media-thumb">
+                                        </a>
+                                    {% elseif media.type == 'video' %}
+                                        <video controls preload="metadata" class="guide-video-player admin-content-video-preview">
+                                            <source src="{{ base_path ~ media.url }}">
+                                        </video>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                    </label>
+                {% endif %}
 
                 {% if section_config.show_video_upload is defined and section_config.show_video_upload %}
                     <label>
@@ -518,6 +556,30 @@
                                                     {% endif %}
                                                     {% if item.note %}
                                                         <p class="guide-area">{{ item.note }}</p>
+                                                    {% endif %}
+                                                </div>
+                                            {% elseif is_activities %}
+                                                <div class="admin-content-item-meta">
+                                                    {% if item.description %}
+                                                        <p class="guide-area">{{ item.description }}</p>
+                                                    {% endif %}
+                                                    {% if item.url %}
+                                                        <a href="{{ item.url }}" target="_blank" rel="noopener noreferrer" class="guide-link">{{ item.url_label ? item.url_label : item.url }}</a>
+                                                    {% endif %}
+                                                    {% if item.media is defined and item.media %}
+                                                        <div class="admin-content-item-meta">
+                                                            {% for media in item.media %}
+                                                                {% if media.type == 'image' %}
+                                                                    <a href="{{ base_path ~ media.url }}" target="_blank" rel="noopener noreferrer">
+                                                                        <img src="{{ base_path ~ media.url }}" alt="{{ item.name }} media {{ loop.index }}" class="admin-content-media-thumb">
+                                                                    </a>
+                                                                {% elseif media.type == 'video' %}
+                                                                    <video controls preload="metadata" class="guide-video-player admin-content-video-preview">
+                                                                        <source src="{{ base_path ~ media.url }}">
+                                                                    </video>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                        </div>
                                                     {% endif %}
                                                 </div>
                                             {% elseif item.url %}

@@ -1,5 +1,6 @@
 ﻿<?php
 
+use App\Controller\ActivityController;
 use App\Controller\ExcursionController;
 use App\Controller\PropertyController;
 use App\Controller\RestaurantController;
@@ -7,6 +8,7 @@ use App\Controller\TodoController;
 use App\Controller\VideoCapsuleController;
 use App\Helper\Locale;
 use App\Helper\Translator;
+use App\Model\ActivityModel;
 use App\Model\ExcursionModel;
 use App\Model\PropertyModel;
 use App\Model\RestaurantModel;
@@ -514,12 +516,14 @@ setSiteContentPdo($pdo);
 $propertyModel = new PropertyModel($pdo);
 $googleTranslateService = new GoogleTranslateService((string) ($_ENV['GOOGLE_TRANSLATE_API_KEY'] ?? ''));
 $restaurantModel = new RestaurantModel($pdo, $googleTranslateService);
+$activityModel = new ActivityModel($pdo, $googleTranslateService);
 $excursionModel = new ExcursionModel($pdo, $googleTranslateService);
 $todoModel = new TodoModel($pdo, $googleTranslateService);
 $videoCapsuleModel = new VideoCapsuleModel($pdo, $googleTranslateService);
 $userModel = new UserModel($pdo);
 $propertyController = new PropertyController($propertyModel, $twig, $basePath, $translator, $googleTranslateService);
 $restaurantController = new RestaurantController($restaurantModel, $twig, $basePath, $translator);
+$activityController = new ActivityController($activityModel, $twig, $basePath, $translator);
 $excursionController = new ExcursionController($excursionModel, $twig, $basePath, $translator);
 $todoController = new TodoController($todoModel, $twig, $basePath, $translator);
 $videoCapsuleController = new VideoCapsuleController($videoCapsuleModel, $twig, $basePath, $translator);
@@ -1680,13 +1684,20 @@ $app->group('/admin', function ($group) use ($propertyController, $basePath) {
     $group->post('/properties/{id}/delete', [$propertyController, 'delete']);
 })->add($adminAuthMiddleware);
 
-$app->group('/admin/content', function ($group) use ($restaurantController, $todoController, $videoCapsuleController) {
+$app->group('/admin/content', function ($group) use ($restaurantController, $activityController, $todoController, $videoCapsuleController) {
     $group->get('/restaurants', [$restaurantController, 'adminIndex']);
     $group->post('/restaurants/items/create', [$restaurantController, 'create']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/update', [$restaurantController, 'update']);
     $group->post('/restaurants/items/{categoryIndex}/{itemIndex}/delete', [$restaurantController, 'deleteItem']);
     $group->post('/restaurants/categories/{categoryIndex}/update', [$restaurantController, 'updateCategory']);
     $group->post('/restaurants/categories/{categoryIndex}/delete', [$restaurantController, 'deleteCategory']);
+
+    $group->get('/activities', [$activityController, 'adminIndex']);
+    $group->post('/activities/items/create', [$activityController, 'create']);
+    $group->post('/activities/items/{categoryIndex}/{itemIndex}/update', [$activityController, 'update']);
+    $group->post('/activities/items/{categoryIndex}/{itemIndex}/delete', [$activityController, 'deleteItem']);
+    $group->post('/activities/categories/{categoryIndex}/update', [$activityController, 'updateCategory']);
+    $group->post('/activities/categories/{categoryIndex}/delete', [$activityController, 'deleteCategory']);
 
     $group->get('/playa_guide', [$todoController, 'adminIndex']);
     $group->post('/playa_guide/items/create', [$todoController, 'create']);

@@ -11,7 +11,7 @@ function siteContentEmptyState(): array
 {
     $empty = [];
 
-    foreach (['restaurants', 'excursions', 'playa_guide', 'video_capsules'] as $section) {
+    foreach (['restaurants', 'excursions', 'playa_guide', 'activities', 'video_capsules'] as $section) {
         $empty[$section] = [];
 
         foreach (Locale::all() as $language) {
@@ -65,6 +65,20 @@ function siteContentTableMap(): array
                 'url' => 'website_url',
                 'url_label' => 'website_label',
                 'video_url' => 'video_url',
+            ],
+        ],
+        'activities' => [
+            'categories_table' => 'activity_categories',
+            'items_table' => 'activities',
+            'category_title_column' => 'title',
+            'category_icon_column' => 'icon_code',
+            'item_column_map' => [
+                'name' => 'name',
+                'area' => 'address',
+                'description' => 'description',
+                'url' => 'website_url',
+                'url_label' => 'website_label',
+                'media' => 'media_json',
             ],
         ],
         'video_capsules' => [
@@ -191,6 +205,39 @@ function ensureSiteContentTables(PDO $pdo): void
             INDEX idx_todo_items_category_sort (category_id, sort_order),
             CONSTRAINT fk_todo_items_category
                 FOREIGN KEY (category_id) REFERENCES todo_categories(id)
+                ON DELETE CASCADE
+        )
+    ");
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS activity_categories (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            language_code CHAR(2) NOT NULL,
+            title VARCHAR(255) NOT NULL,
+            icon_code VARCHAR(50) NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_activity_categories_language_sort (language_code, sort_order)
+        )
+    ");
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS activities (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            category_id INT NOT NULL,
+            name VARCHAR(255) NOT NULL,
+            address VARCHAR(255) NULL,
+            description TEXT NULL,
+            website_url TEXT NULL,
+            website_label VARCHAR(255) NULL,
+            media_json LONGTEXT NULL,
+            sort_order INT NOT NULL DEFAULT 0,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            INDEX idx_activities_category_sort (category_id, sort_order),
+            CONSTRAINT fk_activities_category
+                FOREIGN KEY (category_id) REFERENCES activity_categories(id)
                 ON DELETE CASCADE
         )
     ");

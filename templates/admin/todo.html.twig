@@ -181,14 +181,20 @@
                                     <span>{{ category.title }}</span>
                                 </label>
                             {% endfor %}
+                            <label class="admin-content-checkbox-option admin-content-checkbox-option-new">
+                                <input type="checkbox" value="1" data-transport-new-category-toggle>
+                                <span>{{ ui.new_category }}</span>
+                            </label>
                         </div>
 
-                        <div class="admin-content-inline-title admin-content-inline-title-compact">
-                            <h3>{{ ui.new_category }}</h3>
-                            <p>{{ ui.new_category_copy|format(current_item_label) }}</p>
-                        </div>
+                        <div class="admin-content-new-category-fields is-hidden" data-transport-new-category-fields>
+                            <div class="admin-content-inline-title admin-content-inline-title-compact">
+                                <h3>{{ ui.new_category }}</h3>
+                                <p>{{ ui.new_category_copy|format(current_item_label) }}</p>
+                            </div>
 
-                        <input type="text" name="new_category_title" value="" placeholder="{{ trans('admin_content.sections.transportation.category_title_placeholder') }}">
+                            <input type="text" name="new_category_title" value="" placeholder="{{ trans('admin_content.sections.transportation.category_title_placeholder') }}" disabled>
+                        </div>
                     </fieldset>
                 {% else %}
                     <label>
@@ -551,6 +557,8 @@
 document.addEventListener('DOMContentLoaded', function () {
     const categoryChoice = document.querySelector('[data-category-choice]');
     const newCategoryFields = document.querySelector('[data-new-category-fields]');
+    const transportNewCategoryToggle = document.querySelector('[data-transport-new-category-toggle]');
+    const transportNewCategoryFields = document.querySelector('[data-transport-new-category-fields]');
     const categoryIconPicker = document.querySelector('[data-category-icon-picker]');
     const categoryIconInput = document.querySelector('[data-category-icon-input]');
     const categoryIconValue = document.querySelector('[data-category-icon-value]');
@@ -584,6 +592,21 @@ document.addEventListener('DOMContentLoaded', function () {
 
         categoryChoice.addEventListener('change', syncNewCategoryFields);
         syncNewCategoryFields();
+    }
+
+    if (transportNewCategoryToggle && transportNewCategoryFields) {
+        const transportNewCategoryInput = transportNewCategoryFields.querySelector('input[name="new_category_title"]');
+        const syncTransportNewCategoryFields = function () {
+            const showNewCategory = transportNewCategoryToggle.checked;
+            transportNewCategoryFields.classList.toggle('is-hidden', !showNewCategory);
+
+            if (transportNewCategoryInput) {
+                transportNewCategoryInput.disabled = !showNewCategory;
+            }
+        };
+
+        transportNewCategoryToggle.addEventListener('change', syncTransportNewCategoryFields);
+        syncTransportNewCategoryFields();
     }
 
     if (!categoryIconInput || !categoryIconPreview || !categoryIconValue || !categoryIconMenu || !categoryIconEmpty || !categoryIconPicker) {

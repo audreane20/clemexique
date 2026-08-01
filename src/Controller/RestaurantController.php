@@ -44,14 +44,15 @@ class RestaurantController
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
+        $sectionConfig = $this->sectionConfig();
         $categories = $this->localizeCategoryTitles(
             $this->restaurantModel->findAllByLanguage($language),
             $language
         );
 
         return $this->twig->render($response, 'admin/restaurants.html.twig', [
-            'page_title' => $this->sectionConfig()['page_title'][$language],
-            'section_config' => $this->sectionConfig(),
+            'page_title_key' => $sectionConfig['page_title'],
+            'section_config' => $sectionConfig,
             'active_section' => 'restaurants',
             'categories' => $categories,
             'editor_language' => $language,
@@ -148,70 +149,26 @@ class RestaurantController
     private function sectionConfig(): array
     {
         return [
-            'page_title' => [
-                'en' => 'Restaurant management',
-                'fr' => 'Gestion des restaurants',
-                'es' => 'Gestion de restaurantes',
-            ],
-            'page_copy' => [
-                'en' => 'Add, edit, or remove the categories and restaurants shown on the public page.',
-                'fr' => 'Ajoutez, modifiez ou supprimez les categories et les restaurants affiches sur la page publique.',
-                'es' => 'Agrega, edita o elimina las categorias y restaurantes que aparecen en la pagina publica.',
-            ],
+            'page_title' => 'admin_content.sections.restaurants.page_title',
+            'page_copy' => 'admin_content.sections.restaurants.page_copy',
             'category_fields' => [
                 [
                     'name' => 'title',
-                    'labels' => [
-                        'en' => 'Category title',
-                        'fr' => 'Titre de la categorie',
-                        'es' => 'Titulo de la categoria',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Ex. Italian',
-                        'fr' => 'Ex. Italien',
-                        'es' => 'Ej. Italiano',
-                    ],
+                    'label_key' => 'admin_content.fields.category_title',
+                    'placeholder_key' => 'admin_content.sections.restaurants.category_title_placeholder',
                 ],
                 [
                     'name' => 'flag',
-                    'labels' => [
-                        'en' => 'Flag / icon code',
-                        'fr' => 'Code du drapeau / icone',
-                        'es' => 'Codigo de bandera / icono',
-                    ],
-                    'placeholders' => [
-                        'en' => 'IT, FR, MX, MUSIC...',
-                        'fr' => 'IT, FR, MX, MUSIC...',
-                        'es' => 'IT, FR, MX, MUSIC...',
-                    ],
+                    'label_key' => 'admin_content.fields.flag_code',
+                    'placeholder_key' => 'admin_content.sections.restaurants.flag_placeholder',
                 ],
             ],
             'item_fields' => [
-                [
-                    'name' => 'name',
-                    'labels' => ['en' => 'Name', 'fr' => 'Nom', 'es' => 'Nombre'],
-                    'placeholders' => ['en' => 'Restaurant name', 'fr' => 'Nom du restaurant', 'es' => 'Nombre del restaurante'],
-                ],
-                [
-                    'name' => 'area',
-                    'labels' => ['en' => 'Address', 'fr' => 'Adresse', 'es' => 'Direccion'],
-                    'placeholders' => ['en' => '5th Avenue', 'fr' => 'Avenue 5', 'es' => '5a Avenida'],
-                ],
-                [
-                    'name' => 'price',
-                    'labels' => ['en' => 'Price', 'fr' => 'Prix', 'es' => 'Precio'],
-                    'placeholders' => ['en' => '', 'fr' => '', 'es' => ''],
-                ],
-                [
-                    'name' => 'url',
-                    'labels' => ['en' => 'Website', 'fr' => 'Site web', 'es' => 'Sitio web'],
-                    'placeholders' => ['en' => 'name.com', 'fr' => 'nom.com', 'es' => 'nombre.com'],
-                ],
-                [
-                    'name' => 'reference',
-                    'labels' => ['en' => 'Reference', 'fr' => 'Reference', 'es' => 'Referencia'],
-                    'placeholders' => ['en' => '', 'fr' => '', 'es' => ''],
-                ],
+                ['name' => 'name', 'label_key' => 'admin_content.fields.name', 'placeholder_key' => 'admin_content.sections.restaurants.name_placeholder'],
+                ['name' => 'area', 'label_key' => 'admin_content.fields.address', 'placeholder_key' => 'admin_content.sections.restaurants.area_placeholder'],
+                ['name' => 'price', 'label_key' => 'admin_content.fields.price', 'placeholder_key' => 'admin_content.fields.empty_placeholder'],
+                ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.sections.restaurants.url_placeholder'],
+                ['name' => 'reference', 'label_key' => 'admin_content.fields.reference', 'placeholder_key' => 'admin_content.fields.empty_placeholder'],
             ],
         ];
     }
@@ -286,32 +243,7 @@ class RestaurantController
 
     private function successMessage(string $key, string $language): string
     {
-        $messages = [
-            'item_saved' => [
-                'en' => 'Item saved.',
-                'fr' => 'Element enregistre.',
-                'es' => 'Elemento guardado.',
-            ],
-            'item_deleted' => [
-                'en' => 'Item deleted.',
-                'fr' => 'Element supprime.',
-                'es' => 'Elemento eliminado.',
-            ],
-            'category_deleted' => [
-                'en' => 'Category deleted.',
-                'fr' => 'Categorie supprimee.',
-                'es' => 'Categoria eliminada.',
-            ],
-            'category_saved' => [
-                'en' => 'Category saved.',
-                'fr' => 'Categorie enregistree.',
-                'es' => 'Categoria guardada.',
-            ],
-        ];
-
-        $language = Locale::normalize($language);
-
-        return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+        return (new Translator($language))->trans('admin_content.flash.' . $key);
     }
 
     private function localizeCategoryTitles(array $categories, string $language): array

@@ -44,14 +44,15 @@ class ExcursionController
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
+        $sectionConfig = $this->sectionConfig();
         $categories = $this->localizeCategoryTitles(
             $this->excursionModel->findAllByLanguage($language),
             $language
         );
 
         return $this->twig->render($response, 'admin/excursions.html.twig', [
-            'page_title' => $this->sectionConfig()['page_title'][$language],
-            'section_config' => $this->sectionConfig(),
+            'page_title_key' => $sectionConfig['page_title'],
+            'section_config' => $sectionConfig,
             'active_section' => 'excursions',
             'categories' => $categories,
             'editor_language' => $language,
@@ -148,50 +149,26 @@ class ExcursionController
     private function sectionConfig(): array
     {
         return [
-            'page_title' => [
-                'en' => 'Excursion management',
-                'fr' => 'Gestion des excursions',
-                'es' => 'Gestion de excursiones',
-            ],
-            'page_copy' => [
-                'en' => 'Add, edit, or remove the categories and items on the excursions page.',
-                'fr' => 'Ajoutez, modifiez ou supprimez les categories et les elements sur la page excursions.',
-                'es' => 'Agrega, edita o elimina las categorias y elementos de la pagina de excursiones.',
-            ],
+            'page_title' => 'admin_content.sections.excursions.page_title',
+            'page_copy' => 'admin_content.sections.excursions.page_copy',
             'category_fields' => [
                 [
                     'name' => 'title',
-                    'labels' => [
-                        'en' => 'Category title',
-                        'fr' => 'Titre de la categorie',
-                        'es' => 'Titulo de la categoria',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Ex. Boat and sea excursions',
-                        'fr' => 'Ex. Excursions en mer',
-                        'es' => 'Ej. Excursiones en barco y mar',
-                    ],
+                    'label_key' => 'admin_content.fields.category_title',
+                    'placeholder_key' => 'admin_content.sections.excursions.category_title_placeholder',
                 ],
                 [
                     'name' => 'flag',
-                    'labels' => [
-                        'en' => 'Flag / icon code',
-                        'fr' => 'Code du drapeau / icone',
-                        'es' => 'Codigo de bandera / icono',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Optional',
-                        'fr' => 'Optionnel',
-                        'es' => 'Opcional',
-                    ],
+                    'label_key' => 'admin_content.fields.flag_code',
+                    'placeholder_key' => 'admin_content.ui.optional',
                 ],
             ],
             'item_fields' => [
-                ['name' => 'name', 'labels' => ['en' => 'Name', 'fr' => 'Nom', 'es' => 'Nombre'], 'placeholders' => ['en' => 'Name', 'fr' => 'Nom', 'es' => 'Nombre']],
-                ['name' => 'area', 'labels' => ['en' => 'Address', 'fr' => 'Adresse', 'es' => 'Direccion'], 'placeholders' => ['en' => 'Playa del Carmen', 'fr' => 'Playa del Carmen', 'es' => 'Playa del Carmen']],
-                ['name' => 'url', 'labels' => ['en' => 'Website', 'fr' => 'Site web', 'es' => 'Sitio web'], 'placeholders' => ['en' => 'https://...', 'fr' => 'https://...', 'es' => 'https://...']],
-                ['name' => 'note', 'labels' => ['en' => 'Note', 'fr' => 'Note', 'es' => 'Nota'], 'placeholders' => ['en' => 'Short note', 'fr' => 'Description courte', 'es' => 'Nota breve']],
-                ['name' => 'video_url', 'labels' => ['en' => 'Video link', 'fr' => 'Lien video', 'es' => 'Enlace de video'], 'placeholders' => ['en' => 'https://youtube.com/...', 'fr' => 'https://youtube.com/...', 'es' => 'https://youtube.com/...']],
+                ['name' => 'name', 'label_key' => 'admin_content.fields.name', 'placeholder_key' => 'admin_content.fields.name'],
+                ['name' => 'area', 'label_key' => 'admin_content.fields.address', 'placeholder_key' => 'admin_content.sections.common.playa_placeholder'],
+                ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
+                ['name' => 'note', 'label_key' => 'admin_content.fields.note', 'placeholder_key' => 'admin_content.fields.short_note_placeholder'],
+                ['name' => 'video_url', 'label_key' => 'admin_content.fields.video_link', 'placeholder_key' => 'admin_content.fields.video_url_placeholder'],
             ],
         ];
     }
@@ -266,32 +243,7 @@ class ExcursionController
 
     private function successMessage(string $key, string $language): string
     {
-        $messages = [
-            'item_saved' => [
-                'en' => 'Item saved.',
-                'fr' => 'Element enregistre.',
-                'es' => 'Elemento guardado.',
-            ],
-            'item_deleted' => [
-                'en' => 'Item deleted.',
-                'fr' => 'Element supprime.',
-                'es' => 'Elemento eliminado.',
-            ],
-            'category_deleted' => [
-                'en' => 'Category deleted.',
-                'fr' => 'Categorie supprimee.',
-                'es' => 'Categoria eliminada.',
-            ],
-            'category_saved' => [
-                'en' => 'Category saved.',
-                'fr' => 'Categorie enregistree.',
-                'es' => 'Categoria guardada.',
-            ],
-        ];
-
-        $language = Locale::normalize($language);
-
-        return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+        return (new Translator($language))->trans('admin_content.flash.' . $key);
     }
 
     private function localizeCategoryTitles(array $categories, string $language): array

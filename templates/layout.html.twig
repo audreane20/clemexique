@@ -38,15 +38,15 @@
                 <div class="header-auth-actions header-auth-actions-left">
                     <details class="account-menu header-admin-menu">
                         <summary class="header-auth-link admin-shortcuts-trigger">
-                            {{ app_lang == 'fr' ? 'Gérer le contenu' : (app_lang == 'es' ? 'Gestionar contenido' : 'Manage content') }}
+                            {{ trans('layout.manage_content') }}
                         </summary>
 
                         <div class="account-menu-panel">
-                            <a href="{{ base_path }}/admin/properties?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'fr' ? 'Propriétés' : (app_lang == 'es' ? 'Propiedades' : 'Properties') }}</a>
-                            <a href="{{ base_path }}/admin/content/restaurants?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'es' ? 'Restaurantes' : 'Restaurants' }}</a>
-                            <a href="{{ base_path }}/admin/content/activities?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'fr' ? 'Activit?s sportive' : (app_lang == 'es' ? 'Actividades deportivas' : 'Sports activities') }}</a>
-                            <a href="{{ base_path }}/admin/content/playa_guide?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'fr' ? 'Evasions' : (app_lang == 'es' ? 'Escapadas' : 'Getaways') }}</a>
-                            <a href="{{ base_path }}/admin/content/video_capsules?lang={{ app_lang }}" class="account-menu-link">{{ app_lang == 'fr' ? 'Capsules vidéo du Mexique' : (app_lang == 'es' ? 'Cápsulas de video de México' : 'Mexico video capsules') }}</a>
+                            <a href="{{ base_path }}/admin/properties?lang={{ app_lang }}" class="account-menu-link">{{ trans('layout.admin_properties') }}</a>
+                            <a href="{{ base_path }}/admin/content/restaurants?lang={{ app_lang }}" class="account-menu-link">{{ trans('layout.admin_restaurants') }}</a>
+                            <a href="{{ base_path }}/admin/content/activities?lang={{ app_lang }}" class="account-menu-link">{{ trans('layout.admin_activities') }}</a>
+                            <a href="{{ base_path }}/admin/content/playa_guide?lang={{ app_lang }}" class="account-menu-link">{{ trans('layout.admin_playa_guide') }}</a>
+                            <a href="{{ base_path }}/admin/content/video_capsules?lang={{ app_lang }}" class="account-menu-link">{{ trans('layout.admin_video_capsules') }}</a>
                         </div>
                     </details>
                 </div>
@@ -106,14 +106,14 @@
             data-header-menu-toggle
             aria-expanded="false"
             aria-controls="site-header-menu"
-            aria-label="{{ app_lang == 'fr' ? 'Ouvrir le menu' : (app_lang == 'es' ? 'Abrir menu' : 'Open menu') }}"
+            aria-label="{{ trans('layout.menu_open') }}"
         >
             <span class="header-menu-toggle-line" aria-hidden="true"></span>
             <span class="header-menu-toggle-line" aria-hidden="true"></span>
             <span class="header-menu-toggle-line" aria-hidden="true"></span>
         </button>
 
-        <button type="button" class="header-menu-backdrop" data-header-menu-close hidden aria-label="{{ app_lang == 'fr' ? 'Fermer le menu' : (app_lang == 'es' ? 'Cerrar menu' : 'Close menu') }}"></button>
+        <button type="button" class="header-menu-backdrop" data-header-menu-close hidden aria-label="{{ trans('layout.menu_close') }}"></button>
 
         <div class="header-menu-panel" id="site-header-menu" data-header-menu-panel hidden>
             <nav class="main-nav header-nav-drawer">

@@ -5,154 +5,57 @@
 {% set is_restaurants = active_section == 'restaurants' %}
 {% set is_video_capsules = active_section == 'video_capsules' %}
 {% set is_activities = active_section == 'activities' %}
-{% set item_label = active_section == 'restaurants'
-    ? {'en': 'restaurant', 'fr': 'restaurant', 'es': 'restaurante'}
+{% set item_label_key = active_section == 'restaurants'
+    ? 'admin_content.item_label.restaurant'
     : active_section == 'excursions'
-        ? {'en': 'excursion', 'fr': 'excursion', 'es': 'excursion'}
+        ? 'admin_content.item_label.excursion'
         : active_section == 'video_capsules'
-            ? {'en': 'video capsule', 'fr': 'capsule vid?o', 'es': 'c?psula de video'}
+            ? 'admin_content.item_label.video_capsule'
         : active_section == 'activities'
-            ? {'en': 'sports activity', 'fr': 'activit? sportive', 'es': 'actividad deportiva'}
-        : {'en': 'activity', 'fr': 'activit?', 'es': 'actividad'} %}
+            ? 'admin_content.item_label.sports_activity'
+        : 'admin_content.item_label.activity' %}
+{% set current_item_label = trans(item_label_key) %}
+{% set add_title = trans('admin_content.sections.' ~ active_section ~ '.add_title') %}
 {% set ui = {
-    'en': {
-        'eyebrow': 'Admin',
-        'edit': 'Edit',
-        'add_restaurant': 'Add a restaurant',
-        'add_excursion': 'Add an excursion',
-        'add_video': 'Add a video capsule',
-        'add_activity': 'Add an activity',
-        'add_sports_activity': 'Add a sports activity',
-        'editing_copy': 'The selected %s is loaded here for editing.',
-        'create_copy': 'Choose an existing category or create a new one directly from this form.',
-        'cancel': 'Cancel',
-        'category': 'Category',
-        'select_category': 'Select a category',
-        'new_category': 'New category',
-        'new_category_copy': 'This category will be created when you save the %s.',
-        'search_icon': 'Search by name or code',
-        'no_matching_icons': 'No matching icons.',
-        'preview': 'Preview:',
-        'no_icon': 'No icon selected yet',
-        'unknown_code': 'Unknown code',
-        'optional': 'optional',
-        'select_price': 'Select a price range',
-        'favorite_pick': 'Favorite pick',
-        'select_reference': 'Select a reference',
-        'no_reference': 'No reference',
-        'save': 'Save %s',
-        'add': 'Add %s',
-        'current_sections': 'Current sections',
-        'categories': 'categories',
-        'no_categories': 'No categories yet.',
-        'items': 'items',
-        'delete_category_confirm': 'Delete this category?',
-        'delete': 'Delete',
-        'empty_restaurants': 'No restaurants in this category yet.',
-        'empty_items': 'No items in this category yet.',
-        'delete_item_confirm': 'Delete this item?',
-        'saving': 'Saving...',
-        'deleting': 'Deleting...'
-    },
-    'fr': {
-        'eyebrow': 'Admin',
-        'edit': 'Modifier',
-        'add_restaurant': 'Ajouter un restaurant',
-        'add_excursion': 'Ajouter une excursion',
-        'add_video': 'Ajouter une capsule vid?o',
-        'add_activity': 'Ajouter une activit?',
-        'add_sports_activity': 'Ajouter une activit? sportive',
-        'editing_copy': 'L ?l?ment s?lectionn? est charg? ici pour modification.',
-        'create_copy': 'Choisissez une cat?gorie existante ou cr?ez-en une nouvelle directement depuis ce formulaire.',
-        'cancel': 'Annuler',
-        'category': 'Cat?gorie',
-        'select_category': 'S?lectionnez une cat?gorie',
-        'new_category': 'Nouvelle cat?gorie',
-        'new_category_copy': 'Cette cat?gorie sera cr??e lorsque vous enregistrerez %s.',
-        'search_icon': 'Recherchez par nom ou code',
-        'no_matching_icons': 'Aucune ic?ne correspondante.',
-        'preview': 'Aper?u :',
-        'no_icon': 'Aucune ic?ne s?lectionn?e pour le moment',
-        'unknown_code': 'Code inconnu',
-        'optional': 'optionnel',
-        'select_price': 'S?lectionnez une gamme de prix',
-        'favorite_pick': 'Coup de coeur',
-        'select_reference': 'S?lectionnez une r?f?rence',
-        'no_reference': 'Aucune r?f?rence',
-        'save': 'Enregistrer %s',
-        'add': 'Ajouter %s',
-        'current_sections': 'Sections actuelles',
-        'categories': 'categories',
-        'no_categories': 'Aucune cat?gorie pour le moment.',
-        'items': '?l?ments',
-        'delete_category_confirm': 'Supprimer cette cat?gorie ?',
-        'delete': 'Supprimer',
-        'empty_restaurants': 'Aucun restaurant dans cette cat?gorie pour le moment.',
-        'empty_items': 'Aucun ?l?ment dans cette cat?gorie pour le moment.',
-        'delete_item_confirm': 'Supprimer cet ?l?ment ?',
-        'saving': 'Enregistrement...',
-        'deleting': 'Suppression...'
-    },
-    'es': {
-        'eyebrow': 'Admin',
-        'edit': 'Editar',
-        'add_restaurant': 'Agregar un restaurante',
-        'add_excursion': 'Agregar una excursi?n',
-        'add_video': 'Agregar una c?psula de video',
-        'add_activity': 'Agregar una actividad',
-        'add_sports_activity': 'Agregar una actividad deportiva',
-        'editing_copy': 'El elemento seleccionado est? cargado aqu? para editarlo.',
-        'create_copy': 'Elige una categor?a existente o crea una nueva directamente desde este formulario.',
-        'cancel': 'Cancelar',
-        'category': 'Categor?a',
-        'select_category': 'Selecciona una categor?a',
-        'new_category': 'Nueva categor?a',
-        'new_category_copy': 'Esta categor?a se crear? cuando guardes %s.',
-        'search_icon': 'Busca por nombre o c?digo',
-        'no_matching_icons': 'No hay iconos coincidentes.',
-        'preview': 'Vista previa:',
-        'no_icon': 'Todav?a no hay icono seleccionado',
-        'unknown_code': 'C?digo desconocido',
-        'optional': 'opcional',
-        'select_price': 'Selecciona un rango de precio',
-        'favorite_pick': 'Favorito',
-        'select_reference': 'Selecciona una referencia',
-        'no_reference': 'Sin referencia',
-        'save': 'Guardar %s',
-        'add': 'Agregar %s',
-        'current_sections': 'Secciones actuales',
-        'categories': 'categor?as',
-        'no_categories': 'Todav?a no hay categor?as.',
-        'items': 'elementos',
-        'delete_category_confirm': '¿Eliminar esta categoría?',
-        'delete': 'Eliminar',
-        'empty_restaurants': 'Todav?a no hay restaurantes en esta categor?a.',
-        'empty_items': 'Todav?a no hay elementos en esta categor?a.',
-        'delete_item_confirm': '¿Eliminar este elemento?',
-        'saving': 'Guardando...',
-        'deleting': 'Eliminando...'
-    }
+    'eyebrow': trans('admin_content.ui.eyebrow'),
+    'edit': trans('admin_content.ui.edit'),
+    'editing_copy': trans('admin_content.ui.editing_copy'),
+    'create_copy': trans('admin_content.ui.create_copy'),
+    'cancel': trans('admin_content.ui.cancel'),
+    'category': trans('admin_content.ui.category'),
+    'select_category': trans('admin_content.ui.select_category'),
+    'new_category': trans('admin_content.ui.new_category'),
+    'new_category_copy': trans('admin_content.ui.new_category_copy'),
+    'search_icon': trans('admin_content.ui.search_icon'),
+    'no_matching_icons': trans('admin_content.ui.no_matching_icons'),
+    'preview': trans('admin_content.ui.preview'),
+    'no_icon': trans('admin_content.ui.no_icon'),
+    'unknown_code': trans('admin_content.ui.unknown_code'),
+    'optional': trans('admin_content.ui.optional'),
+    'select_price': trans('admin_content.ui.select_price'),
+    'favorite_pick': trans('admin_content.ui.favorite_pick'),
+    'select_reference': trans('admin_content.ui.select_reference'),
+    'no_reference': trans('admin_content.ui.no_reference'),
+    'save': trans('admin_content.ui.save'),
+    'current_sections': trans('admin_content.ui.current_sections'),
+    'categories': trans('admin_content.ui.categories'),
+    'no_categories': trans('admin_content.ui.no_categories'),
+    'items': trans('admin_content.ui.items'),
+    'delete_category_confirm': trans('admin_content.ui.delete_category_confirm'),
+    'delete': trans('admin_content.ui.delete'),
+    'empty_restaurants': trans('admin_content.ui.empty_restaurants'),
+    'empty_items': trans('admin_content.ui.empty_items'),
+    'delete_item_confirm': trans('admin_content.ui.delete_item_confirm'),
+    'media_upload_label': trans('admin_content.ui.media_upload_label'),
+    'media_upload_help': trans('admin_content.ui.media_upload_help'),
+    'video_upload_label': trans('admin_content.ui.video_upload_label'),
+    'video_upload_help': trans('admin_content.ui.video_upload_help'),
+    'current_video': trans('admin_content.ui.current_video'),
+    'open_video': trans('admin_content.ui.open_video'),
+    'open_video_link': trans('admin_content.ui.open_video_link')
 } %}
-{% set current_item_label = item_label[app_lang] %}
-{% set add_title = is_restaurants
-    ? ui[app_lang].add_restaurant
-    : (is_video_capsules
-        ? ui[app_lang].add_video
-        : (is_activities
-            ? ui[app_lang].add_sports_activity
-        : (active_section == 'excursions'
-        ? ui[app_lang].add_excursion
-        : ui[app_lang].add_activity))) %}
-{% set submit_add_label = app_lang == 'es'
-    ? (active_section == 'playa_guide' ? 'Agregar actividad' : add_title)
-    : (app_lang == 'fr'
-        ? (active_section == 'playa_guide' ? 'Ajouter activit?' : ui[app_lang].add|format(current_item_label))
-        : ui[app_lang].add|format(current_item_label)) %}
-{% set submit_save_label = app_lang == 'es'
-    ? (active_section == 'playa_guide' ? 'Guardar actividad' : ui[app_lang].save|format(current_item_label))
-    : (app_lang == 'fr'
-        ? (active_section == 'playa_guide' ? 'Enregistrer activit?' : ui[app_lang].save|format(current_item_label))
-        : ui[app_lang].save|format(current_item_label)) %}
+{% set submit_add_label = add_title %}
+{% set submit_save_label = ui.save|format(current_item_label) %}
 {% set required_item_fields = section_config.required_item_fields is defined
     ? section_config.required_item_fields
     : (is_restaurants ? ['name', 'area', 'price', 'url'] : ['name', 'area', 'url']) %}
@@ -170,9 +73,9 @@
 <section class="admin-content-shell">
     <div class="admin-properties-header">
         <div>
-            <p class="admin-properties-eyebrow">{{ ui[app_lang].eyebrow }}</p>
-            <h1>{{ section_config.page_title[app_lang] }}</h1>
-            <p>{{ section_config.page_copy[app_lang] }}</p>
+            <p class="admin-properties-eyebrow">{{ ui.eyebrow }}</p>
+            <h1>{{ trans(section_config.page_title) }}</h1>
+            <p>{{ trans(section_config.page_copy) }}</p>
         </div>
     </div>
 
@@ -190,25 +93,25 @@
                 <div>
                     <h2>
                         {% if is_editing_category %}
-                            {{ ui[app_lang].edit ~ ' ' ~ ui[app_lang].category }}
+                            {{ ui.edit ~ ' ' ~ ui.category }}
                         {% elseif is_editing_item %}
-                            {{ ui[app_lang].edit ~ ' ' ~ current_item_label }}
+                            {{ ui.edit ~ ' ' ~ current_item_label }}
                         {% else %}
                             {{ add_title }}
                         {% endif %}
                     </h2>
                     <p>
                         {% if is_editing_category %}
-                            {{ ui[app_lang].editing_copy|format(ui[app_lang].category|lower) }}
+                            {{ ui.editing_copy|format(ui.category|lower) }}
                         {% elseif is_editing_item %}
-                            {{ ui[app_lang].editing_copy|format(current_item_label) }}
+                            {{ ui.editing_copy|format(current_item_label) }}
                         {% else %}
-                            {{ ui[app_lang].create_copy }}
+                            {{ ui.create_copy }}
                         {% endif %}
                     </p>
                 </div>
                 {% if is_editing_item or is_editing_category %}
-                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}" class="admin-content-cancel-link">{{ ui[app_lang].cancel }}</a>
+                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}" class="admin-content-cancel-link">{{ ui.cancel }}</a>
                 {% endif %}
             </div>
 
@@ -219,7 +122,7 @@
                     {% for field in section_config.category_fields %}
                         <label>
                             <span class="admin-content-label-copy">
-                                {{ field.labels[app_lang] }}
+                                {{ trans(field.label_key) }}
                                 {% if field.name == 'title' %}
                                     <span class="admin-content-required-marker">*</span>
                                 {% endif %}
@@ -227,7 +130,7 @@
                             {% if field.name == 'flag' %}
                                 <div class="admin-content-icon-picker" data-category-icon-picker>
                                     <input type="hidden" name="category_flag" value="{{ editing_category.flag|default('') }}" data-category-icon-value>
-                                    <input type="text" value="{{ editing_category.flag|default('') }}" placeholder="{{ ui[app_lang].search_icon }}" autocomplete="off" data-category-icon-input>
+                                    <input type="text" value="{{ editing_category.flag|default('') }}" placeholder="{{ ui.search_icon }}" autocomplete="off" data-category-icon-input>
                                     <div class="admin-content-icon-picker-menu is-hidden" data-category-icon-menu>
                                         {% for choice in category_icon_choices %}
                                             <button type="button" class="admin-content-icon-option" data-icon-code="{{ choice.code }}" data-icon-label="{{ choice.name }}">
@@ -239,54 +142,54 @@
                                             </button>
                                         {% endfor %}
                                         <div class="admin-content-icon-empty is-hidden" data-category-icon-empty>
-                                            {{ ui[app_lang].no_matching_icons }}
+                                            {{ ui.no_matching_icons }}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="admin-content-icon-preview" data-category-icon-preview>
-                                    <span class="admin-content-icon-preview-label">{{ ui[app_lang].preview }}</span>
+                                    <span class="admin-content-icon-preview-label">{{ ui.preview }}</span>
                                     <span class="admin-content-icon-preview-value">
                                         {% if editing_category.flag %}
                                             {{ render_category_icon(editing_category.flag) }}<span>{{ editing_category.flag }}</span>
                                         {% else %}
-                                            {{ ui[app_lang].no_icon }}
+                                            {{ ui.no_icon }}
                                         {% endif %}
                                     </span>
                                 </div>
                             {% else %}
-                                <input type="text" name="category_title" value="{{ editing_category.title|default('') }}" placeholder="{{ field.placeholders[app_lang] }}">
+                                <input type="text" name="category_title" value="{{ editing_category.title|default('') }}" placeholder="{{ trans(field.placeholder_key) }}">
                             {% endif %}
                         </label>
                     {% endfor %}
                 {% else %}
                 <label>
-                    <span class="admin-content-label-copy">{{ ui[app_lang].category }}<span class="admin-content-required-marker">*</span></span>
+                    <span class="admin-content-label-copy">{{ ui.category }}<span class="admin-content-required-marker">*</span></span>
                     <select name="category_choice" data-category-choice>
                         {% if categories is not empty %}
-                            <option value="">{{ ui[app_lang].select_category }}</option>
+                            <option value="">{{ ui.select_category }}</option>
                             {% for category in categories %}
                                 <option value="{{ loop.index0 }}" {{ selected_category_choice == loop.index0 ? 'selected' : '' }}>
                                     {{ category.title }}
                                 </option>
                             {% endfor %}
                         {% endif %}
-                        <option value="__new__" {{ selected_category_choice == '__new__' ? 'selected' : '' }}>{{ ui[app_lang].new_category }}</option>
+                        <option value="__new__" {{ selected_category_choice == '__new__' ? 'selected' : '' }}>{{ ui.new_category }}</option>
                     </select>
                 </label>
 
                 <div class="admin-content-new-category-fields is-hidden" data-new-category-fields>
                     <div class="admin-content-inline-title">
-                        <h3>{{ ui[app_lang].new_category }}</h3>
-                        <p>{{ ui[app_lang].new_category_copy|format(current_item_label) }}</p>
+                        <h3>{{ ui.new_category }}</h3>
+                        <p>{{ ui.new_category_copy|format(current_item_label) }}</p>
                     </div>
 
                     {% for field in section_config.category_fields %}
                         <label>
-                            {{ field.labels[app_lang] }}
+                            {{ trans(field.label_key) }}
                             {% if field.name == 'flag' %}
                                 <div class="admin-content-icon-picker" data-category-icon-picker>
                                     <input type="hidden" name="new_category_{{ field.name }}" value="" data-category-icon-value>
-                                    <input type="text" value="" placeholder="{{ ui[app_lang].search_icon }}" autocomplete="off" data-category-icon-input>
+                                    <input type="text" value="" placeholder="{{ ui.search_icon }}" autocomplete="off" data-category-icon-input>
                                     <div class="admin-content-icon-picker-menu is-hidden" data-category-icon-menu>
                                         {% for choice in category_icon_choices %}
                                             <button type="button" class="admin-content-icon-option" data-icon-code="{{ choice.code }}" data-icon-label="{{ choice.name }}">
@@ -298,16 +201,16 @@
                                             </button>
                                         {% endfor %}
                                         <div class="admin-content-icon-empty is-hidden" data-category-icon-empty>
-                                            {{ ui[app_lang].no_matching_icons }}
+                                            {{ ui.no_matching_icons }}
                                         </div>
                                     </div>
                                 </div>
                                 <div class="admin-content-icon-preview" data-category-icon-preview>
-                                    <span class="admin-content-icon-preview-label">{{ ui[app_lang].preview }}</span>
-                                    <span class="admin-content-icon-preview-value">{{ ui[app_lang].no_icon }}</span>
+                                    <span class="admin-content-icon-preview-label">{{ ui.preview }}</span>
+                                    <span class="admin-content-icon-preview-value">{{ ui.no_icon }}</span>
                                 </div>
                             {% else %}
-                                <input type="text" name="new_category_{{ field.name }}" value="" placeholder="{{ field.placeholders[app_lang] }}">
+                                <input type="text" name="new_category_{{ field.name }}" value="" placeholder="{{ trans(field.placeholder_key) }}">
                             {% endif %}
                         </label>
                     {% endfor %}
@@ -317,16 +220,16 @@
                     {% if field.name != 'url_label' %}
                     <label>
                         <span class="admin-content-label-copy">
-                            {{ field.labels[app_lang] }}
+                            {{ trans(field.label_key) }}
                             {% if field.name in required_item_fields %}
                                 <span class="admin-content-required-marker">*</span>
                             {% elseif field.name in optional_item_fields %}
-                                <span class="admin-content-optional-marker">({{ ui[app_lang].optional }})</span>
+                                <span class="admin-content-optional-marker">({{ ui.optional }})</span>
                             {% endif %}
                         </span>
                         {% if is_restaurants and field.name == 'price' %}
                             <select name="{{ field.name }}">
-                                <option value="">{{ ui[app_lang].select_price }}</option>
+                                <option value="">{{ ui.select_price }}</option>
                                 {% for option in price_options %}
                                     <option value="{{ option }}" {{ is_editing_item and attribute(editing_item, field.name)|default('') == option ? 'selected' : '' }}>{{ option }}</option>
                                 {% endfor %}
@@ -334,7 +237,7 @@
                         {% elseif is_restaurants and field.name == 'reference' %}
                             {% set current_reference = is_editing_item ? attribute(editing_item, field.name)|default('') : '' %}
                             {% set current_reference_lower = current_reference|lower %}
-                            {% set favorite_reference_value = ui[app_lang].favorite_pick %}
+                            {% set favorite_reference_value = ui.favorite_pick %}
                             {% set tripadvisor_reference_value = 'Tripadvisor 2025' %}
                             {% set selected_reference_value = '' %}
                             {% if 'tripadvisor' in current_reference_lower %}
@@ -360,7 +263,7 @@
                                                 <span class="admin-content-reference-choice-label">{{ tripadvisor_reference_value }}</span>
                                             </span>
                                         {% else %}
-                                            <span class="admin-content-reference-placeholder">{{ ui[app_lang].select_reference }}</span>
+                                            <span class="admin-content-reference-placeholder">{{ ui.select_reference }}</span>
                                         {% endif %}
                                     </span>
                                 </button>
@@ -368,7 +271,7 @@
                                 <div class="admin-content-reference-menu is-hidden" data-reference-menu role="listbox">
                                     <button type="button" class="admin-content-reference-option" data-reference-option data-reference-value="">
                                         <span class="admin-content-reference-choice-render">
-                                            <span class="admin-content-reference-placeholder">{{ ui[app_lang].no_reference }}</span>
+                                            <span class="admin-content-reference-placeholder">{{ ui.no_reference }}</span>
                                         </span>
                                     </button>
 
@@ -392,9 +295,9 @@
                                 </div>
                             </div>
                         {% elseif field.type is defined and field.type == 'textarea' %}
-                            <textarea name="{{ field.name }}" rows="4" placeholder="{{ field.placeholders[app_lang] }}">{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}</textarea>
+                            <textarea name="{{ field.name }}" rows="4" placeholder="{{ trans(field.placeholder_key) }}">{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}</textarea>
                         {% else %}
-                            <input type="text" name="{{ field.name }}" value="{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}" placeholder="{{ field.placeholders[app_lang] }}">
+                            <input type="text" name="{{ field.name }}" value="{{ is_editing_item ? attribute(editing_item, field.name)|default('') : '' }}" placeholder="{{ trans(field.placeholder_key) }}">
                         {% endif %}
                     </label>
                     {% endif %}
@@ -403,16 +306,12 @@
                 {% if section_config.show_media_upload is defined and section_config.show_media_upload %}
                     <label>
                         <span class="admin-content-label-copy">
-                            {{ app_lang == 'fr' ? 'Photos et vid?os' : (app_lang == 'es' ? 'Fotos y videos' : 'Pictures and/or videos') }}
-                            <span class="admin-content-optional-marker">({{ ui[app_lang].optional }})</span>
+                            {{ ui.media_upload_label }}
+                            <span class="admin-content-optional-marker">({{ ui.optional }})</span>
                         </span>
                         <input type="file" name="media_files[]" accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/quicktime,video/webm,.jpg,.jpeg,.png,.webp,.gif,.avif,.mp4,.mov,.m4v,.webm" multiple>
                         <span class="admin-content-field-help">
-                            {{ app_lang == 'fr'
-                                ? 'Ajoutez une ou plusieurs photos ou vid?os depuis votre appareil.'
-                                : (app_lang == 'es'
-                                    ? 'Agrega una o varias fotos o videos desde tu dispositivo.'
-                                    : 'Add one or more photos or videos from your device.') }}
+                            {{ ui.media_upload_help }}
                         </span>
                         {% if is_editing_item and editing_item.media is defined and editing_item.media %}
                             <div class="admin-content-item-meta">
@@ -435,22 +334,16 @@
                 {% if section_config.show_video_upload is defined and section_config.show_video_upload %}
                     <label>
                         <span class="admin-content-label-copy">
-                            {{ app_lang == 'fr' ? 'Fichier vidéo' : (app_lang == 'es' ? 'Archivo de video' : 'Video file') }}
-                            <span class="admin-content-optional-marker">({{ ui[app_lang].optional }})</span>
+                            {{ ui.video_upload_label }}
+                            <span class="admin-content-optional-marker">({{ ui.optional }})</span>
                         </span>
                         <input type="file" name="video_file" accept="video/mp4,video/quicktime,video/webm,.mp4,.mov,.m4v,.webm">
                         <span class="admin-content-field-help">
-                            {{ app_lang == 'fr'
-                                ? 'Vous pouvez téléverser une vidéo depuis le téléphone, la caméra ou le dossier Downloads.'
-                                : (app_lang == 'es'
-                                    ? 'Puedes subir un video desde el teléfono, la cámara o la carpeta Downloads.'
-                                    : 'You can upload a video from a phone, camera roll, or the Downloads folder.') }}
+                            {{ ui.video_upload_help }}
                         </span>
                         {% if is_editing_item and editing_item.video_url %}
                             <span class="admin-content-field-help">
-                                {{ app_lang == 'fr'
-                                    ? 'Vidéo actuelle :'
-                                    : (app_lang == 'es' ? 'Video actual:' : 'Current video:') }}
+                                {{ ui.current_video }}
                                 {{ editing_item.video_url }}
                             </span>
                         {% endif %}
@@ -460,7 +353,7 @@
 
                 <button type="submit" class="contact-btn">
                     {% if is_editing_category %}
-                        {{ ui[app_lang].save|format(ui[app_lang].category|lower) }}
+                        {{ ui.save|format(ui.category|lower) }}
                     {% elseif is_editing_item %}
                         {{ submit_save_label }}
                     {% else %}
@@ -473,14 +366,14 @@
         <section class="admin-content-preview-panel admin-content-preview">
             <div class="admin-content-preview-header">
                 <div>
-                    <p class="property-preview-label">{{ ui[app_lang].current_sections }}</p>
-                    <h2>{{ categories|length }} {{ ui[app_lang].categories }}</h2>
+                    <p class="property-preview-label">{{ ui.current_sections }}</p>
+                    <h2>{{ categories|length }} {{ ui.categories }}</h2>
                 </div>
             </div>
 
             {% if categories is empty %}
                 <div class="property-empty-state">
-                    <p>{{ ui[app_lang].no_categories }}</p>
+                    <p>{{ ui.no_categories }}</p>
                 </div>
             {% else %}
                 <div class="admin-content-quick-links">
@@ -505,15 +398,15 @@
                                             {{ render_category_icon(category.flag) }}
                                         {% endif %}
                                     </div>
-                                    <p>{{ category.items|length }} {{ ui[app_lang].items }}</p>
+                                    <p>{{ category.items|length }} {{ ui.items }}</p>
                                 </div>
 
                                 <div class="admin-content-card-actions">
-                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_category={{ category_index }}#category-section-{{ category_index }}" class="header-auth-link">{{ ui[app_lang].edit }}</a>
+                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_category={{ category_index }}#category-section-{{ category_index }}" class="header-auth-link">{{ ui.edit }}</a>
 
-                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" data-admin-content-action data-confirm-message="{{ ui[app_lang].delete_category_confirm }}">
+                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/categories/{{ category_index }}/delete" data-admin-content-action data-confirm-message="{{ ui.delete_category_confirm }}">
                                         <input type="hidden" name="editor_language" value="{{ editor_language }}">
-                                        <button type="submit" class="account-menu-button property-delete-button">{{ ui[app_lang].delete }}</button>
+                                        <button type="submit" class="account-menu-button property-delete-button">{{ ui.delete }}</button>
                                     </form>
                                 </div>
                             </div>
@@ -521,7 +414,7 @@
                             <div class="admin-content-item-list">
                                 {% if category.items is empty %}
                                     <div class="admin-content-empty-items">
-                                        {{ is_restaurants ? ui[app_lang].empty_restaurants : ui[app_lang].empty_items }}
+                                        {{ is_restaurants ? ui.empty_restaurants : ui.empty_items }}
                                     </div>
                                 {% else %}
                                     {% for item in category.items %}
@@ -538,11 +431,11 @@
                                                 </div>
 
                                                 <div class="admin-content-card-actions">
-                                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_item_category={{ category_index }}&edit_item={{ item_index }}" class="header-auth-link">{{ ui[app_lang].edit }}</a>
+                                                    <a href="{{ base_path }}/admin/content/{{ active_section }}?lang={{ editor_language }}&edit_item_category={{ category_index }}&edit_item={{ item_index }}" class="header-auth-link">{{ ui.edit }}</a>
 
-                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" data-admin-content-action data-confirm-message="{{ ui[app_lang].delete_item_confirm }}">
+                                                    <form method="POST" action="{{ base_path }}/admin/content/{{ active_section }}/items/{{ category_index }}/{{ item_index }}/delete" data-admin-content-action data-confirm-message="{{ ui.delete_item_confirm }}">
                                                         <input type="hidden" name="editor_language" value="{{ editor_language }}">
-                                                        <button type="submit" class="account-menu-button property-delete-button">{{ ui[app_lang].delete }}</button>
+                                                        <button type="submit" class="account-menu-button property-delete-button">{{ ui.delete }}</button>
                                                     </form>
                                                 </div>
                                             </div>
@@ -554,11 +447,11 @@
                                                             <source src="{{ base_path ~ item.video_url }}">
                                                         </video>
                                                         <a href="{{ base_path ~ item.video_url }}" target="_blank" rel="noopener noreferrer" class="guide-link">
-                                                            {{ app_lang == 'fr' ? 'Ouvrir la vid?o' : (app_lang == 'es' ? 'Abrir video' : 'Open video') }}
+                                                            {{ ui.open_video }}
                                                         </a>
                                                     {% else %}
                                                         <a href="{{ item.video_url }}" target="_blank" rel="noopener noreferrer" class="guide-link">
-                                                            {{ app_lang == 'fr' ? 'Ouvrir le lien vid?o' : (app_lang == 'es' ? 'Abrir enlace del video' : 'Open video link') }}
+                                                            {{ ui.open_video_link }}
                                                         </a>
                                                     {% endif %}
                                                     {% if item.note %}
@@ -607,14 +500,14 @@
 </section>
 
 <div class="admin-confirm-modal" data-admin-confirm-modal hidden>
-    <button type="button" class="admin-confirm-backdrop" data-admin-confirm-cancel aria-label="{{ ui[app_lang].cancel }}"></button>
+    <button type="button" class="admin-confirm-backdrop" data-admin-confirm-cancel aria-label="{{ ui.cancel }}"></button>
     <div class="admin-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title">
-        <p class="admin-confirm-eyebrow" id="admin-confirm-title">{{ ui[app_lang].eyebrow }}</p>
-        <h3>{{ ui[app_lang].delete }}</h3>
+        <p class="admin-confirm-eyebrow" id="admin-confirm-title">{{ ui.eyebrow }}</p>
+        <h3>{{ ui.delete }}</h3>
         <p data-admin-confirm-message></p>
         <div class="admin-confirm-actions">
-            <button type="button" class="admin-content-cancel-link" data-admin-confirm-cancel>{{ ui[app_lang].cancel }}</button>
-            <button type="button" class="account-menu-button property-delete-button" data-admin-confirm-submit>{{ ui[app_lang].delete }}</button>
+            <button type="button" class="admin-content-cancel-link" data-admin-confirm-cancel>{{ ui.cancel }}</button>
+            <button type="button" class="account-menu-button property-delete-button" data-admin-confirm-submit>{{ ui.delete }}</button>
         </div>
     </div>
 </div>
@@ -673,8 +566,8 @@ document.addEventListener('DOMContentLoaded', function () {
 
         if (!choice) {
             previewValue.textContent = code === ''
-                ? '{{ ui[app_lang].no_icon }}'
-                : '{{ ui[app_lang].unknown_code }}';
+                ? '{{ ui.no_icon }}'
+                : '{{ ui.unknown_code }}';
             return;
         }
 
@@ -860,7 +753,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             const formToSubmit = pendingActionForm;
             closeConfirmModal();
-            submitAdminContentAction(formToSubmit, '{{ ui[app_lang].deleting }}');
+            submitAdminContentAction(formToSubmit, '{{ ui.deleting }}');
         });
     }
 
@@ -952,7 +845,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
             form.addEventListener('submit', function (event) {
                 event.preventDefault();
-                submitAdminContentAction(form, '{{ ui[app_lang].saving }}');
+                submitAdminContentAction(form, '{{ ui.saving }}');
             });
         }
 
@@ -968,7 +861,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                submitAdminContentAction(actionForm, '{{ ui[app_lang].deleting }}');
+                submitAdminContentAction(actionForm, '{{ ui.deleting }}');
             });
         });
     };

@@ -42,10 +42,11 @@ class VideoCapsuleController
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
+        $sectionConfig = $this->sectionConfig();
 
         return $this->twig->render($response, 'admin/todo.html.twig', [
-            'page_title' => $this->sectionConfig()['page_title'][$language],
-            'section_config' => $this->sectionConfig(),
+            'page_title_key' => $sectionConfig['page_title'],
+            'section_config' => $sectionConfig,
             'active_section' => 'video_capsules',
             'categories' => $this->videoCapsuleModel->findAllByLanguage($language),
             'editor_language' => $language,
@@ -154,11 +155,7 @@ class VideoCapsuleController
 
         try {
             $this->videoCapsuleModel->updateCategoryByIndex($language, (int) $args['categoryIndex'], $data);
-            $_SESSION[self::FLASH_KEY] = ['success' => [
-                'en' => 'Category saved.',
-                'fr' => 'Categorie enregistree.',
-                'es' => 'Categoria guardada.',
-            ][Locale::normalize($language)] ?? 'Category saved.'];
+            $_SESSION[self::FLASH_KEY] = ['success' => $this->successMessage('category_saved', $language)];
         } catch (\InvalidArgumentException $exception) {
             $_SESSION[self::FLASH_KEY] = ['error' => $exception->getMessage()];
         }
@@ -169,35 +166,19 @@ class VideoCapsuleController
     private function sectionConfig(): array
     {
         return [
-            'page_title' => [
-                'en' => 'Video capsules management',
-                'fr' => 'Gestion des capsules vidéo',
-                'es' => 'Gestión de cápsulas de video',
-            ],
-            'page_copy' => [
-                'en' => 'Add, edit, or remove video categories and video capsules.',
-                'fr' => 'Ajoutez, modifiez ou supprimez des catégories et des capsules vidéo.',
-                'es' => 'Agrega, edita o elimina categorías y cápsulas de video.',
-            ],
+            'page_title' => 'admin_content.sections.video_capsules.page_title',
+            'page_copy' => 'admin_content.sections.video_capsules.page_copy',
             'category_fields' => [
                 [
                     'name' => 'title',
-                    'labels' => [
-                        'en' => 'Category title',
-                        'fr' => 'Titre de la catégorie',
-                        'es' => 'Título de la categoría',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Ex. Beaches and lifestyle',
-                        'fr' => 'Ex. Plages et art de vivre',
-                        'es' => 'Ej. Playas y estilo de vida',
-                    ],
+                    'label_key' => 'admin_content.fields.category_title',
+                    'placeholder_key' => 'admin_content.sections.video_capsules.category_title_placeholder',
                 ],
             ],
             'item_fields' => [
-                ['name' => 'name', 'labels' => ['en' => 'Video title', 'fr' => 'Titre de la vidéo', 'es' => 'Título del video'], 'placeholders' => ['en' => 'Video title', 'fr' => 'Titre de la vidéo', 'es' => 'Título del video']],
-                ['name' => 'video_url', 'labels' => ['en' => 'Video link', 'fr' => 'Lien vidéo', 'es' => 'Enlace del video'], 'placeholders' => ['en' => 'https://youtube.com/...', 'fr' => 'https://youtube.com/...', 'es' => 'https://youtube.com/...']],
-                ['name' => 'note', 'labels' => ['en' => 'Description', 'fr' => 'Description', 'es' => 'Descripción'], 'placeholders' => ['en' => 'Short description', 'fr' => 'Description courte', 'es' => 'Descripción breve']],
+                ['name' => 'name', 'label_key' => 'admin_content.fields.video_title', 'placeholder_key' => 'admin_content.fields.video_title'],
+                ['name' => 'video_url', 'label_key' => 'admin_content.fields.video_link', 'placeholder_key' => 'admin_content.fields.video_url_placeholder'],
+                ['name' => 'note', 'label_key' => 'admin_content.fields.description', 'placeholder_key' => 'admin_content.fields.short_description_placeholder'],
             ],
             'required_item_fields' => ['name'],
             'optional_item_fields' => ['video_url', 'note'],
@@ -254,27 +235,7 @@ class VideoCapsuleController
 
     private function successMessage(string $key, string $language): string
     {
-        $messages = [
-            'item_saved' => [
-                'en' => 'Video capsule saved.',
-                'fr' => 'Capsule vidéo enregistrée.',
-                'es' => 'Cápsula de video guardada.',
-            ],
-            'item_deleted' => [
-                'en' => 'Video capsule deleted.',
-                'fr' => 'Capsule vidéo supprimée.',
-                'es' => 'Cápsula de video eliminada.',
-            ],
-            'category_deleted' => [
-                'en' => 'Category deleted.',
-                'fr' => 'Catégorie supprimée.',
-                'es' => 'Categoría eliminada.',
-            ],
-        ];
-
-        $language = Locale::normalize($language);
-
-        return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+        return (new Translator($language))->trans('admin_content.flash.' . $key);
     }
 
     private function prepareVideoCapsuleData(Request $request, array $data, string $language, ?array $existingItem): array

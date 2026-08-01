@@ -33,10 +33,11 @@ class ActivityController
         $editingCategoryIndex = isset($query['edit_item_category']) ? (int) $query['edit_item_category'] : null;
         $editingItemIndex = isset($query['edit_item']) ? (int) $query['edit_item'] : null;
         $flash = $this->consumeFlash();
+        $sectionConfig = $this->sectionConfig();
 
         return $this->twig->render($response, 'admin/todo.html.twig', [
-            'page_title' => $this->sectionConfig()['page_title'][$language],
-            'section_config' => $this->sectionConfig(),
+            'page_title_key' => $sectionConfig['page_title'],
+            'section_config' => $sectionConfig,
             'active_section' => 'activities',
             'categories' => $this->activityModel->findAllByLanguage($language),
             'editor_language' => $language,
@@ -151,36 +152,20 @@ class ActivityController
     private function sectionConfig(): array
     {
         return [
-            'page_title' => [
-                'en' => 'Sports activities management',
-                'fr' => 'Gestion des activit?s sportive',
-                'es' => 'Gestion de actividades deportivas',
-            ],
-            'page_copy' => [
-                'en' => 'Add, edit, or remove sports activity categories and activities.',
-                'fr' => 'Ajoutez, modifiez ou supprimez des cat?gories d activit?s sportive et des activit?s.',
-                'es' => 'Agrega, edita o elimina categor?as de actividades deportivas y actividades.',
-            ],
+            'page_title' => 'admin_content.sections.activities.page_title',
+            'page_copy' => 'admin_content.sections.activities.page_copy',
             'category_fields' => [
                 [
                     'name' => 'title',
-                    'labels' => [
-                        'en' => 'Category title',
-                        'fr' => 'Titre de la cat?gorie',
-                        'es' => 'T?tulo de la categor?a',
-                    ],
-                    'placeholders' => [
-                        'en' => 'Ex. Water sports',
-                        'fr' => 'Ex. Sports nautiques',
-                        'es' => 'Ej. Deportes acu?ticos',
-                    ],
+                    'label_key' => 'admin_content.fields.category_title',
+                    'placeholder_key' => 'admin_content.sections.activities.category_title_placeholder',
                 ],
             ],
             'item_fields' => [
-                ['name' => 'name', 'labels' => ['en' => 'Activity name', 'fr' => 'Nom de l activit?', 'es' => 'Nombre de la actividad'], 'placeholders' => ['en' => 'Activity name', 'fr' => 'Nom de l activit?', 'es' => 'Nombre de la actividad']],
-                ['name' => 'area', 'labels' => ['en' => 'Location', 'fr' => 'Emplacement', 'es' => 'Ubicaci?n'], 'placeholders' => ['en' => 'Playa del Carmen', 'fr' => 'Playa del Carmen', 'es' => 'Playa del Carmen']],
-                ['name' => 'description', 'type' => 'textarea', 'labels' => ['en' => 'Description', 'fr' => 'Description', 'es' => 'Descripci?n'], 'placeholders' => ['en' => 'Optional description', 'fr' => 'Description optionnelle', 'es' => 'Descripci?n opcional']],
-                ['name' => 'url', 'labels' => ['en' => 'Website', 'fr' => 'Site web', 'es' => 'Sitio web'], 'placeholders' => ['en' => 'https://...', 'fr' => 'https://...', 'es' => 'https://...']],
+                ['name' => 'name', 'label_key' => 'admin_content.fields.activity_name', 'placeholder_key' => 'admin_content.fields.activity_name'],
+                ['name' => 'area', 'label_key' => 'admin_content.fields.location', 'placeholder_key' => 'admin_content.sections.common.playa_placeholder'],
+                ['name' => 'description', 'type' => 'textarea', 'label_key' => 'admin_content.fields.description', 'placeholder_key' => 'admin_content.fields.optional_description_placeholder'],
+                ['name' => 'url', 'label_key' => 'admin_content.fields.website', 'placeholder_key' => 'admin_content.fields.url_placeholder'],
             ],
             'required_item_fields' => ['name', 'area'],
             'optional_item_fields' => ['description', 'url', 'media_files'],
@@ -238,32 +223,7 @@ class ActivityController
 
     private function successMessage(string $key, string $language): string
     {
-        $messages = [
-            'item_saved' => [
-                'en' => 'Activity saved.',
-                'fr' => 'Activit? enregistr?e.',
-                'es' => 'Actividad guardada.',
-            ],
-            'item_deleted' => [
-                'en' => 'Activity deleted.',
-                'fr' => 'Activit? supprim?e.',
-                'es' => 'Actividad eliminada.',
-            ],
-            'category_deleted' => [
-                'en' => 'Category deleted.',
-                'fr' => 'Cat?gorie supprim?e.',
-                'es' => 'Categor?a eliminada.',
-            ],
-            'category_saved' => [
-                'en' => 'Category saved.',
-                'fr' => 'Cat?gorie enregistr?e.',
-                'es' => 'Categor?a guardada.',
-            ],
-        ];
-
-        $language = Locale::normalize($language);
-
-        return $messages[$key][$language] ?? $messages[$key]['en'] ?? $key;
+        return (new Translator($language))->trans('admin_content.flash.' . $key);
     }
 
     private function prepareActivityData(Request $request, array $data, ?array $existingItem): array

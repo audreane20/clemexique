@@ -84,7 +84,7 @@
                                             rel="noopener noreferrer"
                                         >
                                             {{ app_lang == 'fr'
-                                                ? 'Pour l''adresse, cliquez ici'
+                                                ? "Pour l'adresse, cliquez ici"
                                                 : (app_lang == 'es'
                                                     ? 'Para la dirección, haz clic aquí'
                                                     : 'For the address, click here') }}
@@ -98,7 +98,7 @@
 
                                 {% if item.url %}
                                     <a href="{{ item.url starts with '/' ? base_path ~ item.url : item.url }}" class="guide-link" target="_blank" rel="noopener noreferrer">
-                                        {{ item.url_label ?: item.url }}
+                                        {{ item.url_label ? item.url_label : item.url }}
                                     </a>
                                 {% endif %}
                             </article>

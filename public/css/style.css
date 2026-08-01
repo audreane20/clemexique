@@ -4465,11 +4465,20 @@ body.admin-confirm-open {
 }
 
 .admin-confirm-actions {
-    display: flex;
-    justify-content: flex-end;
-    flex-wrap: wrap;
-    gap: 10px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
     margin-top: 22px;
+}
+
+.admin-confirm-choice-button {
+    width: 100%;
+    justify-content: center;
+    text-align: center;
+}
+
+.admin-confirm-cancel-button {
+    order: 3;
 }
 
 .admin-content-add-item {
@@ -5681,13 +5690,9 @@ body.admin-confirm-open {
         font-size: 1.45rem;
     }
 
-    .admin-confirm-actions {
-        display: grid;
-        grid-template-columns: 1fr;
-    }
-
     .admin-confirm-actions .admin-content-cancel-link,
-    .admin-confirm-actions .property-delete-button {
+    .admin-confirm-actions .property-delete-button,
+    .admin-confirm-actions .account-menu-button {
         width: 100%;
     }
 

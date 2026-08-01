@@ -45,12 +45,13 @@ class PropertyController
     {
         $queryParams = $request->getQueryParams();
         $editingProperty = null;
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($queryParams['mode'] ?? null);
 
         if (!empty($queryParams['edit'])) {
             $editingProperty = $this->propertyModel->findById((int) $queryParams['edit']);
         }
 
-        return $this->renderAdminProperties($response, $editingProperty);
+        return $this->renderAdminProperties($response, $editingProperty, null, [], $selectedAdminFilter);
     }
 
     public function show(Request $request, Response $response, array $args): Response
@@ -81,6 +82,7 @@ class PropertyController
         $directUploadManifest = $this->extractDirectUploadManifest($rawData);
         $data = $this->normalizePropertyFormData($rawData);
         $queryParams = $request->getQueryParams();
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($queryParams['mode'] ?? null);
         $progressToken = $this->sanitizeUploadProgressToken((string) ($queryParams['upload_progress_token'] ?? ($data['upload_progress_token'] ?? '')));
         unset($data['upload_progress_token']);
 
@@ -100,7 +102,7 @@ class PropertyController
 
         if ($this->requestExceedsPostLimit($request)) {
             $this->failUploadProgress($progressToken, $this->translator->trans('properties.error_upload_too_large'));
-            return $this->renderAdminProperties($response, null, $this->translator->trans('properties.error_upload_too_large'), $data);
+            return $this->renderAdminProperties($response, null, $this->translator->trans('properties.error_upload_too_large'), $data, $selectedAdminFilter);
         }
 
         $this->releaseSessionLock();
@@ -135,15 +137,15 @@ class PropertyController
         } catch (\RuntimeException $exception) {
             $this->failUploadProgress($progressToken, $exception->getMessage());
             $this->resumeSessionLock();
-            return $this->renderAdminProperties($response, null, $exception->getMessage(), $data);
+            return $this->renderAdminProperties($response, null, $exception->getMessage(), $data, $selectedAdminFilter);
         } catch (\InvalidArgumentException $exception) {
             $this->failUploadProgress($progressToken, $exception->getMessage());
             $this->resumeSessionLock();
-            return $this->renderAdminProperties($response, null, $exception->getMessage(), $data);
+            return $this->renderAdminProperties($response, null, $exception->getMessage(), $data, $selectedAdminFilter);
         }
 
         return $response
-            ->withHeader('Location', $this->basePath . '/admin/properties')
+            ->withHeader('Location', $this->adminPropertiesUrl($selectedAdminFilter))
             ->withStatus(302);
     }
 
@@ -154,6 +156,7 @@ class PropertyController
         $directUploadManifest = $this->extractDirectUploadManifest($rawData);
         $data = $this->normalizePropertyFormData($rawData);
         $queryParams = $request->getQueryParams();
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($queryParams['mode'] ?? null);
         $progressToken = $this->sanitizeUploadProgressToken((string) ($queryParams['upload_progress_token'] ?? ($data['upload_progress_token'] ?? '')));
         unset($data['upload_progress_token']);
         $property = $this->propertyModel->findById($id);
@@ -182,7 +185,8 @@ class PropertyController
                 $response,
                 array_replace($property, $data),
                 $this->translator->trans('properties.error_upload_too_large'),
-                $data
+                $data,
+                $selectedAdminFilter
             );
         }
 
@@ -204,7 +208,8 @@ class PropertyController
                     $response,
                     array_replace($property, $data),
                     $message,
-                    $data
+                    $data,
+                    $selectedAdminFilter
                 );
             }
 
@@ -224,32 +229,34 @@ class PropertyController
         } catch (\RuntimeException $exception) {
             $this->failUploadProgress($progressToken, $exception->getMessage());
             $this->resumeSessionLock();
-            return $this->renderAdminProperties($response, array_replace($property, $data), $exception->getMessage(), $data);
+            return $this->renderAdminProperties($response, array_replace($property, $data), $exception->getMessage(), $data, $selectedAdminFilter);
         } catch (\InvalidArgumentException $exception) {
             $this->failUploadProgress($progressToken, $exception->getMessage());
             $this->resumeSessionLock();
-            return $this->renderAdminProperties($response, array_replace($property, $data), $exception->getMessage(), $data);
+            return $this->renderAdminProperties($response, array_replace($property, $data), $exception->getMessage(), $data, $selectedAdminFilter);
         }
 
         return $response
-            ->withHeader('Location', $this->basePath . '/admin/properties')
+            ->withHeader('Location', $this->adminPropertiesUrl($selectedAdminFilter))
             ->withStatus(302);
     }
 
     public function delete(Request $request, Response $response, array $args): Response
     {
         $id = (int) ($args['id'] ?? 0);
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($request->getQueryParams()['mode'] ?? null);
 
         $this->propertyModel->delete($id);
 
         return $response
-            ->withHeader('Location', $this->basePath . '/admin/properties')
+            ->withHeader('Location', $this->adminPropertiesUrl($selectedAdminFilter))
             ->withStatus(302);
     }
 
     public function deleteImages(Request $request, Response $response, array $args): Response
     {
         $id = (int) ($args['id'] ?? 0);
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($request->getQueryParams()['mode'] ?? null);
         $property = $this->propertyModel->findById($id);
 
         if ($property === null) {
@@ -263,7 +270,9 @@ class PropertyController
             return $this->renderAdminProperties(
                 $response,
                 $property,
-                $this->translator->trans('properties.error_delete_photos_required')
+                $this->translator->trans('properties.error_delete_photos_required'),
+                [],
+                $selectedAdminFilter
             );
         }
 
@@ -274,17 +283,18 @@ class PropertyController
                 ? $this->translator->trans('properties.error_delete_photos_last')
                 : $this->translator->trans('properties.error_delete_photos_required');
 
-            return $this->renderAdminProperties($response, $property, $message);
+            return $this->renderAdminProperties($response, $property, $message, [], $selectedAdminFilter);
         }
 
         return $response
-            ->withHeader('Location', $this->basePath . '/admin/properties')
+            ->withHeader('Location', $this->adminPropertiesUrl($selectedAdminFilter))
             ->withStatus(302);
     }
 
     public function setPrimaryImage(Request $request, Response $response, array $args): Response
     {
         $id = (int) ($args['id'] ?? 0);
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($request->getQueryParams()['mode'] ?? null);
         $property = $this->propertyModel->findById($id);
 
         if ($property === null) {
@@ -298,7 +308,9 @@ class PropertyController
             return $this->renderAdminProperties(
                 $response,
                 $property,
-                $this->translator->trans('properties.error_primary_image_required')
+                $this->translator->trans('properties.error_primary_image_required'),
+                [],
+                $selectedAdminFilter
             );
         }
 
@@ -308,12 +320,14 @@ class PropertyController
             return $this->renderAdminProperties(
                 $response,
                 $property,
-                $this->translator->trans('properties.error_primary_image_invalid')
+                $this->translator->trans('properties.error_primary_image_invalid'),
+                [],
+                $selectedAdminFilter
             );
         }
 
         return $response
-            ->withHeader('Location', $this->basePath . '/admin/properties')
+            ->withHeader('Location', $this->adminPropertiesUrl($selectedAdminFilter))
             ->withStatus(302);
     }
 
@@ -1407,15 +1421,17 @@ class PropertyController
         Response $response,
         ?array $editingProperty = null,
         ?string $error = null,
-        array $formData = []
+        array $formData = [],
+        string $selectedAdminFilter = 'all'
     ): Response {
         $noticeGroups = $_SESSION['property_admin_notice_groups'] ?? null;
         unset($_SESSION['property_admin_notice_groups']);
         $activeImportJob = $this->consumeActivePropertyImportJobSummary();
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($selectedAdminFilter);
 
         return $this->twig->render($response, 'admin/properties.html.twig', [
             'page_title_key' => 'properties.page_title',
-            'properties' => $this->propertyModel->findAll(),
+            'properties' => $this->propertyModel->findAllByMode($selectedAdminFilter),
             'editing_property' => $editingProperty !== null ? $this->hydratePropertyDescriptions($editingProperty) : null,
             'form_error' => $error,
             'form_notice_groups' => $noticeGroups,
@@ -1423,7 +1439,30 @@ class PropertyController
             'form_error_groups' => $error !== null ? $this->buildUploadSkippedGroupsFromMessageContext($error) : null,
             'direct_upload_enabled' => $this->isDirectUploadEnabled(),
             'active_import_job' => $activeImportJob,
+            'selected_admin_filter' => $selectedAdminFilter,
         ]);
+    }
+
+    private function resolveAdminListingModeFilter(mixed $value): string
+    {
+        $mode = strtolower(trim((string) $value));
+
+        return in_array($mode, ['all', 'revente', 'future_projet'], true)
+            ? $mode
+            : 'all';
+    }
+
+    private function adminPropertiesUrl(string $selectedAdminFilter = 'all', array $query = []): string
+    {
+        $selectedAdminFilter = $this->resolveAdminListingModeFilter($selectedAdminFilter);
+
+        if ($selectedAdminFilter !== 'all') {
+            $query['mode'] = $selectedAdminFilter;
+        }
+
+        $queryString = http_build_query($query);
+
+        return $this->basePath . '/admin/properties' . ($queryString !== '' ? '?' . $queryString : '');
     }
 
     public function processImportJobById(string $jobId): void

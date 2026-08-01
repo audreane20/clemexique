@@ -1720,6 +1720,31 @@ body.home-transition-sun-active .home-hero-orb-sun {
     font-size: 28px;
 }
 
+.property-form-card-header,
+.property-admin-preview-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.property-form-card-header {
+    margin-bottom: 18px;
+}
+
+.property-form-card-header h2 {
+    margin-bottom: 0;
+}
+
+.property-cancel-link-inline {
+    margin-top: 4px;
+}
+
+.property-filter-actions-admin {
+    justify-content: flex-end;
+}
+
 .property-form {
     display: grid;
     gap: 16px;

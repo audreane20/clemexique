@@ -260,7 +260,7 @@ return [
     'info_request_rent.hero' => 'A simple page to access our trusted third-party rental form.',
     'info_request_rent.copy' => 'You will be redirected to a trusted third party to fill out the rental form.',
     'info_request_rent.note_line_1' => 'If you mention CLeMexique, you will receive a FREE GIFT upon your arrival.',
-    'info_request_rent.note_line_2' => 'Select: "CLeMexique.ca" for the question "How did you get our contact?" for the free gift.',
+    'info_request_rent.note_line_2' => 'Enter: "clemexique.ca" when asked for a promotional code to get the free gift.',
     'info_request_rent.cta' => 'Open the rental form',
     'info_request.secondary_title' => 'Residency & Immigration steps',
     'info_request.secondary_copy' => 'Open this guide to see the main steps, fees, and a few advantages related to residency in Mexico.',

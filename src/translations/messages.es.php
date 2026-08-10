@@ -199,7 +199,7 @@ return array(
     'info_request_rent.hero' => 'Una página simple para acceder a nuestro formulario de renta de un tercero de confianza.',
     'info_request_rent.copy' => 'Serás redirigido a un tercero de confianza para completar el formulario de renta.',
     'info_request_rent.note_line_1' => 'Si menciona CLeMexique, recibirá un REGALO GRATIS a su llegada.',
-    'info_request_rent.note_line_2' => 'Seleccione: "CLeMexique.ca" en la pregunta "¿Cómo obtuvo nuestro contacto?" para el regalo gratis.',
+    'info_request_rent.note_line_2' => 'Escriba: "clemexique.ca" cuando se solicite un codigo promocional para obtener el regalo gratis.',
     'info_request_rent.cta' => 'Abrir el formulario de renta',
     'info_request.currency_cad' => 'CAD',
     'info_request.currency_mxn' => 'MXN',
